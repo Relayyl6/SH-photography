@@ -605,9 +605,9 @@ export default function BookingForm() {
           </form>
         </div>
 
-        {/* Live Summary Sidebar (Sticky) */}
-        <div className="hidden lg:block w-80 shrink-0">
-          <div className="sticky top-28">
+        {/* Live Summary Sidebar (Sticky on desktop, stacked on mobile) */}
+        <div className="w-full lg:w-80 shrink-0 mt-8 lg:mt-0">
+          <div className="lg:sticky lg:top-28">
             <h3 className="font-display text-xl mb-6 pb-4 border-b border-ink/10">Live Summary</h3>
             
             <div className="space-y-6">
