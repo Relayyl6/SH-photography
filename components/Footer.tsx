@@ -20,17 +20,17 @@ export function Footer() {
         
         {/* Floating elements for left and right */}
         <motion.div 
-          animate={{ y: [0, -15, 0], rotate: [0, -2, 0] }}
+          animate={{ y: [0, -18, 0], rotate: [0, -3, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-4 lg:left-12 top-0 md:top-[-2rem] hidden md:block w-32 h-32 lg:w-48 lg:h-48 opacity-80 mix-blend-multiply pointer-events-none"
+          className="absolute left-0 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 mix-blend-multiply pointer-events-none opacity-90"
         >
           <Image src="/floating-camera.jpg" alt="" fill className="object-contain" />
         </motion.div>
         
         <motion.div 
-          animate={{ y: [0, 15, 0], rotate: [0, 2, 0] }}
+          animate={{ y: [0, 18, 0], rotate: [0, 3, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute right-4 lg:right-12 bottom-0 md:bottom-[-2rem] hidden md:block w-32 h-32 lg:w-48 lg:h-48 opacity-80 mix-blend-multiply pointer-events-none"
+          className="absolute right-0 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 mix-blend-multiply pointer-events-none opacity-90"
         >
           <Image src="/floating-lens.jpg" alt="" fill className="object-contain" />
         </motion.div>
