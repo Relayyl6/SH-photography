@@ -78,7 +78,7 @@ export default function HomePage() {
 
       {/* ---------- Giant Watermark Crosswalk ---------- */}
       <div className="w-full relative z-0 flex items-center justify-center select-none pointer-events-none">
-        <h2 className="absolute w-full text-center font-display text-[12.5vw] leading-none text-ink/[0.06] blur-[3px] whitespace-nowrap m-0 p-0 tracking-tighter">
+        <h2 className="absolute w-full text-center font-display text-[11.5vw] leading-none text-ink/[0.06] blur-[3px] whitespace-nowrap m-0 p-0 tracking-tighter">
           SH PHOTOGRAPHY
         </h2>
       </div>
