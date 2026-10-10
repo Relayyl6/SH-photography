@@ -32,7 +32,7 @@ export default function StylePage() {
         </div>
 
         {/* Hero Section */}
-        <div className="relative flex-1 flex flex-col items-center justify-center w-full pb-24 md:pb-32 lg:pb-40">
+        <div className="relative flex-1 flex flex-col items-center justify-center w-full pb-12 md:pb-20">
           
           {/* Center Image */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] md:w-[350px] md:h-[350px] lg:w-[450px] lg:h-[450px] z-10 mix-blend-multiply pointer-events-none">
@@ -62,35 +62,10 @@ export default function StylePage() {
 
           </div>
         </div>
-
-        {/* Red Box Bottom Left */}
-        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[60%] lg:w-[50%] max-w-[550px] min-h-[140px] p-6 md:p-8 lg:p-10 z-50 flex items-start gap-4 md:gap-6 rounded-tr-2xl">
-          
-          {/* Bespoke faded edges blending into red using CSS Mask */}
-          <div 
-            className="relative w-16 h-16 md:w-24 md:h-24 shrink-0 mt-1"
-            style={{
-              WebkitMaskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)",
-              maskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)"
-            }}
-          >
-             <Image src="/frame-sq-1.jpg" alt="Artwork" fill className="object-cover scale-110" />
-          </div>
-          
-          <div className="flex flex-col text-left flex-1 pb-2">
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl mb-2 leading-[0.9] tracking-tight text-white drop-shadow-sm">
-              Genuine<br />Connections
-            </h2>
-            <p className="text-[10px] md:text-xs uppercase font-sans tracking-[0.15em] opacity-90 leading-relaxed text-white">
-              FOR ME, PHOTOGRAPHY GOES BEYOND THE PICTURES. IT&apos;S ABOUT CONNECTING WITH MY CLIENTS. 
-              <span className="ml-3 font-serif text-2xl md:text-3xl leading-none align-middle font-light">⟶</span>
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Original Style Text */}
-      <div className="relative z-10 w-full max-w-[1300px] mt-16 md:mt-24 pb-10 px-4 md:px-0">
+      <div className="relative z-10 w-full max-w-[1300px] mt-16 md:mt-24 pb-48 md:pb-64 px-4 md:px-0">
         <div className="mx-auto max-w-3xl">
           <article className="prose-none space-y-6 md:space-y-8 text-base md:text-[1.1rem] leading-relaxed text-[#f6f4f0]/80 md:text-center md:text-[1.25rem]">
             <Reveal>
