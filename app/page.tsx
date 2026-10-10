@@ -22,7 +22,7 @@ export default function HomePage() {
           muted 
           loop 
           playsInline 
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.25] blur-xl pointer-events-none select-none z-0"
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.35] blur-sm pointer-events-none select-none z-0"
         >
           <source src="/photographer-bg.mp4" type="video/mp4" />
         </video>
