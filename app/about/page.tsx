@@ -14,24 +14,16 @@ export default function AboutPage() {
     <>
       <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
         
-        {/* Unified Title matching the grid layout EXACTLY */}
-        <div className="hidden md:flex flex-row items-end justify-between gap-12 lg:gap-20 mb-6 select-none pointer-events-none">
-          {/* Left Side: "MY" strictly matching the 40% column */}
-          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0">
-            <svg viewBox="0 0 160 100" className="w-full h-auto text-ink fill-current overflow-hidden">
-              <text x="0" y="85" textLength="160" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">
-                MY
-              </text>
-            </svg>
-          </div>
-          {/* Right Side: "STORY" strictly matching the 55% column */}
-          <div className="w-full md:w-[55%]">
-            <svg viewBox="0 0 350 140" className="w-full h-auto text-ink fill-current overflow-hidden">
-              <text x="0" y="125" textLength="350" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase" fontSize="160">
-                STORY
-              </text>
-            </svg>
-          </div>
+        {/* Unified Desktop Title (Top-Aligned, Tight Gap) */}
+        <div className="hidden md:block w-full mb-12 select-none pointer-events-none">
+          <svg viewBox="0 0 1000 190" className="w-full h-auto text-ink fill-current overflow-visible">
+            <text x="0" y="130" className="font-display font-bold uppercase tracking-tighter" fontSize="150">
+              MY
+            </text>
+            <text x="270" y="172" textLength="730" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase tracking-tighter" fontSize="210">
+              STORY
+            </text>
+          </svg>
         </div>
 
         {/* Mobile Title (Perfectly Justified Stack) */}
