@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import BookingForm from '@/components/book/BookingForm';
 
 export const metadata = {
@@ -9,8 +10,9 @@ export default function BookPage() {
   return (
     <main className="min-h-screen bg-paper pt-24 pb-12">
       <div className="container-site">
-
-        <BookingForm />
+        <Suspense fallback={<div className="py-24 text-center text-ink/40">Loading form…</div>}>
+          <BookingForm />
+        </Suspense>
       </div>
     </main>
   );

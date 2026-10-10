@@ -3,14 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { packages } from "@/lib/packages";
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: { slug: string } };
 
 export async function generateStaticParams() {
   return packages.map((pkg) => ({ slug: pkg.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug } = params;
   const pkg = packages.find((p) => p.slug === slug);
   if (!pkg) return {};
   return {
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ServiceDetailPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
   const pkg = packages.find((p) => p.slug === slug);
   if (!pkg) notFound();
 
