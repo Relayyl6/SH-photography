@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="min-h-screen bg-[#33110b] -mt-[120px] p-4 pt-[100px] md:p-8 md:pt-[120px] overflow-x-hidden font-display flex flex-col items-center">
+    <div className="min-h-screen bg-[#33110b] -mt-[120px] pt-[100px] md:pt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-132px)] md:h-[calc(100dvh-168px)] min-h-[500px] flex flex-col shadow-2xl overflow-hidden mt-4">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-100px)] md:h-[calc(100dvh-120px)] min-h-[500px] flex flex-col shadow-2xl overflow-hidden rounded-t-xl md:rounded-t-2xl">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
         <div className="absolute top-[-2%] left-[-2%] md:top-[2%] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
@@ -68,7 +68,7 @@ export default function StylePage() {
         </div>
 
         {/* Red Box Bottom Left */}
-        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[45%] max-w-[500px] h-[16vh] min-h-[120px] p-4 md:p-6 z-50 flex items-center gap-4">
+        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[45%] max-w-[500px] h-[16vh] min-h-[120px] md:min-h-[140px] p-4 md:p-6 z-50 flex items-center gap-4">
           
           {/* Bespoke faded edges blending into red using CSS Mask */}
           <div 
@@ -82,12 +82,12 @@ export default function StylePage() {
           </div>
           
           <div className="flex flex-col text-left justify-center ml-2">
-            <h2 className="font-display text-2xl md:text-[3.5vh] mb-1 leading-[0.9] tracking-tight text-white">
+            <h2 className="font-display text-2xl md:text-[3.8vh] mb-1 leading-[0.85] tracking-tight text-white drop-shadow-sm">
               Genuine<br />Connections
             </h2>
-            <p className="text-[8px] md:text-[0.9vh] uppercase font-sans tracking-[0.1em] opacity-90 max-w-[200px] leading-relaxed text-white">
+            <p className="text-[9px] md:text-[1vh] uppercase font-sans tracking-[0.15em] opacity-90 max-w-[220px] leading-relaxed text-white mt-1">
               FOR ME, PHOTOGRAPHY GOES BEYOND THE PICTURES. IT&apos;S ABOUT CONNECTING WITH MY CLIENTS. 
-              <span className="ml-2 font-serif text-[2vh] leading-none align-middle font-light">⟶</span>
+              <span className="ml-3 font-serif text-[2.5vh] leading-none align-middle font-light">⟶</span>
             </p>
           </div>
         </div>
