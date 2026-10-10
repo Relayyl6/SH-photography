@@ -11,9 +11,9 @@ export function Footer() {
       {/* Massive Dark CTA Block with Subtle Faded Edges */}
       <div className="w-full relative z-20 mt-12 mb-12">
         {/* Subtle Top Fade */}
-        <div className="h-10 md:h-16 w-full absolute top-0 left-0 right-0 -mt-10 md:-mt-16 bg-gradient-to-t from-[#15130f] to-transparent pointer-events-none z-30"></div>
+        <div className="h-10 md:h-16 w-full absolute top-0 left-0 right-0 -mt-10 md:-mt-16 bg-gradient-to-t from-[#3a3128] to-transparent pointer-events-none z-30"></div>
         
-        <div className="w-full bg-[#15130f] text-paper py-16 md:py-20 relative z-20">
+        <div className="w-full bg-[#3a3128] text-paper py-16 md:py-20 relative z-20">
           <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div>
               <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
@@ -35,7 +35,7 @@ export function Footer() {
         </div>
 
         {/* Subtle Bottom Fade */}
-        <div className="h-10 md:h-16 w-full absolute bottom-0 left-0 right-0 -mb-10 md:-mb-16 bg-gradient-to-b from-[#15130f] to-transparent pointer-events-none z-30"></div>
+        <div className="h-10 md:h-16 w-full absolute bottom-0 left-0 right-0 -mb-10 md:-mb-16 bg-gradient-to-b from-[#3a3128] to-transparent pointer-events-none z-30"></div>
       </div>
 
       <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">

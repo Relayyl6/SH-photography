@@ -26,8 +26,8 @@ export default function AboutPage() {
           </div>
           {/* Right Side: "STORY" strictly matching the 55% column */}
           <div className="w-full md:w-[55%]">
-            <svg viewBox="0 0 350 100" className="w-full h-auto text-ink fill-current overflow-hidden">
-              <text x="0" y="85" textLength="350" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">
+            <svg viewBox="0 0 350 140" className="w-full h-auto text-ink fill-current overflow-hidden">
+              <text x="0" y="125" textLength="350" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase" fontSize="160">
                 STORY
               </text>
             </svg>
@@ -36,9 +36,9 @@ export default function AboutPage() {
 
         {/* Mobile Title (Perfectly Justified Stack) */}
         <div className="md:hidden flex flex-col mb-8 select-none pointer-events-none">
-          <svg viewBox="0 0 350 200" className="w-full h-auto text-ink fill-current overflow-hidden">
+          <svg viewBox="0 0 350 240" className="w-full h-auto text-ink fill-current overflow-hidden">
             <text x="0" y="90" textLength="350" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">MY</text>
-            <text x="0" y="190" textLength="350" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">STORY</text>
+            <text x="0" y="230" textLength="350" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase" fontSize="160">STORY</text>
           </svg>
         </div>
 
