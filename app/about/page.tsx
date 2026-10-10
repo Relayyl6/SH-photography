@@ -12,22 +12,34 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <div className="w-full overflow-hidden select-none pointer-events-none mt-10 mb-4 md:mb-10">
-        <svg viewBox="0 0 1000 250" className="w-full h-auto text-ink fill-current overflow-visible relative z-20">
-          <text 
-            x="50%" 
-            y="220" 
-            textAnchor="middle" 
-            className="font-display font-bold uppercase tracking-tighter" 
-          >
-            <tspan fontSize="140" dy="-70">MY </tspan>
-            <tspan fontSize="280" dy="70">STORY</tspan>
-          </text>
-        </svg>
-      </div>
-
-      <div className="container-site pb-20 relative z-10 mt-8 md:mt-12">
+      <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
         
+        {/* Unified Title matching the grid layout EXACTLY */}
+        <div className="hidden md:flex flex-row items-end justify-between gap-12 lg:gap-20 mb-8 select-none pointer-events-none">
+          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0">
+            <svg viewBox="0 0 400 120" className="w-full h-auto text-ink fill-current overflow-visible">
+              <text x="0" y="100" className="font-display font-bold uppercase tracking-tighter" fontSize="130">
+                MY
+              </text>
+            </svg>
+          </div>
+          <div className="w-full md:w-[55%]">
+            <svg viewBox="0 0 550 120" className="w-full h-auto text-ink fill-current overflow-visible">
+              <text x="0" y="100" className="font-display font-bold uppercase tracking-tighter" fontSize="130">
+                STORY
+              </text>
+            </svg>
+          </div>
+        </div>
+
+        {/* Mobile Title (Stack) */}
+        <div className="md:hidden flex flex-col mb-8 select-none pointer-events-none">
+          <svg viewBox="0 0 1000 250" className="w-full h-auto text-ink fill-current overflow-visible">
+            <text x="0" y="100" className="font-display font-bold uppercase tracking-tighter" fontSize="130">MY</text>
+            <text x="0" y="240" className="font-display font-bold uppercase tracking-tighter" fontSize="150">STORY</text>
+          </svg>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
           
           {/* Left Column: Enlarged Picture (40%) & Sticky */}
