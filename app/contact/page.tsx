@@ -12,47 +12,53 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
-      <div className="container-site pt-20 pb-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Let&apos;s talk</p>
-        <h1 className="mt-3 max-w-2xl font-display text-display-lg">
-          Send a message or request a booking
-        </h1>
-        <p className="mt-4 max-w-xl text-ink/70">I&apos;ll get back to you as soon as I can.</p>
+      <div className="container-site pt-12 md:pt-20 pb-10">
+        
+        <div className="grid gap-12 lg:gap-20 lg:grid-cols-[1fr_1.3fr]">
+          {/* Left Column: Headline and Quick Contact */}
+          <div className="lg:sticky lg:top-32 lg:self-start">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-accent">Let&apos;s talk</p>
+            <h1 className="mt-4 font-display text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight">
+              Send a message<br />or request a<br />booking
+            </h1>
+            <p className="mt-6 text-lg text-ink/70 max-w-md">I&apos;ll get back to you as soon as I can.</p>
 
-        <div className="mt-14 grid gap-16 lg:grid-cols-[1fr_1.3fr]">
-          <div>
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Quick contact</h2>
-            <ul className="mt-5 space-y-4">
-              <li>
-                <a
-                  href={`https://wa.me/${siteConfig.whatsappE164}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-display text-xl hover:text-accent"
-                >
-                  WhatsApp me →
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${siteConfig.email}`} className="font-display text-xl hover:text-accent break-all">
-                  Email me →
-                </a>
-              </li>
-              <li>
-                <a href={`tel:${siteConfig.phoneE164}`} className="font-display text-xl hover:text-accent">
-                  {siteConfig.phoneDisplay}
-                </a>
-              </li>
-            </ul>
+            <div className="mt-16 md:mt-24 space-y-12">
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-5">Quick contact</h2>
+                <ul className="space-y-4">
+                  <li>
+                    <a href={`https://wa.me/${siteConfig.whatsappE164}`} target="_blank" rel="noopener noreferrer" className="font-display text-2xl hover:text-accent transition-colors">
+                      WhatsApp me →
+                    </a>
+                  </li>
+                  <li>
+                    <a href={`mailto:${siteConfig.email}`} className="font-display text-2xl hover:text-accent break-all transition-colors">
+                      Email me →
+                    </a>
+                  </li>
+                  <li>
+                    <a href={`tel:${siteConfig.phoneE164}`} className="font-display text-2xl hover:text-accent transition-colors">
+                      {siteConfig.phoneDisplay}
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            <p className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink/50">Location</p>
-            <p className="mt-2 text-ink/70">{siteConfig.locationLine}</p>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-3">Location</p>
+                <p className="text-lg text-ink/80">{siteConfig.locationLine}</p>
+              </div>
 
-            <p className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink/50">Follow</p>
-            <SocialLinks className="mt-3" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-4">Follow</p>
+                <SocialLinks className="mt-3" />
+              </div>
+            </div>
           </div>
 
-          <Suspense fallback={null}>
+          {/* Right Column: Form */}
+          <div className="mt-8 lg:mt-0">
             <ContactForm />
           </Suspense>
         </div>

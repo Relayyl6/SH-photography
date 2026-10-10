@@ -63,7 +63,7 @@ export function Header() {
             {"SH Photography"}
           </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
             <div className="relative">
               <button
                 type="button"
@@ -121,13 +121,13 @@ export function Header() {
           <div className="flex items-center gap-3">
             <Link
               href="/contact"
-              className={`hidden rounded-full bg-ink text-sm font-semibold text-paper transition-all duration-500 hover:bg-accent md:inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
+              className={`hidden rounded-full bg-ink text-sm font-semibold text-paper transition-all duration-500 hover:bg-accent lg:inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
             >
               Book / Get in touch
             </Link>
             <button
               type="button"
-              className={`inline-flex items-center justify-center rounded-full border border-line md:hidden transition-all duration-500 ${scrolled ? 'h-8 w-8' : 'h-10 w-10'}`}
+              className={`inline-flex items-center justify-center rounded-full border border-line lg:hidden transition-all duration-500 ${scrolled ? 'h-8 w-8' : 'h-10 w-10'}`}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -143,7 +143,7 @@ export function Header() {
         <nav 
           id="mobile-menu" 
           aria-label="Mobile" 
-          className="absolute left-4 right-4 top-[calc(100%+8px)] rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-xl md:hidden overflow-hidden origin-top animate-in fade-in slide-in-from-top-4 duration-200"
+          className="absolute left-4 right-4 top-[calc(100%+8px)] rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-xl lg:hidden overflow-hidden origin-top animate-in fade-in slide-in-from-top-4 duration-200"
         >
           <ul className="flex flex-col gap-1 px-5 sm:px-6 py-4">
             <li>
