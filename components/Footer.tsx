@@ -15,30 +15,29 @@ export function Footer() {
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
       {/* Editorial Typographic CTA */}
-      <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-16 md:mb-24' : 'my-16 md:my-24'}`}>
-        <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase mb-4">
+      <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-10 md:mb-16' : 'my-10 md:my-16'}`}>
+        <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2">
           Ready to create together?
         </p>
         
-        <h2 className="font-display text-5xl md:text-7xl lg:text-[8rem] leading-[0.95] tracking-tighter text-ink mb-6">
-          Let&apos;s make <br className="hidden sm:block" />
-          <span className="italic text-ink/70">magic.</span>
+        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-none tracking-tighter text-ink mb-3">
+          Let&apos;s make <span className="italic text-ink/70">magic.</span>
         </h2>
         
-        <p className="text-ink/70 text-base md:text-lg font-medium max-w-xl mx-auto mb-8">
+        <p className="text-ink/70 text-sm md:text-base font-medium max-w-xl mx-auto mb-6">
           Photographing people, brands and products since 2020. I&apos;d love to hear about your next project.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
           <Link
             href="/book"
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-10 py-4 md:py-5 text-sm md:text-base font-semibold text-paper hover:bg-accent transition-colors duration-300"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-8 py-3 text-sm font-semibold text-paper hover:bg-accent transition-colors duration-300"
           >
             Book a Session
           </Link>
           <Link
             href="/contact"
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-ink/20 px-10 py-4 md:py-5 text-sm md:text-base font-semibold text-ink hover:border-ink transition-colors duration-300"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-ink/20 px-8 py-3 text-sm font-semibold text-ink hover:border-ink transition-colors duration-300"
           >
             Get in touch
           </Link>
