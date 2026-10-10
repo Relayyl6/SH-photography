@@ -23,7 +23,10 @@ export function RightColumnParallax({ children, className }: Props) {
   const y = useTransform(scrollY, [0, 250], [0, isDesktop ? 250 : 0]);
 
   return (
-    <motion.div style={{ y }} className={className}>
+    <motion.div 
+      style={{ y, willChange: "transform", transform: "translateZ(0)" }} 
+      className={className}
+    >
       {children}
     </motion.div>
   );

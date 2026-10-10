@@ -44,7 +44,7 @@ export default function AboutPage() {
           </div>
 
           {/* Right Column: Headline & Article (Scrolls normally after initial freeze) */}
-          <RightColumnParallax className="w-full md:w-[55%]">
+          <RightColumnParallax className="w-full md:w-[55%] md:mb-[250px]">
             
             {/* "STORY" scrolls with the article, negative margin pulls it across the gap */}
             <div className="hidden md:block w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] -ml-12 lg:-ml-20 mb-6 select-none pointer-events-none">
