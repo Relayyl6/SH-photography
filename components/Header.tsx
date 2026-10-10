@@ -3,6 +3,17 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { sessions } from "@/lib/sessions";
+import { AnimatePresence, motion } from "framer-motion";
+
+const mobileMenuVariant = {
+  hidden: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.2 } },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1], staggerChildren: 0.05, delayChildren: 0.1 } }
+};
+
+const mobileItemVariant = {
+  hidden: { opacity: 0, x: -15 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] } }
+};
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -138,58 +149,64 @@ export function Header() {
           </div>
         </div>
       </div>
-
-      {mobileOpen && (
-        <nav 
-          id="mobile-menu" 
-          aria-label="Mobile" 
-          className="absolute left-4 right-4 top-[calc(100%+8px)] rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-xl lg:hidden overflow-hidden origin-top animate-in fade-in slide-in-from-top-4 duration-200"
-        >
-          <ul className="flex flex-col gap-1 px-5 sm:px-6 py-4">
-            <li>
-              <p className="px-1 pb-1 pt-3 text-xs font-semibold uppercase tracking-widest text-ink/50">
-                Portfolio
-              </p>
-            </li>
-            <li>
-              <Link href="/portfolio" className="block rounded-lg px-1 py-2 font-medium" onClick={() => setMobileOpen(false)}>
-                All sessions
-              </Link>
-            </li>
-            {sessions.map((s) => (
-              <li key={s.slug}>
+      
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.nav 
+            variants={mobileMenuVariant}
+            initial="hidden"
+            animate="show"
+            exit="hidden"
+            id="mobile-menu" 
+            aria-label="Mobile" 
+            className="absolute left-4 right-4 top-[calc(100%+8px)] rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-xl lg:hidden overflow-hidden origin-top"
+          >
+            <ul className="flex flex-col gap-1 px-5 sm:px-6 py-6">
+              <motion.li variants={mobileItemVariant}>
+                <p className="px-1 pb-1 text-xs font-semibold uppercase tracking-widest text-ink/50">
+                  Portfolio
+                </p>
+              </motion.li>
+              <motion.li variants={mobileItemVariant}>
+                <Link href="/portfolio" className="block rounded-lg px-1 py-2 font-medium" onClick={() => setMobileOpen(false)}>
+                  All sessions
+                </Link>
+              </motion.li>
+              {sessions.map((s) => (
+                <motion.li key={s.slug} variants={mobileItemVariant}>
+                  <Link
+                    href={`/portfolio/${s.slug}`}
+                    className="block rounded-lg px-1 py-2 pl-4 text-ink/80"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {s.title}
+                  </Link>
+                </motion.li>
+              ))}
+              {navLinks.map((link) => (
+                <motion.li key={link.href} variants={mobileItemVariant}>
+                  <Link
+                    href={link.href}
+                    className="block rounded-lg px-1 py-3 font-medium"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.li>
+              ))}
+              <motion.li variants={mobileItemVariant} className="pt-4 pb-2">
                 <Link
-                  href={`/portfolio/${s.slug}`}
-                  className="block rounded-lg px-1 py-2 pl-4 text-ink/80"
+                  href="/contact"
+                  className="block rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {s.title}
+                  Book / Get in touch
                 </Link>
-              </li>
-            ))}
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="block rounded-lg px-1 py-3 font-medium"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            <li className="pt-2">
-              <Link
-                href="/contact"
-                className="block rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper"
-                onClick={() => setMobileOpen(false)}
-              >
-                Book / Get in touch
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      )}
+              </motion.li>
+            </ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
