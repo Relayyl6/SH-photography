@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
-import { RightColumnParallax } from "@/components/RightColumnParallax";
 
 export const metadata: Metadata = {
   title: "About",
@@ -44,7 +43,8 @@ export default function AboutPage() {
           </div>
 
           {/* Right Column: Headline & Article (Scrolls normally after initial freeze) */}
-          <RightColumnParallax className="w-full md:w-[55%] md:mb-[250px]">
+          <div className="w-full md:w-[55%] md:pb-[250px]">
+            <div className="w-full md:sticky md:top-[7rem]">
             
             {/* "STORY" scrolls with the article, negative margin pulls it across the gap */}
             <div className="hidden md:block w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] -ml-12 lg:-ml-20 mb-6 select-none pointer-events-none">
@@ -107,7 +107,8 @@ export default function AboutPage() {
               story of each unique moment
             </p>
           </article>
-        </RightColumnParallax>
+            </div>
+          </div>
       </div>
       </div>
     </>
