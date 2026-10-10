@@ -8,32 +8,26 @@ export function Footer() {
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line/50 bg-paper text-ink">
       
-      {/* Massive Dark CTA Block with Blurred/Faded Edges */}
-      <div className="w-full relative z-20">
-        <div className="h-12 md:h-20 bg-gradient-to-b from-paper to-[#15130f]"></div>
-        
-        <div className="w-full bg-[#15130f] text-paper py-6 md:py-10">
-          <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
-            <div>
-              <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
-                Let&apos;s make something.
-              </h2>
-              <p className="text-paper/70 text-lg md:text-xl font-medium">
-                Photographing people, brands and products since 2020.
-              </p>
-            </div>
-            <div className="shrink-0">
-              <Link 
-                href="/contact" 
-                className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
-              >
-                Book / Get in touch
-              </Link>
-            </div>
+      {/* Massive Dark CTA Block */}
+      <div className="w-full bg-[#15130f] text-paper py-20 md:py-24 relative z-20">
+        <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
+          <div>
+            <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
+              Let&apos;s make magic.
+            </h2>
+            <p className="text-paper/70 text-lg md:text-xl font-medium">
+              Photographing people, brands and products since 2020.
+            </p>
+          </div>
+          <div className="shrink-0">
+            <Link 
+              href="/contact" 
+              className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
+            >
+              Book / Get in touch
+            </Link>
           </div>
         </div>
-        
-        <div className="h-12 md:h-20 bg-gradient-to-b from-[#15130f] to-paper"></div>
       </div>
 
       <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">
