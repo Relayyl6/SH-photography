@@ -131,12 +131,20 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              href="/contact"
-              className={`hidden rounded-full bg-ink text-sm font-semibold text-paper transition-all duration-500 hover:bg-accent lg:inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
-            >
-              Book / Get in touch
-            </Link>
+            <div className="hidden lg:flex items-center gap-2">
+              <Link
+                href="/book"
+                className={`rounded-full bg-ink text-sm font-semibold text-paper transition-all duration-500 hover:bg-accent inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
+              >
+                Book
+              </Link>
+              <Link
+                href="/contact"
+                className={`rounded-full border border-ink text-sm font-semibold text-ink bg-transparent transition-all duration-500 hover:bg-ink hover:text-paper inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
+              >
+                Get in touch
+              </Link>
+            </div>
             <button
               type="button"
               className={`inline-flex items-center justify-center rounded-full border border-line lg:hidden transition-all duration-500 ${scrolled ? 'h-8 w-8' : 'h-10 w-10'}`}
@@ -195,13 +203,20 @@ export function Header() {
                   </Link>
                 </motion.li>
               ))}
-              <motion.li variants={mobileItemVariant} className="pt-4 pb-2">
+              <motion.li variants={mobileItemVariant} className="pt-4 pb-2 flex gap-2">
                 <Link
-                  href="/contact"
-                  className="block rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper"
+                  href="/book"
+                  className="block flex-1 rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Book / Get in touch
+                  Book
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block flex-1 rounded-full border border-ink px-5 py-3 text-center font-semibold text-ink bg-transparent"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Get in touch
                 </Link>
               </motion.li>
             </ul>
