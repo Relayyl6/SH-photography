@@ -15,12 +15,13 @@ export default function HomePage() {
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden bg-paper -mt-[120px]">
         
-        {/* Blurred Background Video */}
+        {/* Blurred Background Video with Poster Fallback */}
         <video 
           autoPlay 
           muted 
           loop 
           playsInline 
+          poster="/hero-bg.jpg"
           className="absolute inset-0 h-full w-full object-cover opacity-[0.35] blur-sm pointer-events-none select-none z-0"
         >
           <source src="/photographer-bg.mp4" type="video/mp4" />
@@ -29,52 +30,136 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <StaggerReveal className="relative container-site flex min-h-[100vh] flex-col justify-center pt-[100px] pb-12 md:pt-[130px] md:pb-16 z-10" staggerVariant="fast">
-          <StaggerItem variant="fadeDown">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent drop-shadow-sm">
-              {siteConfig.location} · Est. 2020
-            </p>
-          </StaggerItem>
+        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[130px] pb-6 sm:pb-8 md:pt-[160px] md:pb-10 z-10" staggerVariant="fast">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <StaggerItem variant="fadeDown">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sand/90 border border-line/60 backdrop-blur-sm mb-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                    {siteConfig.location} · Est. 2020
+                  </p>
+                </div>
+              </StaggerItem>
 
-          <h1 className="mt-4 md:mt-5 font-display text-display-xl text-ink drop-shadow-sm flex flex-col">
-            <StaggerItem variant="fadeUpLarge">
-              <span>Photographing</span>
-            </StaggerItem>
-            <StaggerItem variant="fadeUpLarge">
-              <span><span className="italic text-accent">people,</span> brands</span>
-            </StaggerItem>
-            <StaggerItem variant="fadeUpLarge">
-              <span>&amp; products</span>
-            </StaggerItem>
-          </h1>
+              <h1 className="mt-2 font-display text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.92] tracking-tight">
+                <StaggerItem variant="fadeUpLarge">
+                  <span>Photographing</span>
+                </StaggerItem>
+                <StaggerItem variant="fadeUpLarge">
+                  <span><span className="italic text-accent">people,</span> brands</span>
+                </StaggerItem>
+                <StaggerItem variant="fadeUpLarge">
+                  <span>&amp; products</span>
+                </StaggerItem>
+              </h1>
 
-          <StaggerItem variant="fadeUp">
-            <p className="mt-4 md:mt-6 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
-          </StaggerItem>
-
-          <StaggerItem variant="fadeScale" className="w-full">
-            <div className="mt-6 md:mt-8 flex flex-wrap justify-end gap-4">
-              <Link
-                href="/portfolio"
-                className="inline-flex items-center justify-center rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent"
-              >
-                View my work
-              </Link>
-              <Link
-                href="/book"
-                className="inline-flex items-center justify-center rounded-full border border-ink px-7 py-3.5 text-sm font-semibold bg-paper/50 backdrop-blur-sm transition-colors hover:bg-ink hover:text-paper"
-              >
-                Book a shoot
-              </Link>
+              <StaggerItem variant="fadeUp">
+                <p className="mt-4 md:mt-6 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">
+                  {siteConfig.heroSubline}
+                </p>
+              </StaggerItem>
             </div>
-          </StaggerItem>
+
+            <StaggerItem variant="fadeScale" className="shrink-0 pb-2">
+              <div className="flex flex-row items-center gap-3 sm:gap-4">
+                <Link
+                  href="/portfolio"
+                  className="inline-flex items-center justify-center rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent shadow-sm"
+                >
+                  View my work
+                </Link>
+                <Link
+                  href="/book"
+                  className="inline-flex items-center justify-center rounded-full border border-ink/40 px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold bg-paper/60 backdrop-blur-sm transition-colors hover:border-ink hover:bg-sand"
+                >
+                  Book a shoot
+                </Link>
+              </div>
+            </StaggerItem>
+          </div>
         </StaggerReveal>
 
-        <StaggerReveal className="relative container-site grid grid-cols-2 gap-4 pb-16 md:grid-cols-4 z-10" staggerVariant="slow">
-          <StaggerItem variant="fadeUp"><PlaceholderImage label="Hero image 1" ratio="3 / 4" /></StaggerItem>
-          <StaggerItem variant="fadeDown" className="mt-8"><PlaceholderImage label="Hero image 2" ratio="3 / 4" /></StaggerItem>
-          <StaggerItem variant="fadeUp"><PlaceholderImage label="Hero image 3" ratio="3 / 4" /></StaggerItem>
-          <StaggerItem variant="fadeDown" className="mt-8"><PlaceholderImage label="Hero image 4" ratio="3 / 4" /></StaggerItem>
+        {/* Real Staggered Editorial Photography Showcase - Visible above fold on mobile */}
+        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-10 mt-6 md:mt-10" staggerVariant="slow">
+          
+          {/* 1. Weddings */}
+          <StaggerItem variant="fadeUp">
+            <Link href="/portfolio/weddings" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+              <Image 
+                src="/bento_wedding.jpg" 
+                alt="Weddings by SH Photography" 
+                fill 
+                className="object-cover transition-transform duration-1000 group-hover:scale-105" 
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Weddings
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Authentic Love</p>
+              </div>
+            </Link>
+          </StaggerItem>
+
+          {/* 2. Portraits (Staggered on Desktop & Tablet) */}
+          <StaggerItem variant="fadeDown" className="mt-4 sm:mt-6 md:mt-12">
+            <Link href="/portfolio/portraits" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+              <Image 
+                src="/bento_portrait.jpg" 
+                alt="Portraits by SH Photography" 
+                fill 
+                className="object-cover transition-transform duration-1000 group-hover:scale-105" 
+                priority
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Portraits
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Warm Elegance</p>
+              </div>
+            </Link>
+          </StaggerItem>
+
+          {/* 3. Fine Art */}
+          <StaggerItem variant="fadeUp">
+            <Link href="/portfolio" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+              <Image 
+                src="/frame-sq-1.jpg" 
+                alt="Editorial Photography by SH Photography" 
+                fill 
+                className="object-cover transition-transform duration-1000 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Editorial
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Regal Detail</p>
+              </div>
+            </Link>
+          </StaggerItem>
+
+          {/* 4. Education & Masterclasses (Staggered on Desktop & Tablet) */}
+          <StaggerItem variant="fadeDown" className="mt-4 sm:mt-6 md:mt-12">
+            <Link href="/services" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+              <Image 
+                src="/bento_classes.jpg" 
+                alt="Photography Masterclasses by SH Photography" 
+                fill 
+                className="object-cover transition-transform duration-1000 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Classes
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Craft &amp; Light</p>
+              </div>
+            </Link>
+          </StaggerItem>
         </StaggerReveal>
       </section>
 
@@ -114,7 +199,22 @@ export default function HomePage() {
       <Reveal>
         <section className="border-y border-line bg-sand">
           <div className="container-site grid gap-12 py-24 md:grid-cols-2 md:items-center">
-            <PlaceholderImage label="Benedict Henry — portrait" ratio="4 / 5" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-[2rem] shadow-xl border border-line/60 group bg-ink">
+              <Image
+                src="/frame-circle.jpg"
+                alt="Benedict Henry — SH Photography"
+                fill
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute bottom-6 left-6 right-6 text-white">
+                <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-semibold uppercase tracking-widest text-white border border-white/30 mb-2">
+                  Founder &amp; Principal
+                </span>
+                <p className="font-display text-2xl font-bold">Benedict Henry</p>
+                <p className="text-xs text-white/80 mt-0.5">Manchester, United Kingdom</p>
+              </div>
+            </div>
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Get to know me</p>
               <h2 className="mt-3 font-display text-display-md">Benedict Henry</h2>
