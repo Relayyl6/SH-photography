@@ -139,7 +139,7 @@ export default function BookingForm() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="bg-[#faf7f2] p-6 sm:p-8 md:p-12 shadow-sm border border-ink/5"
+                className="w-full"
               >
                 {/* STEP 1 */}
                 {currentStep === 0 && (
@@ -600,7 +600,7 @@ export default function BookingForm() {
 
         {/* Live Summary Sidebar (Sticky) */}
         <div className="hidden lg:block w-80 shrink-0">
-          <div className="sticky top-28 bg-[#faf7f2] border border-ink/10 p-6 shadow-sm rounded-lg">
+          <div className="sticky top-28">
             <h3 className="font-display text-xl mb-6 pb-4 border-b border-ink/10">Live Summary</h3>
             
             <div className="space-y-6">
