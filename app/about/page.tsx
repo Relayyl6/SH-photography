@@ -129,6 +129,7 @@ export default function AboutPage() {
           </article>
         </div>
       </div>
+      </div>
     </>
   );
 }
