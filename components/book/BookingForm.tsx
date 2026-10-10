@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { bookingSchema, BookingFormData } from './schema';
 import { BookingCalendar } from './BookingCalendar';
+import { QuoteReceipt } from './QuoteReceipt';
 import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
@@ -54,6 +55,7 @@ const slugToLabel: Record<string, string> = {
 export default function BookingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedData, setSubmittedData] = useState<BookingFormData | null>(null);
   const [prefillLabel, setPrefillLabel] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
@@ -90,7 +92,9 @@ export default function BookingForm() {
 
   const onSubmit = (data: BookingFormData) => {
     console.log('Form submitted:', data);
+    setSubmittedData(data);
     setIsSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = async () => {
@@ -132,20 +136,16 @@ export default function BookingForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (isSubmitted) {
+  if (isSubmitted && submittedData) {
     return (
-      <div className="max-w-2xl mx-auto py-24 text-center px-4">
-        <div className="w-16 h-16 bg-[#faf7f2] border border-ink text-[#e8491c] rounded-full flex items-center justify-center mx-auto mb-8">
-          <Check size={32} />
-        </div>
-        <h2 className="font-display text-4xl text-ink mb-4">Request Received</h2>
-        <p className="text-ink/70 text-lg mb-8">
-          Thank you for your inquiry. I will review your details and respond within 24–48 hours with a custom quote.
-        </p>
-        <a href="/" className="inline-block px-8 py-4 bg-ink text-paper hover:bg-ink/90 transition-colors">
-          Return Home
-        </a>
-      </div>
+      <QuoteReceipt
+        data={submittedData}
+        onReset={() => {
+          setIsSubmitted(false);
+          setSubmittedData(null);
+          setCurrentStep(0);
+        }}
+      />
     );
   }
 

@@ -40,7 +40,7 @@ export function Footer() {
         </p>
         
         <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-none tracking-tighter text-ink mb-3 relative z-10">
-          Let&apos;s make <span className="italic text-ink/70">magic.</span>
+          Let&apos;s make <span className="italic uppercase text-ink/70">MAGIC.</span>
         </h2>
         
         <p className="text-ink/70 text-sm md:text-base font-medium max-w-xl mx-auto mb-6 relative z-10">
