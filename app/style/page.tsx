@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Reveal } from "@/components/Reveal";
+import { FloatingFrames } from "@/components/FloatingFrames";
 
 export const metadata: Metadata = {
   title: "Style",
@@ -9,20 +11,15 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
+    <div className="relative min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center pb-[200px] md:pb-[300px]">
       
+      {/* Seamless transition to footer */}
+      <div className="absolute bottom-0 left-0 w-full h-[200px] md:h-[300px] bg-gradient-to-b from-transparent to-[#FAF7F2] pointer-events-none z-0" />
+
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
       <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] min-h-[calc(100vh+120px)] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
         
-        {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
-        <div className="absolute top-[120px] left-[-2%] md:top-[160px] md:left-[4%] w-[100px] h-[100px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] z-40 pointer-events-none mix-blend-multiply opacity-90">
-          <Image src="/frame-sq-2.jpg" alt="Art" fill className="object-contain" />
-        </div>
-
-        {/* Floating Bottom Right Frame (Inside card) */}
-        <div className="absolute bottom-[22%] right-[-10%] md:bottom-[5%] md:right-[2%] w-[120px] h-[120px] md:w-[220px] md:h-[220px] lg:w-[280px] lg:h-[280px] z-40 pointer-events-none mix-blend-multiply opacity-90">
-          <Image src="/frame-sq-1.jpg" alt="Art" fill className="object-contain" />
-        </div>
+        <FloatingFrames />
 
         {/* Top Header inside the poster (Pushed down below nav bar) */}
         <div className="relative z-50 flex items-center justify-between px-6 pb-4 md:px-10 md:pb-8 pt-[140px] md:pt-[160px]">
@@ -94,21 +91,25 @@ export default function StylePage() {
       </div>
 
       {/* Original Style Text */}
-      <div className="w-full max-w-[1300px] mt-16 md:mt-24 pb-10 px-4 md:px-0">
+      <div className="relative z-10 w-full max-w-[1300px] mt-16 md:mt-24 pb-10 px-4 md:px-0">
         <div className="mx-auto max-w-3xl">
           <article className="prose-none space-y-6 md:space-y-8 text-base md:text-[1.1rem] leading-relaxed text-[#f6f4f0]/80 md:text-center md:text-[1.25rem]">
-            <p>
-              My photography style is natural, vibrant and authentic. I love bright colours and
-              capturing moments as they truly happen, without excessive editing. I focus on real
-              emotions, genuine connections and storytelling, whether it&apos;s a love story, a
-              wedding, an event or simply a meaningful moment.
-            </p>
-            <p>
-              For me, photography goes beyond the pictures. It&apos;s about connecting with my
-              clients and creating an excellent experience from the first interaction, throughout the
-              shoot and even after delivery. I want every client to feel comfortable, valued and
-              confident that their memories are being preserved beautifully and authentically.
-            </p>
+            <Reveal>
+              <p>
+                My photography style is natural, vibrant and authentic. I love bright colours and
+                capturing moments as they truly happen, without excessive editing. I focus on real
+                emotions, genuine connections and storytelling, whether it&apos;s a love story, a
+                wedding, an event or simply a meaningful moment.
+              </p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p>
+                For me, photography goes beyond the pictures. It&apos;s about connecting with my
+                clients and creating an excellent experience from the first interaction, throughout the
+                shoot and even after delivery. I want every client to feel comfortable, valued and
+                confident that their memories are being preserved beautifully and authentically.
+              </p>
+            </Reveal>
           </article>
         </div>
       </div>

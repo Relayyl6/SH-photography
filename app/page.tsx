@@ -6,6 +6,7 @@ import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 import { VideoFacade } from "@/components/VideoFacade";
 import { SocialLinks } from "@/components/SocialLinks";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
+import { Reveal } from "@/components/Reveal";
 
 export default function HomePage() {
   const serviceNames = packages.filter((p) => p.category === "photography").map((p) => p.name);
@@ -93,68 +94,74 @@ export default function HomePage() {
       </section>
 
       {/* ---------- About teaser ---------- */}
-      <section className="border-y border-line bg-sand">
-        <div className="container-site grid gap-12 py-24 md:grid-cols-2 md:items-center">
-          <PlaceholderImage label="Benedict Henry — portrait" ratio="4 / 5" />
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Get to know me</p>
-            <h2 className="mt-3 font-display text-display-md">Benedict Henry</h2>
-            <p className="mt-6 max-w-lg text-ink/70">
-              My photography style is all about natural storytelling. I strive to capture moments
-              that feel authentic and timeless, aiming for perfection even before post-production.
-            </p>
-            <Link href="/about" className="mt-6 inline-block text-sm font-semibold underline underline-offset-4">
-              Read my full story →
-            </Link>
+      <Reveal>
+        <section className="border-y border-line bg-sand">
+          <div className="container-site grid gap-12 py-24 md:grid-cols-2 md:items-center">
+            <PlaceholderImage label="Benedict Henry — portrait" ratio="4 / 5" />
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Get to know me</p>
+              <h2 className="mt-3 font-display text-display-md">Benedict Henry</h2>
+              <p className="mt-6 max-w-lg text-ink/70">
+                My photography style is all about natural storytelling. I strive to capture moments
+                that feel authentic and timeless, aiming for perfection even before post-production.
+              </p>
+              <Link href="/about" className="mt-6 inline-block text-sm font-semibold underline underline-offset-4">
+                Read my full story →
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </Reveal>
 
       {/* ---------- Services summary ---------- */}
-      <section className="container-site py-24">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">What I do</p>
-        <h2 className="mt-3 font-display text-display-md">Services &amp; classes</h2>
+      <Reveal>
+        <section className="container-site py-24">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">What I do</p>
+          <h2 className="mt-3 font-display text-display-md">Services &amp; classes</h2>
 
-        <div className="mt-12 grid gap-10 md:grid-cols-2">
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Photography services</h3>
-            <ul className="mt-4 space-y-3">
-              {serviceNames.map((name) => (
-                <li key={name} className="border-b border-line pb-3 font-display text-xl">
-                  {name}
-                </li>
-              ))}
-            </ul>
+          <div className="mt-12 grid gap-10 md:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Photography services</h3>
+              <ul className="mt-4 space-y-3">
+                {serviceNames.map((name) => (
+                  <li key={name} className="border-b border-line pb-3 font-display text-xl">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Classes</h3>
+              <ul className="mt-4 space-y-3">
+                {classNames.map((name) => (
+                  <li key={name} className="border-b border-line pb-3 font-display text-xl">
+                    {name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Classes</h3>
-            <ul className="mt-4 space-y-3">
-              {classNames.map((name) => (
-                <li key={name} className="border-b border-line pb-3 font-display text-xl">
-                  {name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
 
-        <Link
-          href="/services"
-          className="mt-10 inline-block text-sm font-semibold underline underline-offset-4"
-        >
-          See what's included →
-        </Link>
-      </section>
+          <Link
+            href="/services"
+            className="mt-10 inline-block text-sm font-semibold underline underline-offset-4"
+          >
+            See what's included →
+          </Link>
+        </section>
+      </Reveal>
 
       {/* ---------- Video ---------- */}
       {featuredVideoId && (
-        <section className="container-site pb-24">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Watch</p>
-          <h2 className="mt-3 font-display text-display-md">A quick tutorial</h2>
-          <div className="mt-8">
-            <VideoFacade videoId={featuredVideoId} title="SH Photography tutorial" />
-          </div>
-        </section>
+        <Reveal>
+          <section className="container-site pb-24">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Watch</p>
+            <h2 className="mt-3 font-display text-display-md">A quick tutorial</h2>
+            <div className="mt-8">
+              <VideoFacade videoId={featuredVideoId} title="SH Photography tutorial" />
+            </div>
+          </section>
+        </Reveal>
       )}
 
     </>

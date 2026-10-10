@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
+import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
   title: "About",
@@ -15,9 +16,9 @@ export default function AboutPage() {
       <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
         
         {/* Mobile Title (Stack) */}
-        <div className="md:hidden flex flex-col mb-8 select-none font-display font-bold uppercase text-ink leading-[0.8] tracking-tighter">
-          <div className="text-[25vw] ml-[-2vw]">MY</div>
-          <div className="text-[32vw] ml-[-2vw]">STORY</div>
+        <div className="md:hidden flex flex-col mb-8 select-none font-display font-bold uppercase text-ink leading-[0.85] tracking-tighter w-full overflow-hidden">
+          <div className="text-[22vw]">MY</div>
+          <div className="text-[22vw]">STORY</div>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
@@ -63,47 +64,59 @@ export default function AboutPage() {
 
             {/* Article */}
             <article className="prose-none w-full space-y-8 text-[1.05rem] md:text-[1.15rem] leading-relaxed text-ink/80 lg:pl-12">
-              <div>
-                <p className="font-display text-2xl md:text-3xl italic text-ink mb-1">A Bit About Me</p>
-                <p className="font-semibold text-ink uppercase tracking-widest text-xs">Benedict Henry | SH Photography</p>
-              </div>
+              <Reveal>
+                <div>
+                  <p className="font-display text-2xl md:text-3xl italic text-ink mb-1">A Bit About Me</p>
+                  <p className="font-semibold text-ink uppercase tracking-widest text-xs">Benedict Henry | SH Photography</p>
+                </div>
+              </Reveal>
 
-            <p>
-              Founded in 2020 in Benin City, Nigeria, SH Photography was born from a passion for
-              preserving life&apos;s most beautiful moments. Today, based in Manchester, United
-              Kingdom, I specialize in weddings, beauty portraits, events, retouching, and general
-              photography services, helping clients relive their memories through striking, natural
-              imagery.
-            </p>
+            <Reveal delay={0.1}>
+              <p>
+                Founded in 2020 in Benin City, Nigeria, SH Photography was born from a passion for
+                preserving life&apos;s most beautiful moments. Today, based in Manchester, United
+                Kingdom, I specialize in weddings, beauty portraits, events, retouching, and general
+                photography services, helping clients relive their memories through striking, natural
+                imagery.
+              </p>
+            </Reveal>
 
-            <p>
-              My photography style is all about natural storytelling. I strive to capture moments
-              that feel authentic and timeless, aiming for perfection even before post-production.
-              Every shoot is an opportunity to tell a story from the smiles and laughter of a wedding
-              day to the elegance of a beauty portrait.
-            </p>
+            <Reveal delay={0.2}>
+              <p>
+                My photography style is all about natural storytelling. I strive to capture moments
+                that feel authentic and timeless, aiming for perfection even before post-production.
+                Every shoot is an opportunity to tell a story from the smiles and laughter of a wedding
+                day to the elegance of a beauty portrait.
+              </p>
+            </Reveal>
 
-            <p>
-              Photography started as a passion: I wanted to help people preserve memories, capture
-              happiness, and create images that could last a lifetime. I approach every job with
-              dedication, giving my very best to ensure client satisfaction is at the heart of
-              everything I do. For me, it&apos;s never just about delivering a product it&apos;s
-              about making the experience enjoyable, meaningful, and memorable for everyone involved.
-            </p>
+            <Reveal delay={0.3}>
+              <p>
+                Photography started as a passion: I wanted to help people preserve memories, capture
+                happiness, and create images that could last a lifetime. I approach every job with
+                dedication, giving my very best to ensure client satisfaction is at the heart of
+                everything I do. For me, it&apos;s never just about delivering a product it&apos;s
+                about making the experience enjoyable, meaningful, and memorable for everyone involved.
+              </p>
+            </Reveal>
 
-            <p>
-              Every shoot with SH Photography is lively and engaging. I communicate openly with
-              clients to understand their vision, ensuring they are comfortable and confident in
-              front of the camera. Over the years, I&apos;ve had the privilege of covering countless
-              events, winning retouching competitions, and developing a collection of professional
-              gear to bring each project to life.
-            </p>
+            <Reveal delay={0.4}>
+              <p>
+                Every shoot with SH Photography is lively and engaging. I communicate openly with
+                clients to understand their vision, ensuring they are comfortable and confident in
+                front of the camera. Over the years, I&apos;ve had the privilege of covering countless
+                events, winning retouching competitions, and developing a collection of professional
+                gear to bring each project to life.
+              </p>
+            </Reveal>
 
-            <p>
-              Above all, SH Photography is about relationships building trust with clients before,
-              during, and after every shoot, and delivering images that capture the joy, beauty, and
-              story of each unique moment
-            </p>
+            <Reveal delay={0.5}>
+              <p>
+                Above all, SH Photography is about relationships building trust with clients before,
+                during, and after every shoot, and delivering images that capture the joy, beauty, and
+                story of each unique moment
+              </p>
+            </Reveal>
           </article>
             </div>
             {/* Spacer to give the sticky element 250px of room to slide down */}
