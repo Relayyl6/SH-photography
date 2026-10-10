@@ -15,17 +15,15 @@ export default function AboutPage() {
       <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
         
         {/* Mobile Title (Stack) */}
-        <div className="md:hidden flex flex-col mb-8 select-none pointer-events-none">
-          <svg viewBox="0 0 350 240" className="w-full h-auto text-ink fill-current overflow-hidden">
-            <text x="0" y="90" textLength="350" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">MY</text>
-            <text x="0" y="230" textLength="350" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase" fontSize="160">STORY</text>
-          </svg>
+        <div className="md:hidden flex flex-col mb-8 select-none font-display font-bold uppercase text-ink leading-[0.8] tracking-tighter">
+          <div className="text-[25vw] ml-[-2vw]">MY</div>
+          <div className="text-[32vw] ml-[-2vw]">STORY</div>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
           
           {/* Left Column: Enlarged Picture (40%) & Sticky */}
-          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0 md:sticky md:top-[-4rem] lg:top-[-8rem]">
+          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0 md:sticky md:top-[-8rem]">
             <div className="w-full">
               {/* "MY" stays sticky with the portrait */}
               <div className="hidden md:block w-full mb-6 select-none pointer-events-none">
@@ -44,7 +42,7 @@ export default function AboutPage() {
 
           {/* Right Column: Headline & Article (Scrolls normally after initial freeze) */}
           <div className="w-full md:w-[55%] md:pb-[250px]">
-            <div className="w-full md:sticky md:top-[7rem]">
+            <div className="w-full md:sticky md:top-[122px]">
             
             {/* "STORY" scrolls with the article, negative margin pulls it across the gap */}
             <div className="hidden md:block w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] -ml-12 lg:-ml-20 mb-6 select-none pointer-events-none">
