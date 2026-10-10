@@ -22,13 +22,13 @@ export default function HomePage() {
           muted 
           loop 
           playsInline 
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.25] blur-xl pointer-events-none select-none -z-10"
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.25] blur-xl pointer-events-none select-none z-0"
         >
           <source src="/photographer-bg.mp4" type="video/mp4" />
         </video>
 
         {/* Bottom Fade Gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none -z-10"></div>
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
         <div className="relative container-site flex min-h-[92vh] flex-col justify-center py-20 z-10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent drop-shadow-sm">
