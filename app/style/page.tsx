@@ -62,11 +62,11 @@ export default function StylePage() {
         </div>
 
         {/* Red Box Bottom Left */}
-        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[50%] lg:w-[45%] max-w-[500px] h-auto py-6 p-4 md:p-6 lg:p-8 z-50 flex items-center gap-4">
+        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[60%] lg:w-[50%] max-w-[550px] min-h-[140px] p-6 md:p-8 lg:p-10 z-50 flex items-start gap-4 md:gap-6 rounded-tr-2xl">
           
           {/* Bespoke faded edges blending into red using CSS Mask */}
           <div 
-            className="relative w-20 h-20 md:w-[90px] md:h-[90px] min-w-[72px] min-h-[72px] shrink-0"
+            className="relative w-16 h-16 md:w-24 md:h-24 shrink-0 mt-1"
             style={{
               WebkitMaskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)",
               maskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)"
@@ -75,13 +75,13 @@ export default function StylePage() {
              <Image src="/frame-sq-1.jpg" alt="Artwork" fill className="object-cover scale-110" />
           </div>
           
-          <div className="flex flex-col text-left justify-center ml-2">
-            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl mb-1 leading-[0.85] tracking-tight text-white drop-shadow-sm">
+          <div className="flex flex-col text-left flex-1 pb-2">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl mb-2 leading-[0.9] tracking-tight text-white drop-shadow-sm">
               Genuine<br />Connections
             </h2>
-            <p className="text-[9px] md:text-[10px] uppercase font-sans tracking-[0.15em] opacity-90 max-w-[220px] leading-relaxed text-white mt-2">
+            <p className="text-[10px] md:text-xs uppercase font-sans tracking-[0.15em] opacity-90 leading-relaxed text-white">
               FOR ME, PHOTOGRAPHY GOES BEYOND THE PICTURES. IT&apos;S ABOUT CONNECTING WITH MY CLIENTS. 
-              <span className="ml-3 font-serif text-xl md:text-2xl leading-none align-middle font-light">⟶</span>
+              <span className="ml-3 font-serif text-2xl md:text-3xl leading-none align-middle font-light">⟶</span>
             </p>
           </div>
         </div>
