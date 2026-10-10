@@ -8,26 +8,34 @@ export function Footer() {
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line/50 bg-paper text-ink">
       
-      {/* Massive Dark CTA Block */}
-      <div className="w-full bg-[#15130f] text-paper py-20 md:py-24 relative z-20">
-        <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
-          <div>
-            <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
-              Let&apos;s make magic.
-            </h2>
-            <p className="text-paper/70 text-lg md:text-xl font-medium">
-              Photographing people, brands and products since 2020.
-            </p>
-          </div>
-          <div className="shrink-0">
-            <Link 
-              href="/contact" 
-              className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
-            >
-              Book / Get in touch
-            </Link>
+      {/* Massive Dark CTA Block with Subtle Faded Edges */}
+      <div className="w-full relative z-20 mt-12 mb-12">
+        {/* Subtle Top Fade */}
+        <div className="h-10 md:h-16 w-full absolute top-0 left-0 right-0 -mt-10 md:-mt-16 bg-gradient-to-t from-[#15130f] to-transparent pointer-events-none z-30"></div>
+        
+        <div className="w-full bg-[#15130f] text-paper py-16 md:py-20 relative z-20">
+          <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
+            <div>
+              <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
+                Let&apos;s make magic.
+              </h2>
+              <p className="text-paper/70 text-lg md:text-xl font-medium">
+                Photographing people, brands and products since 2020.
+              </p>
+            </div>
+            <div className="shrink-0">
+              <Link 
+                href="/contact" 
+                className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
+              >
+                Book / Get in touch
+              </Link>
+            </div>
           </div>
         </div>
+
+        {/* Subtle Bottom Fade */}
+        <div className="h-10 md:h-16 w-full absolute bottom-0 left-0 right-0 -mb-10 md:-mb-16 bg-gradient-to-b from-[#15130f] to-transparent pointer-events-none z-30"></div>
       </div>
 
       <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">
