@@ -15,17 +15,17 @@ export function Footer() {
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
       {/* Editorial Typographic CTA */}
-      <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-24 md:mb-32' : 'my-32 md:my-48'}`}>
-        <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase mb-6 md:mb-8">
+      <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-16 md:mb-24' : 'my-16 md:my-24'}`}>
+        <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase mb-4">
           Ready to create together?
         </p>
         
-        <h2 className="font-display text-6xl md:text-8xl lg:text-[9rem] leading-[0.9] tracking-tighter text-ink mb-8 md:mb-10">
+        <h2 className="font-display text-5xl md:text-7xl lg:text-[8rem] leading-[0.95] tracking-tighter text-ink mb-6">
           Let&apos;s make <br className="hidden sm:block" />
           <span className="italic text-ink/70">magic.</span>
         </h2>
         
-        <p className="text-ink/70 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10 md:mb-12">
+        <p className="text-ink/70 text-base md:text-lg font-medium max-w-xl mx-auto mb-8">
           Photographing people, brands and products since 2020. I&apos;d love to hear about your next project.
         </p>
 
