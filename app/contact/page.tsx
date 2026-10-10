@@ -59,8 +59,10 @@ export default function ContactPage() {
 
           {/* Right Column: Form */}
           <div className="mt-8 lg:mt-0">
-            <ContactForm />
-          </Suspense>
+            <Suspense fallback={null}>
+              <ContactForm />
+            </Suspense>
+          </div>
         </div>
       </div>
 
