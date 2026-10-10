@@ -36,15 +36,17 @@ export default function HomePage() {
             </p>
           </StaggerItem>
 
-          <StaggerItem variant="fadeUpLarge">
-            <h1 className="mt-4 md:mt-6 font-display text-display-xl text-ink drop-shadow-sm">
-              Photographing
-              <br />
-              <span className="italic text-accent">people,</span> brands
-              <br />
-              &amp; products
-            </h1>
-          </StaggerItem>
+          <h1 className="mt-4 md:mt-6 font-display text-display-xl text-ink drop-shadow-sm flex flex-col">
+            <StaggerItem variant="fadeUpLarge">
+              <span>Photographing</span>
+            </StaggerItem>
+            <StaggerItem variant="fadeUpLarge">
+              <span><span className="italic text-accent">people,</span> brands</span>
+            </StaggerItem>
+            <StaggerItem variant="fadeUpLarge">
+              <span>&amp; products</span>
+            </StaggerItem>
+          </h1>
 
           <StaggerItem variant="fadeUp">
             <p className="mt-6 md:mt-8 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
