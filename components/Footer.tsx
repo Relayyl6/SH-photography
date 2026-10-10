@@ -20,13 +20,13 @@ export function Footer() {
       {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
       <div className={`w-full relative z-20 ${isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'}`}>
         <div 
-          className={`w-full bg-[#3a3128] text-paper ${isStylePage ? 'py-20 md:py-32' : 'py-32 md:py-40'}`}
-          style={!isStylePage ? {
-            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
-            maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)"
+          className={`w-full bg-[#3a3128] text-paper py-32 md:py-40`}
+          style={isStylePage ? {
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
+            maskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)"
           } : {
-            WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent)",
-            maskImage: "linear-gradient(to bottom, black 80%, transparent)"
+            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+            maskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)"
           }}
         >
           <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
