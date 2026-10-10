@@ -14,17 +14,21 @@ export function Footer() {
   return (
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
-      {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
-      <div className={`w-full relative z-20 ${isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'}`}>
-        <div 
-          className={`w-full ${isStylePage ? 'bg-[#33110b]' : 'bg-[#3a3128]'} text-paper py-32 md:py-40`}
-          style={isStylePage ? {
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)",
-            maskImage: "linear-gradient(to bottom, black 0%, black 85%, transparent 100%)"
-          } : {
-            WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
-            maskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)"
-          }}
+      {/* Dark CTA block — full-bleed, flush edges instead of a mask-fade.
+          The old mask-image dissolved the dark colour into the page over a tall
+          zone, which read as a smudge rather than a blend. A crisp edge with a
+          hairline border reads as intentional and matches Footer/Home's CTA
+          strip, so it's consistent with the rest of the site instead of a
+          one-off effect. */}
+      <div
+        className={`w-full relative z-20 border-y border-line/60 ${
+          isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'
+        }`}
+      >
+        <div
+          className={`w-full ${
+            isStylePage ? 'bg-[#33110b]' : 'bg-[#3a3128]'
+          } text-paper py-24 md:py-32`}
         >
           <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div>
@@ -36,8 +40,8 @@ export function Footer() {
               </p>
             </div>
             <div className="shrink-0">
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
               >
                 Book / Get in touch
