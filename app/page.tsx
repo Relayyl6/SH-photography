@@ -30,12 +30,12 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <div className="relative container-site flex min-h-[100vh] flex-col justify-center pt-[calc(5rem+120px)] pb-20 z-10">
+        <div className="relative container-site flex min-h-[100vh] flex-col justify-center pt-[140px] pb-12 md:pt-[180px] md:pb-20 z-10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent drop-shadow-sm">
             {siteConfig.location} · Est. 2020
           </p>
 
-          <h1 className="mt-6 font-display text-display-xl text-ink drop-shadow-sm">
+          <h1 className="mt-4 md:mt-6 font-display text-display-xl text-ink drop-shadow-sm">
             Photographing
             <br />
             <span className="italic text-accent">people,</span> brands
@@ -43,9 +43,9 @@ export default function HomePage() {
             &amp; products
           </h1>
 
-          <p className="mt-8 max-w-xl text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
+          <p className="mt-6 md:mt-8 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
 
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-8 md:mt-10 flex flex-wrap gap-4">
             <Link
               href="/portfolio"
               className="inline-flex items-center justify-center rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent"
