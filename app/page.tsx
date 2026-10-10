@@ -52,8 +52,8 @@ export default function HomePage() {
             <p className="mt-4 md:mt-6 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
           </StaggerItem>
 
-          <StaggerItem variant="fadeScale">
-            <div className="mt-6 md:mt-8 flex flex-wrap gap-4">
+          <StaggerItem variant="fadeScale" className="w-full">
+            <div className="mt-6 md:mt-8 flex flex-wrap justify-end gap-4">
               <Link
                 href="/portfolio"
                 className="inline-flex items-center justify-center rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent"
