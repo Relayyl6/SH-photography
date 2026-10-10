@@ -17,10 +17,10 @@ export default function AboutPage() {
         {/* Unified Desktop Title (Top-Aligned, Tight Gap) */}
         <div className="hidden md:block w-full mb-12 select-none pointer-events-none">
           <svg viewBox="0 0 1000 190" className="w-full h-auto text-ink fill-current overflow-visible">
-            <text x="0" y="130" className="font-display font-bold uppercase tracking-tighter" fontSize="150">
+            <text x="0" y="130" textLength="385" lengthAdjust="spacing" className="font-display font-bold uppercase tracking-tighter" fontSize="150">
               MY
             </text>
-            <text x="270" y="172" textLength="730" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase tracking-tighter" fontSize="210">
+            <text x="400" y="172" textLength="600" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase tracking-tighter" fontSize="210">
               STORY
             </text>
           </svg>
