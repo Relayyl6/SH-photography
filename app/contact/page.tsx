@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <>
-      <div className="container-site pt-12 md:pt-20 pb-10">
+      <div className="container-site pt-12 md:pt-20 pb-0">
         
         <div className="grid gap-12 lg:gap-20 lg:grid-cols-[1fr_1.3fr]">
           {/* Left Column: Headline and Quick Contact */}
@@ -23,7 +23,7 @@ export default function ContactPage() {
             </h1>
             <p className="mt-6 text-lg text-ink/70 max-w-md">I&apos;ll get back to you as soon as I can.</p>
 
-            <div className="mt-16 md:mt-24 space-y-12">
+            <div className="mt-16 md:mt-24 space-y-12 mb-8 md:mb-12">
               <div>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-5">Quick contact</h2>
                 <ul className="space-y-4">
@@ -58,7 +58,7 @@ export default function ContactPage() {
           </div>
 
           {/* Right Column: Form */}
-          <div className="mt-8 lg:mt-0">
+          <div className="mt-8 lg:mt-0 mb-8 md:mb-12">
             <Suspense fallback={null}>
               <ContactForm />
             </Suspense>
@@ -66,11 +66,11 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="w-full overflow-hidden select-none pointer-events-none pb-4 mt-6">
-        <svg viewBox="0 0 1400 300" className="w-full h-auto text-ink fill-current">
+      <div className="w-full overflow-hidden select-none pointer-events-none leading-none flex items-end">
+        <svg viewBox="0 0 1400 215" className="w-full h-auto text-ink fill-current">
           <text 
             x="50%" 
-            y="250" 
+            y="215" 
             dominantBaseline="baseline" 
             textAnchor="middle" 
             className="font-display font-bold uppercase tracking-tighter" 
