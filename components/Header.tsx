@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { sessions } from "@/lib/sessions";
 import { AnimatePresence, motion } from "framer-motion";
@@ -71,8 +72,15 @@ export function Header() {
     >
       <div className="relative rounded-full border border-line/60 bg-paper/70 backdrop-blur-md shadow-sm pointer-events-auto">
         <div className={`flex items-center justify-between px-5 sm:px-6 md:px-8 transition-all duration-500 ease-in-out ${scrolled ? 'h-12 md:h-14' : 'h-16 md:h-20'}`}>
-          <Link href="/" className={`font-display tracking-tight transition-all duration-500 ${scrolled ? 'text-lg' : 'text-xl'}`}>
-            {"SH Photography"}
+          <Link href="/" className="inline-flex items-center group py-0.5">
+            <Image
+              src="/logo.png"
+              alt="SH Photography"
+              width={140}
+              height={100}
+              className={`w-auto object-contain transition-all duration-300 group-hover:opacity-80 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'}`}
+              priority
+            />
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">

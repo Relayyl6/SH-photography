@@ -22,17 +22,17 @@ export function Footer() {
         <motion.div 
           animate={{ y: [0, -18, 0], rotate: [0, -3, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-0 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 mix-blend-multiply pointer-events-none opacity-90"
+          className="absolute left-0 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 pointer-events-none drop-shadow-lg"
         >
-          <Image src="/floating-camera.jpg" alt="" fill className="object-contain" />
+          <Image src="/floating-camera.png" alt="Vintage Camera" fill className="object-contain" />
         </motion.div>
         
         <motion.div 
           animate={{ y: [0, 18, 0], rotate: [0, 3, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute right-0 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 mix-blend-multiply pointer-events-none opacity-90"
+          className="absolute right-0 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 pointer-events-none drop-shadow-lg"
         >
-          <Image src="/floating-lens.jpg" alt="" fill className="object-contain" />
+          <Image src="/floating-lens.png" alt="Camera Lens" fill className="object-contain" />
         </motion.div>
 
         <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
@@ -66,8 +66,14 @@ export function Footer() {
       <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">
         {/* Logo */}
         <div className="mb-12">
-          <Link href="/" className="font-display text-2xl font-bold tracking-tight">
-            {siteConfig.businessName}
+          <Link href="/" className="inline-block group">
+            <Image
+              src="/logo.png"
+              alt="SH Photography"
+              width={160}
+              height={120}
+              className="h-16 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80"
+            />
           </Link>
         </div>
 
