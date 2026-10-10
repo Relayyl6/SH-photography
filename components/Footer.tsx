@@ -112,7 +112,7 @@ export function Footer() {
                   {siteConfig.email}
                 </a>
               </li>
-              <li><Link href="/contact" className="hover:text-accent transition-colors">Book a session</Link></li>
+              <li><Link href="/book" className="hover:text-accent transition-colors">Book a session</Link></li>
             </ul>
           </div>
 

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { bookingSchema, BookingFormData } from './schema';
 import { BookingCalendar } from './BookingCalendar';
 import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
+
 
 const steps = [
   'Service & Session Type',
@@ -27,9 +29,34 @@ function formatTimeLabel(hhmm?: string) {
   return `${displayHour}:${mStr} ${period}`;
 }
 
+// Maps ?service=<slug> URL param → serviceCategory radio value used in Step 1.
+const slugToCategory: Record<string, BookingFormData['serviceCategory']> = {
+  weddings: 'Wedding',
+  birthdays: 'Event',
+  anniversaries: 'Event',
+  graduations: 'Event',
+  'general-photography': 'Other',
+  'general-photography-classes': 'Other',
+  'retouching-classes': 'Retouching',
+};
+
+// Human-readable label shown in the pre-fill badge.
+const slugToLabel: Record<string, string> = {
+  weddings: 'Weddings',
+  birthdays: 'Birthdays',
+  anniversaries: 'Anniversaries',
+  graduations: 'Graduations',
+  'general-photography': 'General Photography',
+  'general-photography-classes': 'Photography Classes',
+  'retouching-classes': 'Retouching Classes',
+};
+
 export default function BookingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [prefillLabel, setPrefillLabel] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
 
   const {
     register,
@@ -37,6 +64,7 @@ export default function BookingForm() {
     watch,
     trigger,
     control,
+    setValue,
     formState: { errors }
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -45,6 +73,20 @@ export default function BookingForm() {
       deliverables: [],
     }
   });
+
+  // Pre-fill serviceCategory from ?service= URL param on mount.
+  useEffect(() => {
+    const slug = searchParams.get('service');
+    if (!slug) return;
+    const cat = slugToCategory[slug];
+    if (cat) {
+      setValue('serviceCategory', cat, { shouldValidate: false });
+    }
+    const label = slugToLabel[slug];
+    if (label) setPrefillLabel(label);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const onSubmit = (data: BookingFormData) => {
     console.log('Form submitted:', data);
@@ -151,7 +193,14 @@ export default function BookingForm() {
                 {/* STEP 1 */}
                 {currentStep === 0 && (
                   <div className="space-y-6">
-                    <h3 className="font-display text-2xl sm:text-3xl mb-6 sm:mb-8">Service & Session Type</h3>
+                    <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
+                      <h3 className="font-display text-2xl sm:text-3xl">Service &amp; Session Type</h3>
+                      {prefillLabel && (
+                        <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                          Pre-filled for: {prefillLabel}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="space-y-4">
                       <label className="block text-sm font-medium">Service Category *</label>

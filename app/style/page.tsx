@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="relative min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center pb-[50px] md:pb-[100px]">
+    <div className="relative min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center pb-0">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
       <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] min-h-[calc(100vh+120px)] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">

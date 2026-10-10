@@ -61,7 +61,7 @@ export default function HomePage() {
                 View my work
               </Link>
               <Link
-                href="/contact"
+                href="/book"
                 className="inline-flex items-center justify-center rounded-full border border-ink px-7 py-3.5 text-sm font-semibold bg-paper/50 backdrop-blur-sm transition-colors hover:bg-ink hover:text-paper"
               >
                 Book a shoot

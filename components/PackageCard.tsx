@@ -32,12 +32,20 @@ export function PackageCard({ pkg }: { pkg: Package }) {
         <p className="mt-4 font-display text-lg">{pkg.priceLabel}</p>
       ) : null}
 
-      <Link
-        href={`/contact?service=${pkg.slug}`}
-        className="mt-6 inline-flex items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-accent"
-      >
-        {pkg.ctaLabel}
-      </Link>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href={`/services/${pkg.slug}`}
+          className="inline-flex flex-1 items-center justify-center rounded-full border border-ink/30 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-ink"
+        >
+          View Details
+        </Link>
+        <Link
+          href={`/book?service=${pkg.slug}`}
+          className="inline-flex flex-1 items-center justify-center rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors hover:bg-accent"
+        >
+          {pkg.ctaLabel}
+        </Link>
+      </div>
     </article>
   );
 }
