@@ -114,7 +114,7 @@ export default function BookingForm() {
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6">
       {/* Progress Bar */}
-      <div className="max-w-3xl mb-12">
+      <div className="w-full mb-12">
         <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
           <span>Step {currentStep + 1} of {steps.length}</span>
           <span className="font-display">{steps[currentStep]}</span>
