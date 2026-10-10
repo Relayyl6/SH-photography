@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="min-h-screen bg-[#33110b] -mt-[120px] pt-[100px] md:pt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
+    <div className="min-h-screen bg-[#33110b] -mt-[120px] pt-[180px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-100px)] md:h-[calc(100dvh-120px)] min-h-[500px] flex flex-col shadow-2xl overflow-hidden rounded-t-xl md:rounded-t-2xl">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-124px)] md:h-[calc(100dvh-140px)] min-h-[500px] flex flex-col shadow-2xl overflow-hidden rounded-t-xl md:rounded-t-2xl">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
         <div className="absolute top-[-2%] left-[-2%] md:top-[2%] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
