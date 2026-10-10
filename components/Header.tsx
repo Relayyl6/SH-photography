@@ -4,15 +4,16 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { sessions } from "@/lib/sessions";
 import { AnimatePresence, motion } from "framer-motion";
+import { easing } from "@/lib/animations";
 
 const mobileMenuVariant = {
   hidden: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.2 } },
-  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1], staggerChildren: 0.05, delayChildren: 0.1 } }
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: easing, staggerChildren: 0.05, delayChildren: 0.1 } }
 };
 
 const mobileItemVariant = {
   hidden: { opacity: 0, x: -15 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.1, 0.25, 1] } }
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: easing } }
 };
 
 const navLinks = [
