@@ -12,63 +12,83 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <div className="w-full overflow-hidden select-none pointer-events-none mt-10 mb-10">
-        <svg viewBox="0 0 1200 250" className="w-full h-auto text-ink fill-current">
+      <div className="w-full overflow-hidden select-none pointer-events-none mt-10 mb-6 md:mb-10">
+        <svg viewBox="0 0 1000 250" className="w-full h-auto text-ink fill-current overflow-visible">
           <text 
             x="50%" 
             y="220" 
-            dominantBaseline="baseline" 
             textAnchor="middle" 
             className="font-display font-bold uppercase tracking-tighter" 
-            fontSize="280"
           >
-            STORY
+            <tspan fontSize="120" dy="-100">ST</tspan>
+            <tspan fontSize="280" dy="100">ORY</tspan>
           </text>
         </svg>
       </div>
 
       <div className="container-site pb-20">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Get to Know ME</p>
-        <h1 className="mt-3 max-w-3xl font-display text-display-md">
-          Based in Manchester, United Kingdom. Photographing people, brands and products since 2020
-        </h1>
-
-        <div className="mt-16 grid gap-12 lg:grid-cols-[1fr_1.4fr]">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <PlaceholderImage label="Benedict Henry — portrait" ratio="4 / 5" />
-            <dl className="mt-6 space-y-3 text-sm">
+        
+        {/* Top Header Block: Small Picture (Left) | Headline (Right) */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 mt-8 md:mt-12">
+          
+          {/* Left Column: Picture (Up Small) & Contact */}
+          <div className="w-full md:w-[260px] lg:w-[300px] shrink-0 md:sticky md:top-32">
+            <div className="w-48 md:w-full mx-auto md:mx-0">
+              <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden shadow-xl ring-1 ring-ink/5">
+                <PlaceholderImage label="Benedict Henry" ratio="4 / 5" />
+              </div>
+            </div>
+            
+            <dl className="mt-8 space-y-5 text-sm text-center md:text-left">
               <div>
-                <dt className="text-ink/50">Contact</dt>
+                <dt className="text-ink/40 uppercase tracking-[0.2em] text-[10px] font-bold mb-1">Contact</dt>
                 <dd>
-                  <a href={`tel:${siteConfig.phoneE164}`} className="underline underline-offset-4">
+                  <a href={`tel:${siteConfig.phoneE164}`} className="underline underline-offset-4 text-base font-medium hover:text-accent transition-colors">
                     {siteConfig.phoneDisplay}
                   </a>
                 </dd>
               </div>
               <div>
-                <dt className="text-ink/50">Email</dt>
+                <dt className="text-ink/40 uppercase tracking-[0.2em] text-[10px] font-bold mb-1">Email</dt>
                 <dd>
-                  <a href={`mailto:${siteConfig.email}`} className="underline underline-offset-4 break-all">
+                  <a href={`mailto:${siteConfig.email}`} className="underline underline-offset-4 break-all text-base font-medium hover:text-accent transition-colors">
                     {siteConfig.email}
                   </a>
                 </dd>
               </div>
               <div>
-                <dt className="text-ink/50">Location</dt>
-                <dd>{siteConfig.locationLine}</dd>
+                <dt className="text-ink/40 uppercase tracking-[0.2em] text-[10px] font-bold mb-1">Location</dt>
+                <dd className="text-base font-medium">{siteConfig.locationLine}</dd>
               </div>
             </dl>
-            <a
-              href="/contact"
-              className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-sm font-semibold text-paper hover:bg-accent"
-            >
-              Book / Get in touch
-            </a>
+            
+            <div className="mt-10 flex justify-center md:justify-start">
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-paper hover:bg-accent transition-all duration-300"
+              >
+                Book / Get in touch
+              </a>
+            </div>
           </div>
 
-          <article className="prose-none max-w-2xl space-y-6 text-[1.05rem] leading-relaxed text-ink/80">
-            <p className="font-display text-xl italic text-ink">A Bit About Me</p>
-            <p className="font-semibold text-ink">Benedict Henry | SH Photography</p>
+          {/* Right Column: Headline & Article */}
+          <div className="w-full md:max-w-2xl lg:max-w-4xl md:pl-10">
+            
+            {/* Headline Pushed to the Right */}
+            <div className="text-left md:text-right ml-auto md:max-w-3xl border-b border-line/40 pb-12 mb-12">
+              <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-5">Get to Know ME</p>
+              <h1 className="font-display text-4xl md:text-5xl lg:text-[4rem] leading-[1.05] text-ink tracking-tight drop-shadow-sm">
+                Based in Manchester, United Kingdom. Photographing people, brands and products since 2020.
+              </h1>
+            </div>
+
+            {/* Article */}
+            <article className="prose-none w-full space-y-8 text-[1.05rem] md:text-[1.15rem] leading-relaxed text-ink/80 md:pl-12 lg:pl-24">
+              <div>
+                <p className="font-display text-2xl md:text-3xl italic text-ink mb-1">A Bit About Me</p>
+                <p className="font-semibold text-ink uppercase tracking-widest text-xs">Benedict Henry | SH Photography</p>
+              </div>
 
             <p>
               Founded in 2020 in Benin City, Nigeria, SH Photography was born from a passion for
