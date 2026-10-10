@@ -32,5 +32,5 @@ export const fadeDown = {
 
 export const imageReveal = {
   hidden: { scale: 1.1, opacity: 0 },
-  show: { scale: 1, opacity: 1, transition: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1] } }
+  show: { scale: 1, opacity: 1, transition: { duration: 1.2, ease: [0.25, 0.1, 0.25, 1] as const } }
 };
