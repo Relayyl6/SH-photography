@@ -157,24 +157,6 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ---------- Contact CTA strip ---------- */}
-      <section className="bg-ink text-paper">
-        <div className="container-site flex flex-col items-start justify-between gap-8 py-20 md:flex-row md:items-center">
-          <div>
-            <h2 className="font-display text-display-md">Let's make something.</h2>
-            <p className="mt-3 max-w-md text-paper/70">{siteConfig.locationLine}</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-6">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-full bg-accent px-7 py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accentDark"
-            >
-              Book / Get in touch
-            </Link>
-            <SocialLinks />
-          </div>
-        </div>
-      </section>
     </>
   );
 }

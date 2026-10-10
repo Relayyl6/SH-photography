@@ -26,44 +26,21 @@ export default function AboutPage() {
         </svg>
       </div>
 
-      <div className="container-site pb-20 relative z-10 -mt-8 md:-mt-28 lg:-mt-40">
+      <div className="container-site pb-20 relative z-10 mt-8 md:mt-12">
         
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
           
-          {/* Left Column: Enlarged Picture (40%) & Contact */}
-          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0">
+          {/* Left Column: Enlarged Picture (40%) & Sticky */}
+          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0 md:sticky md:top-32">
             <div className="w-full">
               <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden shadow-2xl">
                 <PlaceholderImage label="Benedict Henry" ratio="4 / 5" />
               </div>
             </div>
-            
-            <dl className="mt-12 space-y-8 text-left">
-              <div>
-                <dt className="text-ink/50 uppercase tracking-[0.2em] text-[11px] font-bold mb-2">Contact</dt>
-                <dd>
-                  <a href={`tel:${siteConfig.phoneE164}`} className="underline decoration-2 underline-offset-4 text-lg md:text-xl font-bold text-ink hover:text-accent transition-colors">
-                    {siteConfig.phoneDisplay}
-                  </a>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-ink/50 uppercase tracking-[0.2em] text-[11px] font-bold mb-2">Email</dt>
-                <dd>
-                  <a href={`mailto:${siteConfig.email}`} className="underline decoration-2 underline-offset-4 break-all text-lg md:text-xl font-bold text-ink hover:text-accent transition-colors">
-                    {siteConfig.email}
-                  </a>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-ink/50 uppercase tracking-[0.2em] text-[11px] font-bold mb-2">Location</dt>
-                <dd className="text-lg md:text-xl font-bold text-ink max-w-[280px] leading-snug">{siteConfig.locationLine}</dd>
-              </div>
-            </dl>
           </div>
 
           {/* Right Column: Headline & Article */}
-          <div className="w-full md:w-[55%] mt-12 md:mt-32 lg:mt-48">
+          <div className="w-full md:w-[55%]">
             
             {/* Headline Pushed to the Right */}
             <div className="text-left border-b border-line/40 pb-12 mb-12">
