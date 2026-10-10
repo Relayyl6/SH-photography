@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { staggerContainer, fadeUp, fadeScale, fadeUpLarge, imageReveal } from "@/lib/animations";
+import { staggerContainer, fadeUp, fadeDown, fadeScale, fadeUpLarge, imageReveal } from "@/lib/animations";
 
 type StaggerRevealProps = {
   children: React.ReactNode;
@@ -32,9 +32,10 @@ export function StaggerReveal({ children, className, staggerVariant = "fast" }: 
   );
 }
 
-export function StaggerItem({ children, className, variant = "fadeUp" }: { children: React.ReactNode, className?: string, variant?: "fadeUp" | "fadeScale" | "fadeUpLarge" | "imageReveal" }) {
+export function StaggerItem({ children, className, variant = "fadeUp" }: { children: React.ReactNode, className?: string, variant?: "fadeUp" | "fadeDown" | "fadeScale" | "fadeUpLarge" | "imageReveal" }) {
   const variants = {
     fadeUp,
+    fadeDown,
     fadeScale,
     fadeUpLarge,
     imageReveal

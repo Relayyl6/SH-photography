@@ -14,6 +14,9 @@ export function Footer() {
   return (
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
+      {isStylePage && (
+        <div className="absolute top-0 left-0 right-0 h-48 md:h-64 bg-gradient-to-b from-[#33110b] via-[#33110b]/80 to-transparent z-30 pointer-events-none" />
+      )}
       {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
       <div className={`w-full relative z-20 ${isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'}`}>
         <div 
