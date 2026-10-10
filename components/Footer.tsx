@@ -18,45 +18,45 @@ export function Footer() {
       {/* Editorial Typographic CTA */}
       <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-10 md:mb-16' : 'my-10 md:my-16'}`}>
         
-        {/* Floating elements for left and right */}
+        {/* Floating elements for left and right - placed higher on mobile/tab to never overlap buttons */}
         <motion.div 
-          animate={{ y: [0, -18, 0], rotate: [0, -3, 0] }}
+          animate={{ y: [0, -14, 0], rotate: [0, -3, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-0 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 pointer-events-none drop-shadow-lg"
+          className="absolute left-1 sm:left-4 md:left-6 lg:left-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0"
         >
-          <Image src="/floating-camera.png" alt="Vintage Camera" fill className="object-contain" />
+          <Image src="/floating-camera.png" alt="Vintage Camera" fill className="object-contain" priority />
         </motion.div>
         
         <motion.div 
-          animate={{ y: [0, 18, 0], rotate: [0, 3, 0] }}
+          animate={{ y: [0, 14, 0], rotate: [0, 3, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute right-0 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 w-24 h-24 sm:w-40 sm:h-40 lg:w-56 lg:h-56 pointer-events-none drop-shadow-lg"
+          className="absolute right-1 sm:right-4 md:right-6 lg:right-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0"
         >
-          <Image src="/floating-lens.png" alt="Camera Lens" fill className="object-contain" />
+          <Image src="/floating-lens.png" alt="Camera Lens" fill className="object-contain" priority />
         </motion.div>
 
-        <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
+        <p className="text-accent text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
           Ready to create together?
         </p>
         
-        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-none tracking-tighter text-ink mb-3 relative z-10">
+        <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-none tracking-tighter text-ink mb-3 relative z-10 px-6 sm:px-0">
           Let&apos;s make <span className="italic uppercase text-ink/70">MAGIC.</span>
         </h2>
         
-        <p className="text-ink/70 text-sm md:text-base font-medium max-w-xl mx-auto mb-6 relative z-10">
+        <p className="text-ink/70 text-sm md:text-base font-medium max-w-lg mx-auto mb-6 relative z-10 px-4 sm:px-0">
           Photographing people, brands and products since 2020. I&apos;d love to hear about your next project.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto relative z-10">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-[280px] sm:max-w-none sm:w-auto relative z-10">
           <Link
             href="/book"
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-8 py-3 text-sm font-semibold text-paper hover:bg-accent transition-colors duration-300"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-paper hover:bg-accent transition-colors duration-300 shadow-sm"
           >
             Book a Session
           </Link>
           <Link
             href="/contact"
-            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-ink/20 px-8 py-3 text-sm font-semibold text-ink hover:border-ink transition-colors duration-300"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-ink/20 px-8 py-3.5 text-sm font-semibold text-ink hover:border-ink hover:bg-sand transition-colors duration-300"
           >
             Get in touch
           </Link>

@@ -146,96 +146,96 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <StaggerReveal className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[220px]">
+          <StaggerReveal className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:auto-rows-[220px]">
             
-            {/* 1. Weddings (2x2) */}
-            <StaggerItem className="col-span-1 md:col-span-2 md:row-span-2" variant="fadeUpLarge">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-8 min-h-[350px] md:min-h-0 h-full w-full block">
+            {/* 1. Weddings (2 cols wide on mobile/tab, 2x2 on desktop) */}
+            <StaggerItem className="col-span-2 md:col-span-2 md:row-span-2" variant="fadeUpLarge">
+              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-8 min-h-[260px] sm:min-h-[320px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_wedding.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
-                    <p className="text-white/70 font-sans text-xs tracking-widest uppercase font-bold mb-3 border border-white/30 rounded-full px-4 py-1 inline-block backdrop-blur-sm">Photography</p>
-                    <h3 className="font-display text-4xl md:text-5xl text-white leading-none tracking-tight">Weddings</h3>
+                    <p className="text-white/70 font-sans text-[10px] sm:text-xs tracking-widest uppercase font-bold mb-2 sm:mb-3 border border-white/30 rounded-full px-3 sm:px-4 py-0.5 sm:py-1 inline-block backdrop-blur-sm">Photography</p>
+                    <h3 className="font-display text-3xl sm:text-4xl md:text-5xl text-white leading-none tracking-tight">Weddings</h3>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 2. General Photography (1x2) */}
-            <StaggerItem className="col-span-1 md:col-span-1 md:row-span-2" variant="fadeUpLarge">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-6 min-h-[350px] md:min-h-0 h-full w-full block">
+            {/* 2. General Photography (tall 1 col, 2 rows on mobile & desktop) */}
+            <StaggerItem className="col-span-1 row-span-2 md:col-span-1 md:row-span-2" variant="fadeUpLarge">
+              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 min-h-[320px] sm:min-h-[360px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="General Photography" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
-                    <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Portfolio</p>
-                    <h3 className="font-display text-3xl text-white leading-tight tracking-tight">General<br/>Photography</h3>
+                    <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1 sm:mb-2">Portfolio</p>
+                    <h3 className="font-display text-xl sm:text-2xl md:text-3xl text-white leading-tight tracking-tight">General<br/>Photography</h3>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 3. Birthdays (1x1) */}
-            <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-[2rem] bg-sand p-6 flex flex-col justify-between hover:bg-[#e8e4db] transition-colors min-h-[220px] md:min-h-0 h-full w-full block">
-                 <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-6 right-6">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            {/* 3. Birthdays (1x1 square next to General Photography) */}
+            <StaggerItem className="col-span-1 row-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
+              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-sand p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#e8e4db] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+                 <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
                  <div className="mt-auto">
-                   <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
-                   <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Birthdays</h3>
-                   <p className="mt-2 text-sm text-ink/70 leading-relaxed">Vibrant, authentic portrait sessions to celebrate and preserve another year of your life.</p>
+                   <p className="text-ink/50 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-0.5 sm:mb-1">Photography</p>
+                   <h3 className="font-display text-lg sm:text-xl md:text-2xl text-ink leading-tight tracking-tight">Birthdays</h3>
+                   <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-ink/70 leading-snug sm:leading-relaxed line-clamp-2 md:line-clamp-none">Vibrant, authentic portrait sessions to celebrate another year.</p>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 4. Anniversaries (1x1) */}
-            <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-[2rem] bg-paper border border-line/50 p-6 flex flex-col justify-between hover:border-line transition-colors min-h-[220px] md:min-h-0 h-full w-full block">
-                 <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-6 right-6">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            {/* 4. Anniversaries (1x1 square under Birthdays, next to General Photography) */}
+            <StaggerItem className="col-span-1 row-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
+              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-paper border border-line/50 p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:border-line transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+                 <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
                  <div className="mt-auto">
-                   <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
-                   <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Anniversaries</h3>
-                   <p className="mt-2 text-sm text-ink/70 leading-relaxed">Intimate, storytelling couples photography to honor and celebrate your journey together.</p>
+                   <p className="text-ink/50 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-0.5 sm:mb-1">Photography</p>
+                   <h3 className="font-display text-lg sm:text-xl md:text-2xl text-ink leading-tight tracking-tight">Anniversaries</h3>
+                   <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-ink/70 leading-snug sm:leading-relaxed line-clamp-2 md:line-clamp-none">Intimate, storytelling couples photography to honor your journey.</p>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 5. Gen Photo Classes (2x1) */}
-            <StaggerItem className="col-span-1 md:col-span-2 md:row-span-1" variant="fadeUpLarge">
-              <Link href="/services" className="group relative overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-6 min-h-[220px] md:min-h-0 h-full w-full block">
+            {/* 5. Gen Photo Classes (2 cols wide on mobile/tab, 2x1 on desktop) */}
+            <StaggerItem className="col-span-2 md:col-span-2 md:row-span-1" variant="fadeUpLarge">
+              <Link href="/services" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-6 min-h-[170px] sm:min-h-[200px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_classes.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-70 group-hover:opacity-90" alt="Classes" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
-                    <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
-                    <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Photography Classes</h3>
+                    <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
+                    <h3 className="font-display text-2xl sm:text-3xl text-white leading-tight tracking-tight">Photography Classes</h3>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 6. Graduations (1x1) */}
+            {/* 6. Graduations (1x1 square) */}
             <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-[2rem] bg-accent p-6 flex flex-col justify-between hover:bg-[#c93f16] transition-colors min-h-[220px] md:min-h-0 h-full w-full block">
-                 <div className="text-white/80 self-end bg-white/20 p-2 rounded-full backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 absolute top-6 right-6">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white opacity-90 group-hover:opacity-100"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-accent p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#c93f16] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+                 <div className="text-white/80 self-end bg-white/20 p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 absolute top-4 right-4 sm:top-6 sm:right-6">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white opacity-90 group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
                  <div className="mt-auto">
-                   <p className="text-white/80 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
-                   <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Graduations</h3>
-                   <p className="mt-2 text-sm text-white/80 leading-relaxed">Mark your academic achievements with elegant, timeless graduation portraits.</p>
+                    <p className="text-white/80 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-0.5 sm:mb-1">Photography</p>
+                    <h3 className="font-display text-lg sm:text-xl md:text-2xl text-white leading-tight tracking-tight">Graduations</h3>
+                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/80 leading-snug sm:leading-relaxed line-clamp-2 md:line-clamp-none">Mark your achievements with timeless graduation portraits.</p>
                  </div>
               </Link>
             </StaggerItem>
 
-            {/* 7. Retouching Classes (1x1) */}
+            {/* 7. Retouching Classes (1x1 square) */}
             <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/services" className="group relative overflow-hidden rounded-[2rem] bg-ink p-6 flex flex-col justify-between hover:bg-[#222] transition-colors min-h-[220px] md:min-h-0 h-full w-full block">
-                 <div className="text-white/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-6 right-6">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <Link href="/services" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#222] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+                 <div className="text-white/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
                  <div className="mt-auto">
-                   <p className="text-white/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
-                   <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Retouching<br/>Classes</h3>
-                   <p className="mt-2 text-sm text-white/60 leading-relaxed">Master professional editing techniques to elevate your raw images to editorial quality.</p>
+                    <p className="text-white/50 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-0.5 sm:mb-1">Education</p>
+                    <h3 className="font-display text-lg sm:text-xl md:text-2xl text-white leading-tight tracking-tight">Retouching<br/>Classes</h3>
+                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-white/60 leading-snug sm:leading-relaxed line-clamp-2 md:line-clamp-none">Master editing to elevate raw images to editorial quality.</p>
                  </div>
               </Link>
             </StaggerItem>
