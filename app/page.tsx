@@ -112,7 +112,7 @@ export default function HomePage() {
 
       {/* ---------- Services summary (Bento Grid) ---------- */}
       <Reveal>
-        <section className="container-site py-24">
+        <section className="container-site pt-24 pb-8 md:pb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">What I do</p>
