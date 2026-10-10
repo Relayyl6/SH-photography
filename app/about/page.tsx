@@ -20,8 +20,8 @@ export default function AboutPage() {
             textAnchor="middle" 
             className="font-display font-bold uppercase tracking-tighter" 
           >
-            <tspan fontSize="180" dy="-50">ST</tspan>
-            <tspan fontSize="280" dy="50">ORY</tspan>
+            <tspan fontSize="140" dy="-70">MY </tspan>
+            <tspan fontSize="280" dy="70">STORY</tspan>
           </text>
         </svg>
       </div>
@@ -46,7 +46,7 @@ export default function AboutPage() {
             <div className="text-left border-b border-line/40 pb-12 mb-12">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-5">Get to Know ME</p>
               <h1 className="font-display text-4xl md:text-5xl lg:text-[4.5rem] leading-[1.05] text-ink tracking-tight drop-shadow-sm">
-                Based in Manchester, United Kingdom. Photographing people, brands and products since 2020.
+                Based in Manchester, United Kingdom.
               </h1>
             </div>
 
