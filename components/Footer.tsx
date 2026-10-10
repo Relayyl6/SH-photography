@@ -10,7 +10,13 @@ export function Footer() {
       
       {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
       <div className="w-full relative z-20 my-24 md:my-32">
-        <div className="w-full bg-[#3a3128] text-paper py-16 md:py-20 shadow-[0_0_100px_60px_#3a3128]">
+        <div 
+          className="w-full bg-[#3a3128] text-paper py-32 md:py-40"
+          style={{
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+            maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)"
+          }}
+        >
           <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div>
               <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
