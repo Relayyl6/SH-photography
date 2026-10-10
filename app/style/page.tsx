@@ -12,20 +12,20 @@ export default function StylePage() {
     <div className="min-h-screen bg-[#33110b] -mt-[120px] pt-[120px] p-4 md:px-8 md:pb-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100vh-2rem)] md:h-[calc(100vh-6rem)] min-h-[600px] flex flex-col shadow-2xl overflow-hidden mt-4">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-2rem)] md:h-[calc(100dvh-6rem)] min-h-[600px] flex flex-col shadow-2xl overflow-hidden mt-4">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
-        <div className="absolute top-[-2%] left-[-2%] md:top-[2%] md:left-[2%] w-[120px] h-[120px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
+        <div className="absolute top-[-2%] left-[-2%] md:top-[2%] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
           <Image src="/frame-sq-2.jpg" alt="Art" fill className="object-contain" />
         </div>
 
         {/* Floating Bottom Right Frame (Inside card) */}
-        <div className="absolute bottom-[18%] right-[-5%] md:bottom-[5%] md:right-[2%] w-[160px] h-[160px] md:w-[28vh] md:h-[28vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
+        <div className="absolute bottom-[22%] right-[-10%] md:bottom-[5%] md:right-[2%] w-[120px] h-[120px] md:w-[28vh] md:h-[28vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
           <Image src="/frame-sq-1.jpg" alt="Art" fill className="object-contain" />
         </div>
 
         {/* Top Header inside the poster */}
-        <div className="relative z-50 flex items-center justify-between px-6 py-6 md:px-10 md:py-8 h-[10vh] min-h-[60px]">
+        <div className="relative z-50 flex items-center justify-between px-6 py-4 md:px-10 md:py-8 h-[10vh] min-h-[60px]">
           <div className="text-ink text-xl md:text-2xl font-light leading-none">+</div>
           <div className="font-display italic text-2xl md:text-4xl text-ink absolute left-1/2 -translate-x-1/2">
             SH
@@ -39,12 +39,12 @@ export default function StylePage() {
         <div className="relative flex-1 flex flex-col items-center justify-center w-full">
           
           {/* Center Image */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[260px] h-[260px] md:w-[45vh] md:h-[45vh] z-10 mix-blend-multiply pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] md:w-[45vh] md:h-[45vh] z-10 mix-blend-multiply pointer-events-none">
             <Image src="/frame-circle.jpg" alt="Style Portrait" fill className="object-contain" priority />
           </div>
 
           {/* Huge Typography (Accent Color) */}
-          <div className="relative z-20 flex flex-col items-center justify-center text-center font-display text-[20vw] md:text-[20vh] leading-[0.75] tracking-tight text-[#e83b1c] mix-blend-multiply pointer-events-none select-none w-full">
+          <div className="relative z-20 flex flex-col items-center justify-center text-center font-display text-[14vw] sm:text-[15.5vw] md:text-[20vh] leading-[0.75] tracking-tight text-[#e83b1c] mix-blend-multiply pointer-events-none select-none w-full">
             
             <div className="relative flex items-center justify-center w-full">
               <div className="hidden md:block text-[1vh] lg:text-[1.2vh] uppercase font-sans tracking-[0.2em] text-ink/50 absolute left-[5%] text-left leading-tight">
