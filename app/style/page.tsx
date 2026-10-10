@@ -12,15 +12,15 @@ export default function StylePage() {
     <div className="min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[100dvh] md:h-[100dvh] min-h-[600px] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100vh+120px)] min-h-[700px] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
-        <div className="absolute top-[120px] left-[-2%] md:top-[140px] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
+        <div className="absolute top-[120px] left-[-2%] md:top-[160px] md:left-[4%] w-[100px] h-[100px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] z-40 pointer-events-none mix-blend-multiply opacity-90">
           <Image src="/frame-sq-2.jpg" alt="Art" fill className="object-contain" />
         </div>
 
         {/* Floating Bottom Right Frame (Inside card) */}
-        <div className="absolute bottom-[22%] right-[-10%] md:bottom-[5%] md:right-[2%] w-[120px] h-[120px] md:w-[28vh] md:h-[28vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
+        <div className="absolute bottom-[22%] right-[-10%] md:bottom-[5%] md:right-[2%] w-[120px] h-[120px] md:w-[220px] md:h-[220px] lg:w-[280px] lg:h-[280px] z-40 pointer-events-none mix-blend-multiply opacity-90">
           <Image src="/frame-sq-1.jpg" alt="Art" fill className="object-contain" />
         </div>
 
@@ -30,7 +30,7 @@ export default function StylePage() {
           <div className="font-display italic text-2xl md:text-4xl text-ink absolute left-1/2 -translate-x-1/2">
             SH
           </div>
-          <Link href="/contact" className="text-[9px] md:text-[1.2vh] font-sans font-semibold tracking-[0.2em] text-ink uppercase hover:text-accent">
+          <Link href="/contact" className="text-[10px] md:text-xs font-sans font-semibold tracking-[0.2em] text-ink uppercase hover:text-accent">
             Contact
           </Link>
         </div>
@@ -39,15 +39,15 @@ export default function StylePage() {
         <div className="relative flex-1 flex flex-col items-center justify-center w-full">
           
           {/* Center Image */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] md:w-[45vh] md:h-[45vh] z-10 mix-blend-multiply pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] md:w-[350px] md:h-[350px] lg:w-[450px] lg:h-[450px] z-10 mix-blend-multiply pointer-events-none">
             <Image src="/frame-circle.jpg" alt="Style Portrait" fill className="object-contain" priority />
           </div>
 
           {/* Huge Typography (Accent Color) */}
-          <div className="relative z-20 flex flex-col items-center justify-center text-center font-display text-[14vw] sm:text-[15.5vw] md:text-[20vh] leading-[0.75] tracking-tight text-[#e83b1c] mix-blend-multiply pointer-events-none select-none w-full">
+          <div className="relative z-20 flex flex-col items-center justify-center text-center font-display text-[15vw] sm:text-[13vw] md:text-[11.5vw] lg:text-[10vw] xl:text-[9.5vw] leading-[0.75] tracking-tight text-[#e83b1c] mix-blend-multiply pointer-events-none select-none w-full">
             
             <div className="relative flex items-center justify-center w-full">
-              <div className="hidden md:block text-[1vh] lg:text-[1.2vh] uppercase font-sans tracking-[0.2em] text-ink/50 absolute left-[5%] text-left leading-tight">
+              <div className="hidden md:block text-[10px] lg:text-xs uppercase font-sans tracking-[0.2em] text-ink/50 absolute left-[5%] text-left leading-tight">
                 MY<br />STYLE
               </div>
               <span>NATURAL</span>
@@ -55,7 +55,7 @@ export default function StylePage() {
             
             <div className="relative flex items-center justify-center w-full mt-2 md:mt-0">
               <span>VIBRANT &amp;</span>
-              <div className="hidden md:block text-[1vh] lg:text-[1.2vh] uppercase font-sans tracking-[0.2em] text-ink/50 absolute right-[5%] text-right leading-tight">
+              <div className="hidden md:block text-[10px] lg:text-xs uppercase font-sans tracking-[0.2em] text-ink/50 absolute right-[5%] text-right leading-tight">
                 EST.<br />2020
               </div>
             </div>
@@ -68,11 +68,11 @@ export default function StylePage() {
         </div>
 
         {/* Red Box Bottom Left */}
-        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[45%] max-w-[500px] h-[16vh] min-h-[120px] md:min-h-[140px] p-4 md:p-6 z-50 flex items-center gap-4">
+        <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[50%] lg:w-[45%] max-w-[500px] h-auto py-6 p-4 md:p-6 lg:p-8 z-50 flex items-center gap-4">
           
           {/* Bespoke faded edges blending into red using CSS Mask */}
           <div 
-            className="relative w-20 h-20 md:w-[14vh] md:h-[14vh] min-w-[72px] min-h-[72px] shrink-0"
+            className="relative w-20 h-20 md:w-[90px] md:h-[90px] min-w-[72px] min-h-[72px] shrink-0"
             style={{
               WebkitMaskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)",
               maskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)"
@@ -82,12 +82,12 @@ export default function StylePage() {
           </div>
           
           <div className="flex flex-col text-left justify-center ml-2">
-            <h2 className="font-display text-2xl md:text-[3.8vh] mb-1 leading-[0.85] tracking-tight text-white drop-shadow-sm">
+            <h2 className="font-display text-2xl md:text-3xl lg:text-4xl mb-1 leading-[0.85] tracking-tight text-white drop-shadow-sm">
               Genuine<br />Connections
             </h2>
-            <p className="text-[9px] md:text-[1vh] uppercase font-sans tracking-[0.15em] opacity-90 max-w-[220px] leading-relaxed text-white mt-1">
+            <p className="text-[9px] md:text-[10px] uppercase font-sans tracking-[0.15em] opacity-90 max-w-[220px] leading-relaxed text-white mt-2">
               FOR ME, PHOTOGRAPHY GOES BEYOND THE PICTURES. IT&apos;S ABOUT CONNECTING WITH MY CLIENTS. 
-              <span className="ml-3 font-serif text-[2.5vh] leading-none align-middle font-light">⟶</span>
+              <span className="ml-3 font-serif text-xl md:text-2xl leading-none align-middle font-light">⟶</span>
             </p>
           </div>
         </div>
