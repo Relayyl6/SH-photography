@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="min-h-screen bg-[#33110b] -mt-[120px] pt-[180px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
+    <div className="min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100dvh-124px)] md:h-[calc(100dvh-140px)] min-h-[500px] flex flex-col shadow-2xl overflow-hidden rounded-t-xl md:rounded-t-2xl">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[100dvh] md:h-[100dvh] min-h-[600px] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
-        <div className="absolute top-[-2%] left-[-2%] md:top-[2%] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
+        <div className="absolute top-[120px] left-[-2%] md:top-[140px] md:left-[2%] w-[100px] h-[100px] md:w-[22vh] md:h-[22vh] z-40 pointer-events-none mix-blend-multiply opacity-90">
           <Image src="/frame-sq-2.jpg" alt="Art" fill className="object-contain" />
         </div>
 
@@ -24,8 +24,8 @@ export default function StylePage() {
           <Image src="/frame-sq-1.jpg" alt="Art" fill className="object-contain" />
         </div>
 
-        {/* Top Header inside the poster */}
-        <div className="relative z-50 flex items-center justify-between px-6 py-4 md:px-10 md:py-8 h-[10vh] min-h-[60px]">
+        {/* Top Header inside the poster (Pushed down below nav bar) */}
+        <div className="relative z-50 flex items-center justify-between px-6 pb-4 md:px-10 md:pb-8 pt-[140px] md:pt-[160px]">
           <div className="text-ink text-xl md:text-2xl font-light leading-none">+</div>
           <div className="font-display italic text-2xl md:text-4xl text-ink absolute left-1/2 -translate-x-1/2">
             SH
