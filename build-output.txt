@@ -1,0 +1,50 @@
+
+> sh-photography@0.1.0 build
+> next build
+
+  ▲ Next.js 14.2.35
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+   Generating static pages (12/26) 
+   Generating static pages (19/26) 
+ ✓ Generating static pages (26/26)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    2.61 kB         145 kB
+├ ○ /_not-found                          873 B          88.2 kB
+├ ○ /about                               649 B           129 kB
+├ ƒ /api/enquiries                       0 B                0 B
+├ ○ /book                                24.7 kB         167 kB
+├ ○ /contact                             3.61 kB         105 kB
+├ ○ /portfolio                           1.32 kB        97.3 kB
+├ ● /portfolio/[session]                 1.67 kB        97.7 kB
+├   ├ /portfolio/family
+├   ├ /portfolio/portraits
+├   ├ /portfolio/weddings
+├   └ [+2 more paths]
+├ ○ /pricing                             142 B          87.5 kB
+├ ○ /privacy                             142 B          87.5 kB
+├ ○ /services                            177 B          96.2 kB
+├ ● /services/[slug]                     177 B          96.2 kB
+├   ├ /services/birthdays
+├   ├ /services/weddings
+├   ├ /services/anniversaries
+├   └ [+4 more paths]
+└ ○ /style                               1.33 kB         144 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/117-4f5b424f20efdcae.js       31.7 kB
+  ├ chunks/fd9d1056-b11b2651f33aae7f.js  53.6 kB
+  └ other shared chunks (total)          1.95 kB
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses getStaticProps)
+ƒ  (Dynamic)  server-rendered on demand
+
