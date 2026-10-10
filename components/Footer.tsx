@@ -8,12 +8,9 @@ export function Footer() {
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line/50 bg-paper text-ink">
       
-      {/* Massive Dark CTA Block with Subtle Faded Edges */}
-      <div className="w-full relative z-20 mt-12 mb-12">
-        {/* Subtle Top Fade */}
-        <div className="h-10 md:h-16 w-full absolute top-0 left-0 right-0 -mt-10 md:-mt-16 bg-gradient-to-t from-[#3a3128] to-transparent pointer-events-none z-30"></div>
-        
-        <div className="w-full bg-[#3a3128] text-paper py-16 md:py-20 relative z-20">
+      {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
+      <div className="w-full relative z-20 my-24 md:my-32">
+        <div className="w-full bg-[#3a3128] text-paper py-16 md:py-20 shadow-[0_0_100px_60px_#3a3128]">
           <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
             <div>
               <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
@@ -33,9 +30,6 @@ export function Footer() {
             </div>
           </div>
         </div>
-
-        {/* Subtle Bottom Fade */}
-        <div className="h-10 md:h-16 w-full absolute bottom-0 left-0 right-0 -mb-10 md:-mb-16 bg-gradient-to-b from-[#3a3128] to-transparent pointer-events-none z-30"></div>
       </div>
 
       <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">
