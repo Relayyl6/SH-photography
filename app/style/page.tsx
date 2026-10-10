@@ -12,7 +12,7 @@ export default function StylePage() {
     <div className="min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center">
       
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
-      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] h-[calc(100vh+120px)] min-h-[700px] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
+      <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] min-h-[calc(100vh+120px)] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
         
         {/* Floating Top Left Frame (Inside card for perfect mix-blend transparency) */}
         <div className="absolute top-[120px] left-[-2%] md:top-[160px] md:left-[4%] w-[100px] h-[100px] md:w-[200px] md:h-[200px] lg:w-[240px] lg:h-[240px] z-40 pointer-events-none mix-blend-multiply opacity-90">
@@ -36,7 +36,7 @@ export default function StylePage() {
         </div>
 
         {/* Hero Section */}
-        <div className="relative flex-1 flex flex-col items-center justify-center w-full">
+        <div className="relative flex-1 flex flex-col items-center justify-center w-full pb-24 md:pb-32 lg:pb-40">
           
           {/* Center Image */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] md:w-[350px] md:h-[350px] lg:w-[450px] lg:h-[450px] z-10 mix-blend-multiply pointer-events-none">
