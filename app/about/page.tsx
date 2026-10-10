@@ -41,7 +41,7 @@ export default function AboutPage() {
           </div>
 
           {/* Right Column: Headline & Article (Scrolls normally after initial freeze) */}
-          <div className="w-full md:w-[55%] md:pb-[250px]">
+          <div className="w-full md:w-[55%] relative">
             <div className="w-full md:sticky md:top-[122px]">
             
             {/* "STORY" scrolls with the article, negative margin pulls it across the gap */}
@@ -106,6 +106,8 @@ export default function AboutPage() {
             </p>
           </article>
             </div>
+            {/* Spacer to give the sticky element 250px of room to slide down */}
+            <div className="hidden md:block h-[250px] w-full pointer-events-none"></div>
           </div>
       </div>
       </div>
