@@ -14,40 +14,34 @@ export function Footer() {
   return (
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
-      {/* Dark CTA block — full-bleed, flush edges instead of a mask-fade.
-          The old mask-image dissolved the dark colour into the page over a tall
-          zone, which read as a smudge rather than a blend. A crisp edge with a
-          hairline border reads as intentional and matches Footer/Home's CTA
-          strip, so it's consistent with the rest of the site instead of a
-          one-off effect. */}
-      <div
-        className={`w-full relative z-20 border-y border-line/60 ${
-          isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'
-        }`}
-      >
-        <div
-          className={`w-full ${
-            isStylePage ? 'bg-[#33110b]' : 'bg-[#3a3128]'
-          } text-paper py-24 md:py-32`}
-        >
-          <div className="container-site flex flex-col md:flex-row md:items-center justify-between gap-10">
-            <div>
-              <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight mb-4 text-[#f6f4f0]">
-                Let&apos;s make magic.
-              </h2>
-              <p className="text-paper/70 text-lg md:text-xl font-medium">
-                Photographing people, brands and products since 2020.
-              </p>
-            </div>
-            <div className="shrink-0">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-full bg-[#e8491c] px-8 py-4 text-sm md:text-base font-semibold text-white hover:bg-white hover:text-ink transition-colors duration-300"
-              >
-                Book / Get in touch
-              </Link>
-            </div>
-          </div>
+      {/* Editorial Typographic CTA */}
+      <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-24 md:mb-32' : 'my-32 md:my-48'}`}>
+        <p className="text-accent text-sm font-bold tracking-[0.2em] uppercase mb-6 md:mb-8">
+          Ready to create together?
+        </p>
+        
+        <h2 className="font-display text-6xl md:text-8xl lg:text-[9rem] leading-[0.9] tracking-tighter text-ink mb-8 md:mb-10">
+          Let&apos;s make <br className="hidden sm:block" />
+          <span className="italic text-ink/70">magic.</span>
+        </h2>
+        
+        <p className="text-ink/70 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10 md:mb-12">
+          Photographing people, brands and products since 2020. I&apos;d love to hear about your next project.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full sm:w-auto">
+          <Link
+            href="/book"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-10 py-4 md:py-5 text-sm md:text-base font-semibold text-paper hover:bg-accent transition-colors duration-300"
+          >
+            Book a Session
+          </Link>
+          <Link
+            href="/contact"
+            className="inline-flex w-full sm:w-auto items-center justify-center rounded-full border border-ink/20 px-10 py-4 md:py-5 text-sm md:text-base font-semibold text-ink hover:border-ink transition-colors duration-300"
+          >
+            Get in touch
+          </Link>
         </div>
       </div>
 
