@@ -112,7 +112,7 @@ export default function BookingForm() {
   const travelReq = watch('travelRequired');
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6">
+    <div className="w-full py-12">
       {/* Progress Bar */}
       <div className="w-full mb-12">
         <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
@@ -129,8 +129,8 @@ export default function BookingForm() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-        <div className="flex-1 max-w-3xl">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
+        <div className="flex-1">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             <AnimatePresence mode="wait">
               <motion.div

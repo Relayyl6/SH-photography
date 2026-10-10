@@ -8,7 +8,7 @@ export const metadata = {
 export default function BookPage() {
   return (
     <main className="min-h-screen bg-paper pt-24 pb-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      <div className="container-site mx-auto px-4 sm:px-6 lg:px-8">
         <header className="text-center mb-12 space-y-4">
           <h1 className="font-display text-5xl md:text-6xl text-ink">Request a Quote</h1>
           <p className="text-lg text-ink/70 max-w-2xl mx-auto">
