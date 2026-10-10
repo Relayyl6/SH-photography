@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <>
       {/* ---------- Hero ---------- */}
-      <section className="relative overflow-hidden bg-paper">
+      <section className="relative overflow-hidden bg-paper -mt-[120px]">
         
         {/* Blurred Background Video */}
         <video 
@@ -30,7 +30,7 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <div className="relative container-site flex min-h-[92vh] flex-col justify-center py-20 z-10">
+        <div className="relative container-site flex min-h-[100vh] flex-col justify-center pt-[calc(5rem+120px)] pb-20 z-10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent drop-shadow-sm">
             {siteConfig.location} · Est. 2020
           </p>
