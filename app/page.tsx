@@ -126,47 +126,79 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[300px]">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[220px]">
             
-            {/* Block 1: Weddings & Anniversaries (Large Image) */}
-            <Link href="/portfolio" className="group relative col-span-1 md:col-span-2 md:row-span-2 overflow-hidden rounded-[2rem] bg-ink block min-h-[400px] md:min-h-0">
+            {/* 1. Weddings (2x2) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-2 md:row-span-2 overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-8 min-h-[350px] md:min-h-0">
                <Image src="/bento_wedding.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings" />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
-               <div className="absolute bottom-8 left-8 right-8 z-10 flex flex-col items-start">
-                  <p className="text-white/70 font-sans text-xs tracking-widest uppercase font-bold mb-3 border border-white/30 rounded-full px-4 py-1 backdrop-blur-sm">Photography</p>
-                  <h3 className="font-display text-4xl md:text-5xl text-white mb-2 leading-none tracking-tight">Weddings &amp; Anniversaries</h3>
-                  <p className="text-white/80 text-sm md:text-base max-w-sm mt-2">Capturing your special day with elegance, preserving true emotions and timeless moments.</p>
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+               <div className="relative z-10">
+                  <p className="text-white/70 font-sans text-xs tracking-widest uppercase font-bold mb-3 border border-white/30 rounded-full px-4 py-1 inline-block backdrop-blur-sm">Photography</p>
+                  <h3 className="font-display text-4xl md:text-5xl text-white leading-none tracking-tight">Weddings</h3>
                </div>
             </Link>
 
-            {/* Block 2: Beauty Portraits (Vertical) */}
-            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-2 overflow-hidden rounded-[2rem] bg-sand block min-h-[400px] md:min-h-0">
-               <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Portraits" />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
-               <div className="absolute bottom-8 left-6 right-6 z-10">
-                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Studio</p>
-                  <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Beauty<br/>Portraits</h3>
+            {/* 2. General Photography (1x2) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-2 overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-6 min-h-[350px] md:min-h-0">
+               <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="General Photography" />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+               <div className="relative z-10">
+                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Portfolio</p>
+                  <h3 className="font-display text-3xl text-white leading-tight tracking-tight">General<br/>Photography</h3>
                </div>
             </Link>
 
-            {/* Block 3: Events (Text / Solid Color) */}
-            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-accent p-8 flex flex-col justify-between block hover:bg-[#c93f16] transition-colors min-h-[250px] md:min-h-0">
-               <div className="text-white/80 self-end bg-white/20 p-3 rounded-full backdrop-blur-md">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white opacity-90 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            {/* 3. Birthdays (1x1) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-sand p-6 flex flex-col justify-between hover:bg-[#e8e4db] transition-colors min-h-[220px] md:min-h-0">
+               <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                </div>
                <div>
-                 <p className="text-white/80 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Photography</p>
-                 <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Events &amp;<br/>Graduations</h3>
+                 <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
+                 <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Birthdays</h3>
                </div>
             </Link>
 
-            {/* Block 4: Classes (Horizontal Image) */}
-            <Link href="/services" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-ink block min-h-[250px] md:min-h-0">
+            {/* 4. Anniversaries (1x1) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-paper border border-line/50 p-6 flex flex-col justify-between hover:border-line transition-colors min-h-[220px] md:min-h-0">
+               <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+               </div>
+               <div>
+                 <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
+                 <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Anniversaries</h3>
+               </div>
+            </Link>
+
+            {/* 5. Gen Photo Classes (2x1) */}
+            <Link href="/services" className="group relative col-span-1 md:col-span-2 md:row-span-1 overflow-hidden rounded-[2rem] bg-ink flex flex-col justify-end p-6 min-h-[220px] md:min-h-0">
                <Image src="/bento_classes.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-70 group-hover:opacity-90" alt="Classes" />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 pointer-events-none" />
-               <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
-                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Education</p>
-                  <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Classes &amp;<br/>Retouching</h3>
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+               <div className="relative z-10">
+                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
+                  <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Photography Classes</h3>
+               </div>
+            </Link>
+
+            {/* 6. Graduations (1x1) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-accent p-6 flex flex-col justify-between hover:bg-[#c93f16] transition-colors min-h-[220px] md:min-h-0">
+               <div className="text-white/80 self-end bg-white/20 p-2 rounded-full backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white opacity-90 group-hover:opacity-100"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+               </div>
+               <div>
+                 <p className="text-white/80 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
+                 <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Graduations</h3>
+               </div>
+            </Link>
+
+            {/* 7. Retouching Classes (1x1) */}
+            <Link href="/services" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-ink p-6 flex flex-col justify-between hover:bg-[#222] transition-colors min-h-[220px] md:min-h-0">
+               <div className="text-white/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+               </div>
+               <div>
+                 <p className="text-white/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
+                 <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Retouching<br/>Classes</h3>
                </div>
             </Link>
 
