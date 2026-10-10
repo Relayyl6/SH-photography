@@ -113,24 +113,31 @@ export default function BookingForm() {
 
   return (
     <div className="w-full py-12">
-      {/* Progress Bar */}
-      <div className="w-full mb-12">
-        <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
-          <span>Step {currentStep + 1} of {steps.length}</span>
-          <span className="font-display">{steps[currentStep]}</span>
-        </div>
-        <div className="h-1 w-full bg-ink/10 rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-ink"
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </div>
-
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
         <div className="flex-1">
+          <header className="mb-12 space-y-4">
+            <h1 className="font-display text-5xl md:text-6xl text-ink">Request a Quote</h1>
+            <p className="text-lg text-ink/70">
+              Please provide as much detail as possible about your upcoming session. This helps me understand your vision and prepare an accurate, custom quote for you.
+            </p>
+          </header>
+
+          {/* Progress Bar */}
+          <div className="w-full mb-12">
+            <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
+              <span>Step {currentStep + 1} of {steps.length}</span>
+              <span className="font-display">{steps[currentStep]}</span>
+            </div>
+            <div className="h-1 w-full bg-ink/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-ink"
+                initial={{ width: 0 }}
+                animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             <AnimatePresence mode="wait">
               <motion.div
