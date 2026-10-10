@@ -12,15 +12,15 @@ export function Footer() {
   const isStylePage = pathname === "/style";
 
   return (
-    <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-12 md:mt-24 border-t border-line/50'}`}>
+    <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
       
       {/* Massive Dark CTA Block with Ultra-Soft Melted Edges */}
-      <div className={`w-full relative z-20 ${isStylePage ? 'mb-24 md:mb-32' : 'mt-16 mb-24 md:mt-20 md:mb-32'}`}>
+      <div className={`w-full relative z-20 ${isStylePage ? 'mb-24 md:mb-32' : 'my-24 md:my-32'}`}>
         <div 
           className={`w-full bg-[#3a3128] text-paper ${isStylePage ? 'py-20 md:py-32' : 'py-32 md:py-40'}`}
           style={!isStylePage ? {
-            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
-            maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)"
+            WebkitMaskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)",
+            maskImage: "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent)"
           } : {
             WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent)",
             maskImage: "linear-gradient(to bottom, black 80%, transparent)"
