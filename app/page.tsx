@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { siteConfig, featuredVideoId } from "@/lib/site-config";
 import { sessions } from "@/lib/sessions";
-import { packages } from "@/lib/packages";
 import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 import { VideoFacade } from "@/components/VideoFacade";
 import { SocialLinks } from "@/components/SocialLinks";
@@ -9,9 +9,6 @@ import { PlaceholderImage } from "@/components/PlaceholderImage";
 import { Reveal } from "@/components/Reveal";
 
 export default function HomePage() {
-  const serviceNames = packages.filter((p) => p.category === "photography").map((p) => p.name);
-  const classNames = packages.filter((p) => p.category === "class").map((p) => p.name);
-
   return (
     <>
       {/* ---------- Hero ---------- */}
@@ -113,41 +110,67 @@ export default function HomePage() {
         </section>
       </Reveal>
 
-      {/* ---------- Services summary ---------- */}
+      {/* ---------- Services summary (Bento Grid) ---------- */}
       <Reveal>
         <section className="container-site py-24">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">What I do</p>
-          <h2 className="mt-3 font-display text-display-md">Services &amp; classes</h2>
-
-          <div className="mt-12 grid gap-10 md:grid-cols-2">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Photography services</h3>
-              <ul className="mt-4 space-y-3">
-                {serviceNames.map((name) => (
-                  <li key={name} className="border-b border-line pb-3 font-display text-xl">
-                    {name}
-                  </li>
-                ))}
-              </ul>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">What I do</p>
+              <h2 className="mt-3 font-display text-display-md">Services &amp; classes</h2>
             </div>
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Classes</h3>
-              <ul className="mt-4 space-y-3">
-                {classNames.map((name) => (
-                  <li key={name} className="border-b border-line pb-3 font-display text-xl">
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center rounded-full border border-ink px-6 py-3 text-sm font-semibold transition-colors hover:bg-ink hover:text-paper"
+            >
+              View packages &amp; pricing
+            </Link>
           </div>
 
-          <Link
-            href="/services"
-            className="mt-10 inline-block text-sm font-semibold underline underline-offset-4"
-          >
-            See what's included →
-          </Link>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:auto-rows-[300px]">
+            
+            {/* Block 1: Weddings & Anniversaries (Large Image) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-2 md:row-span-2 overflow-hidden rounded-[2rem] bg-ink block min-h-[400px] md:min-h-0">
+               <Image src="/bento_wedding.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings" />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+               <div className="absolute bottom-8 left-8 right-8 z-10 flex flex-col items-start">
+                  <p className="text-white/70 font-sans text-xs tracking-widest uppercase font-bold mb-3 border border-white/30 rounded-full px-4 py-1 backdrop-blur-sm">Photography</p>
+                  <h3 className="font-display text-4xl md:text-5xl text-white mb-2 leading-none tracking-tight">Weddings &amp; Anniversaries</h3>
+                  <p className="text-white/80 text-sm md:text-base max-w-sm mt-2">Capturing your special day with elegance, preserving true emotions and timeless moments.</p>
+               </div>
+            </Link>
+
+            {/* Block 2: Beauty Portraits (Vertical) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-2 overflow-hidden rounded-[2rem] bg-sand block min-h-[400px] md:min-h-0">
+               <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Portraits" />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+               <div className="absolute bottom-8 left-6 right-6 z-10">
+                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Studio</p>
+                  <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Beauty<br/>Portraits</h3>
+               </div>
+            </Link>
+
+            {/* Block 3: Events (Text / Solid Color) */}
+            <Link href="/portfolio" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-accent p-8 flex flex-col justify-between block hover:bg-[#c93f16] transition-colors min-h-[250px] md:min-h-0">
+               <div className="text-white/80 self-end bg-white/20 p-3 rounded-full backdrop-blur-md">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white opacity-90 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+               </div>
+               <div>
+                 <p className="text-white/80 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Photography</p>
+                 <h3 className="font-display text-3xl text-white leading-tight tracking-tight">Events &amp;<br/>Graduations</h3>
+               </div>
+            </Link>
+
+            {/* Block 4: Classes (Horizontal Image) */}
+            <Link href="/services" className="group relative col-span-1 md:col-span-1 md:row-span-1 overflow-hidden rounded-[2rem] bg-ink block min-h-[250px] md:min-h-0">
+               <Image src="/bento_classes.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-70 group-hover:opacity-90" alt="Classes" />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 pointer-events-none" />
+               <div className="absolute inset-0 p-6 flex flex-col justify-end z-10">
+                  <p className="text-white/70 font-sans text-[10px] tracking-widest uppercase font-bold mb-2">Education</p>
+                  <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Classes &amp;<br/>Retouching</h3>
+               </div>
+            </Link>
+
+          </div>
         </section>
       </Reveal>
 
