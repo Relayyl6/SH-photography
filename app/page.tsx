@@ -137,7 +137,7 @@ export default function HomePage() {
               <h2 className="mt-3 font-display text-display-md">Services &amp; classes</h2>
             </div>
             <Link
-              href="/pricing"
+              href="/services"
               className="inline-flex items-center justify-center rounded-full border border-ink px-6 py-3 text-sm font-semibold transition-colors hover:bg-ink hover:text-paper"
             >
               View packages &amp; pricing
