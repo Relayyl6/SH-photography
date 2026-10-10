@@ -148,7 +148,7 @@ export default function BookingForm() {
 
                     <div className="space-y-4">
                       <label className="block text-sm font-medium">Service Category *</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                         {['Wedding', 'Portrait', 'Event', 'Retouching', 'Other'].map(cat => (
                           <label key={cat} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.serviceCategory === cat ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
                             <input type="radio" value={cat} {...register('serviceCategory')} className="hidden" />
@@ -425,7 +425,7 @@ export default function BookingForm() {
 
                     <div>
                       <label className="block text-sm font-medium mb-4">Budget Range *</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                         {['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss'].map(range => (
                           <label key={range} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.budgetRange === range ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
                             <input type="radio" value={range} {...register('budgetRange')} className="hidden" />
