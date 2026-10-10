@@ -11,11 +11,8 @@ export const metadata: Metadata = {
 
 export default function StylePage() {
   return (
-    <div className="relative min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center pb-[200px] md:pb-[300px]">
+    <div className="relative min-h-screen bg-[#33110b] -mt-[120px] px-4 md:px-8 overflow-x-hidden font-display flex flex-col items-center pb-[50px] md:pb-[100px]">
       
-      {/* Seamless transition to footer */}
-      <div className="absolute bottom-0 left-0 w-full h-[200px] md:h-[300px] bg-gradient-to-b from-transparent to-[#FAF7F2] pointer-events-none z-0" />
-
       {/* Main Inner Card (The Poster) - Fits exactly in viewport */}
       <div className="relative bg-[#f6f4f0] w-full max-w-[1400px] min-h-[calc(100vh+120px)] flex flex-col shadow-2xl overflow-hidden md:rounded-b-2xl">
         
