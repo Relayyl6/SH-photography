@@ -22,17 +22,17 @@ export function Footer() {
         <motion.div 
           animate={{ y: [0, -15, 0], rotate: [0, -2, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-4 lg:left-12 top-0 md:top-[-2rem] hidden md:block w-24 h-32 lg:w-32 lg:h-40 opacity-80 mix-blend-multiply pointer-events-none rounded-sm overflow-hidden"
+          className="absolute left-4 lg:left-12 top-0 md:top-[-2rem] hidden md:block w-32 h-32 lg:w-48 lg:h-48 opacity-80 mix-blend-multiply pointer-events-none"
         >
-          <Image src="/frame-sq-1.jpg" alt="" fill className="object-cover" />
+          <Image src="/floating-camera.jpg" alt="" fill className="object-contain" />
         </motion.div>
         
         <motion.div 
           animate={{ y: [0, 15, 0], rotate: [0, 2, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute right-4 lg:right-12 bottom-0 md:bottom-[-2rem] hidden md:block w-24 h-24 lg:w-32 lg:h-32 opacity-80 mix-blend-multiply pointer-events-none rounded-full overflow-hidden"
+          className="absolute right-4 lg:right-12 bottom-0 md:bottom-[-2rem] hidden md:block w-32 h-32 lg:w-48 lg:h-48 opacity-80 mix-blend-multiply pointer-events-none"
         >
-          <Image src="/frame-sq-2.jpg" alt="" fill className="object-cover" />
+          <Image src="/floating-lens.jpg" alt="" fill className="object-contain" />
         </motion.div>
 
         <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
