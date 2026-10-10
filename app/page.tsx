@@ -14,13 +14,28 @@ export default function HomePage() {
   return (
     <>
       {/* ---------- Hero ---------- */}
-      <section className="relative overflow-hidden border-b border-line bg-paper">
-        <div className="container-site flex min-h-[92vh] flex-col justify-center py-20">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">
+      <section className="relative overflow-hidden bg-paper">
+        
+        {/* Blurred Background Video */}
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.25] blur-xl pointer-events-none select-none -z-10"
+        >
+          <source src="/photographer-bg.mp4" type="video/mp4" />
+        </video>
+
+        {/* Bottom Fade Gradient */}
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none -z-10"></div>
+
+        <div className="relative container-site flex min-h-[92vh] flex-col justify-center py-20 z-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent drop-shadow-sm">
             {siteConfig.location} · Est. 2020
           </p>
 
-          <h1 className="mt-6 font-display text-display-xl text-ink">
+          <h1 className="mt-6 font-display text-display-xl text-ink drop-shadow-sm">
             Photographing
             <br />
             <span className="italic text-accent">people,</span> brands
@@ -28,7 +43,7 @@ export default function HomePage() {
             &amp; products
           </h1>
 
-          <p className="mt-8 max-w-xl text-lg text-ink/70">{siteConfig.heroSubline}</p>
+          <p className="mt-8 max-w-xl text-lg text-ink/80 drop-shadow-sm">{siteConfig.heroSubline}</p>
 
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
@@ -39,14 +54,14 @@ export default function HomePage() {
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-full border border-ink px-7 py-3.5 text-sm font-semibold transition-colors hover:bg-ink hover:text-paper"
+              className="inline-flex items-center justify-center rounded-full border border-ink px-7 py-3.5 text-sm font-semibold bg-paper/50 backdrop-blur-sm transition-colors hover:bg-ink hover:text-paper"
             >
               Book a shoot
             </Link>
           </div>
         </div>
 
-        <div className="container-site grid grid-cols-2 gap-4 pb-16 md:grid-cols-4">
+        <div className="relative container-site grid grid-cols-2 gap-4 pb-16 md:grid-cols-4 z-10">
           <PlaceholderImage label="Hero image 1" ratio="3 / 4" />
           <PlaceholderImage label="Hero image 2" ratio="3 / 4" className="mt-8" />
           <PlaceholderImage label="Hero image 3" ratio="3 / 4" />
