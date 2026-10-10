@@ -8,7 +8,7 @@ export const metadata = {
 export default function BookPage() {
   return (
     <main className="min-h-screen bg-paper pt-24 pb-12">
-      <div className="container-site mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container-site">
 
         <BookingForm />
       </div>
