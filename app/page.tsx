@@ -67,8 +67,15 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ---------- Giant Watermark Crosswalk ---------- */}
+      <div className="w-full relative z-0 flex items-center justify-center select-none pointer-events-none">
+        <h2 className="absolute font-display text-[16vw] leading-none text-ink/[0.04] blur-[4px] whitespace-nowrap m-0 p-0 tracking-tighter">
+          SH PHOTOGRAPHY
+        </h2>
+      </div>
+
       {/* ---------- Sessions ---------- */}
-      <section className="container-site py-24">
+      <section className="container-site py-24 relative z-10">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Sessions</p>
