@@ -55,9 +55,9 @@ export function Header() {
   return (
     <header 
       ref={headerRef} 
-      className={`sticky z-50 w-full container-site transition-all duration-500 ease-in-out ${scrolled ? 'top-2' : 'top-4'}`}
+      className={`sticky z-[100] w-full container-site transition-all duration-500 ease-in-out ${scrolled ? 'top-2' : 'top-4'}`}
     >
-      <div className="relative rounded-full border border-line/60 bg-paper/70 backdrop-blur-md shadow-sm">
+      <div className="relative rounded-full border border-line/60 bg-paper/70 backdrop-blur-md shadow-sm pointer-events-auto">
         <div className={`flex items-center justify-between px-5 sm:px-6 md:px-8 transition-all duration-500 ease-in-out ${scrolled ? 'h-12 md:h-14' : 'h-16 md:h-20'}`}>
           <Link href="/" className={`font-display tracking-tight transition-all duration-500 ${scrolled ? 'text-lg' : 'text-xl'}`}>
             {"SH Photography"}
