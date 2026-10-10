@@ -156,6 +156,7 @@ export default function HomePage() {
                <div>
                  <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
                  <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Birthdays</h3>
+                 <p className="mt-2 text-sm text-ink/70 leading-relaxed">Vibrant, authentic portrait sessions to celebrate and preserve another year of your life.</p>
                </div>
             </Link>
 
@@ -167,6 +168,7 @@ export default function HomePage() {
                <div>
                  <p className="text-ink/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
                  <h3 className="font-display text-2xl text-ink leading-tight tracking-tight">Anniversaries</h3>
+                 <p className="mt-2 text-sm text-ink/70 leading-relaxed">Intimate, storytelling couples photography to honor and celebrate your journey together.</p>
                </div>
             </Link>
 
@@ -188,6 +190,7 @@ export default function HomePage() {
                <div>
                  <p className="text-white/80 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Photography</p>
                  <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Graduations</h3>
+                 <p className="mt-2 text-sm text-white/80 leading-relaxed">Mark your academic achievements with elegant, timeless graduation portraits.</p>
                </div>
             </Link>
 
@@ -199,6 +202,7 @@ export default function HomePage() {
                <div>
                  <p className="text-white/50 font-sans text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
                  <h3 className="font-display text-2xl text-white leading-tight tracking-tight">Retouching<br/>Classes</h3>
+                 <p className="mt-2 text-sm text-white/60 leading-relaxed">Master professional editing techniques to elevate your raw images to editorial quality.</p>
                </div>
             </Link>
 
