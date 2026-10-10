@@ -69,11 +69,19 @@ export default function StylePage() {
 
         {/* Red Box Bottom Left */}
         <div className="absolute bottom-0 left-0 bg-[#e83b1c] text-paper w-full md:w-[45%] max-w-[500px] h-[16vh] min-h-[120px] p-4 md:p-6 z-50 flex items-center gap-4">
-          {/* Using mix-blend-multiply here as well so the white vanishes and it tints beautifully into the red! */}
-          <div className="relative w-16 h-16 md:w-[12vh] md:h-[12vh] min-w-[64px] min-h-[64px] shrink-0 mix-blend-multiply">
-             <Image src="/frame-sq-1.jpg" alt="Artwork" fill className="object-contain" />
+          
+          {/* Bespoke faded edges blending into red using CSS Mask */}
+          <div 
+            className="relative w-20 h-20 md:w-[14vh] md:h-[14vh] min-w-[72px] min-h-[72px] shrink-0"
+            style={{
+              WebkitMaskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)",
+              maskImage: "radial-gradient(circle closest-side, black 65%, transparent 100%)"
+            }}
+          >
+             <Image src="/frame-sq-1.jpg" alt="Artwork" fill className="object-cover scale-110" />
           </div>
-          <div className="flex flex-col text-left justify-center">
+          
+          <div className="flex flex-col text-left justify-center ml-2">
             <h2 className="font-display text-2xl md:text-[3.5vh] mb-1 leading-[0.9] tracking-tight text-white">
               Genuine<br />Connections
             </h2>
