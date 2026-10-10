@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
+import { AboutParallaxTitle } from "@/components/AboutParallaxTitle";
 
 export const metadata: Metadata = {
   title: "About",
@@ -14,25 +15,7 @@ export default function AboutPage() {
     <>
       <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
         
-        {/* Unified Desktop Title (Top-Aligned, Tight Gap) */}
-        <div className="hidden md:block w-full mb-12 select-none pointer-events-none">
-          <svg viewBox="0 0 1000 190" className="w-full h-auto text-ink fill-current overflow-visible">
-            <text x="0" y="130" textLength="330" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase tracking-tighter" fontSize="150">
-              MY
-            </text>
-            <text x="400" y="172" textLength="600" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase tracking-tighter" fontSize="210">
-              STORY
-            </text>
-          </svg>
-        </div>
-
-        {/* Mobile Title (Perfectly Justified Stack) */}
-        <div className="md:hidden flex flex-col mb-8 select-none pointer-events-none">
-          <svg viewBox="0 0 350 240" className="w-full h-auto text-ink fill-current overflow-hidden">
-            <text x="0" y="90" textLength="350" lengthAdjust="spacing" className="font-display font-bold uppercase" fontSize="100">MY</text>
-            <text x="0" y="230" textLength="350" lengthAdjust="spacingAndGlyphs" className="font-display font-bold uppercase" fontSize="160">STORY</text>
-          </svg>
-        </div>
+        <AboutParallaxTitle />
 
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
           
