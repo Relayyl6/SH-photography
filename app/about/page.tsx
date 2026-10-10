@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site-config";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
+import { RightColumnParallax } from "@/components/RightColumnParallax";
 
 export const metadata: Metadata = {
   title: "About",
@@ -25,7 +26,7 @@ export default function AboutPage() {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-12 lg:gap-20">
           
           {/* Left Column: Enlarged Picture (40%) & Sticky */}
-          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0 md:sticky md:top-32">
+          <div className="w-full md:w-[45%] lg:w-[40%] shrink-0 md:sticky md:top-[-4rem] lg:top-[-8rem]">
             <div className="w-full">
               {/* "MY" stays sticky with the portrait */}
               <div className="hidden md:block w-full mb-6 select-none pointer-events-none">
@@ -42,8 +43,8 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Right Column: Headline & Article (Scrolls normally) */}
-          <div className="w-full md:w-[55%]">
+          {/* Right Column: Headline & Article (Scrolls normally after initial freeze) */}
+          <RightColumnParallax className="w-full md:w-[55%]">
             
             {/* "STORY" scrolls with the article, negative margin pulls it across the gap */}
             <div className="hidden md:block w-[calc(100%+3rem)] lg:w-[calc(100%+5rem)] -ml-12 lg:-ml-20 mb-6 select-none pointer-events-none">
@@ -106,7 +107,7 @@ export default function AboutPage() {
               story of each unique moment
             </p>
           </article>
-        </div>
+        </RightColumnParallax>
       </div>
       </div>
     </>
