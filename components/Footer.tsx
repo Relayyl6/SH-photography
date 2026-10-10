@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { siteConfig } from "@/lib/site-config";
 import { SocialLinks } from "./SocialLinks";
 import { sessions } from "@/lib/sessions";
@@ -16,19 +17,37 @@ export function Footer() {
       
       {/* Editorial Typographic CTA */}
       <div className={`relative z-20 container-site text-center flex flex-col items-center justify-center ${isStylePage ? 'mb-10 md:mb-16' : 'my-10 md:my-16'}`}>
-        <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2">
+        
+        {/* Floating elements for left and right */}
+        <motion.div 
+          animate={{ y: [0, -15, 0], rotate: [0, -2, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-4 lg:left-12 top-0 md:top-[-2rem] hidden md:block w-24 h-32 lg:w-32 lg:h-40 opacity-80 mix-blend-multiply pointer-events-none rounded-sm overflow-hidden"
+        >
+          <Image src="/frame-sq-1.jpg" alt="" fill className="object-cover" />
+        </motion.div>
+        
+        <motion.div 
+          animate={{ y: [0, 15, 0], rotate: [0, 2, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute right-4 lg:right-12 bottom-0 md:bottom-[-2rem] hidden md:block w-24 h-24 lg:w-32 lg:h-32 opacity-80 mix-blend-multiply pointer-events-none rounded-full overflow-hidden"
+        >
+          <Image src="/frame-sq-2.jpg" alt="" fill className="object-cover" />
+        </motion.div>
+
+        <p className="text-accent text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
           Ready to create together?
         </p>
         
-        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-none tracking-tighter text-ink mb-3">
+        <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-none tracking-tighter text-ink mb-3 relative z-10">
           Let&apos;s make <span className="italic text-ink/70">magic.</span>
         </h2>
         
-        <p className="text-ink/70 text-sm md:text-base font-medium max-w-xl mx-auto mb-6">
+        <p className="text-ink/70 text-sm md:text-base font-medium max-w-xl mx-auto mb-6 relative z-10">
           Photographing people, brands and products since 2020. I&apos;d love to hear about your next project.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto relative z-10">
           <Link
             href="/book"
             className="inline-flex w-full sm:w-auto items-center justify-center rounded-full bg-ink px-8 py-3 text-sm font-semibold text-paper hover:bg-accent transition-colors duration-300"
