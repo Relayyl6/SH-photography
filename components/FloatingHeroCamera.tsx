@@ -21,7 +21,7 @@ export function FloatingHeroCamera() {
         repeat: Infinity,
         ease: 'easeInOut',
       }}
-      className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none -z-10 select-none w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[85vw]"
+      className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-[76%] pointer-events-none -z-10 select-none w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[85vw]"
     >
       <div className="relative aspect-[756/634] w-full filter drop-shadow-[0_20px_35px_rgba(21,19,15,0.35)]">
         <Image
