@@ -254,7 +254,7 @@ export default function HomePage() {
             
             {/* 1. Weddings (2 cols wide on mobile/tab, 2x2 on desktop) */}
             <StaggerItem className="col-span-2 md:col-span-2 md:row-span-2" variant="fadeUpLarge">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-8 min-h-[260px] sm:min-h-[320px] md:min-h-0 h-full w-full block">
+              <Link href="/services/weddings" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-8 min-h-[260px] sm:min-h-[320px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_wedding.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
@@ -266,7 +266,7 @@ export default function HomePage() {
 
             {/* 2. General Photography (tall 1 col, 2 rows on mobile & desktop) */}
             <StaggerItem className="col-span-1 row-span-2 md:col-span-1 md:row-span-2" variant="fadeUpLarge">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 min-h-[320px] sm:min-h-[360px] md:min-h-0 h-full w-full block">
+              <Link href="/services/general-photography" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 min-h-[320px] sm:min-h-[360px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="General Photography" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
@@ -278,7 +278,7 @@ export default function HomePage() {
 
             {/* 3. Birthdays (1x1 square next to General Photography) */}
             <StaggerItem className="col-span-1 row-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-sand p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#e8e4db] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+              <Link href="/services/birthdays" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-sand p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#e8e4db] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
                  <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
@@ -292,7 +292,7 @@ export default function HomePage() {
 
             {/* 4. Anniversaries (1x1 square under Birthdays, next to General Photography) */}
             <StaggerItem className="col-span-1 row-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-paper border border-line/50 p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:border-line transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+              <Link href="/services/anniversaries" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-paper border border-line/50 p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:border-line transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
                  <div className="text-ink/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
@@ -306,7 +306,7 @@ export default function HomePage() {
 
             {/* 5. Gen Photo Classes (2 cols wide on mobile/tab, 2x1 on desktop) */}
             <StaggerItem className="col-span-2 md:col-span-2 md:row-span-1" variant="fadeUpLarge">
-              <Link href="/services" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-6 min-h-[170px] sm:min-h-[200px] md:min-h-0 h-full w-full block">
+              <Link href="/services/general-photography-classes" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-6 min-h-[170px] sm:min-h-[200px] md:min-h-0 h-full w-full block">
                  <Image src="/bento_classes.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-70 group-hover:opacity-90" alt="Classes" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
                  <div className="relative z-10">
@@ -318,7 +318,7 @@ export default function HomePage() {
 
             {/* 6. Graduations (1x1 square) */}
             <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/portfolio" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-accent p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#c93f16] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+              <Link href="/services/graduations" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-accent p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#c93f16] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
                  <div className="text-white/80 self-end bg-white/20 p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 absolute top-4 right-4 sm:top-6 sm:right-6">
                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white opacity-90 group-hover:opacity-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
@@ -332,7 +332,7 @@ export default function HomePage() {
 
             {/* 7. Retouching Classes (1x1 square) */}
             <StaggerItem className="col-span-1 md:col-span-1 md:row-span-1" variant="fadeScale">
-              <Link href="/services" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#222] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
+              <Link href="/services/retouching-classes" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:bg-[#222] transition-colors min-h-[155px] sm:min-h-[175px] md:min-h-0 h-full w-full block">
                  <div className="text-white/30 self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 absolute top-4 right-4 sm:top-6 sm:right-6">
                     <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                  </div>
