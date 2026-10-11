@@ -85,7 +85,7 @@ export default function HomePage() {
         </StaggerReveal>
 
         {/* Real Staggered Editorial Photography Showcase - Visible above fold on mobile */}
-        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-20 mt-4 sm:mt-8 md:mt-12" staggerVariant="slow">
+        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-20 mt-20 sm:mt-8 md:mt-12" staggerVariant="slow">
           
           {/* 1. Weddings */}
           <StaggerItem variant="fadeUp">
