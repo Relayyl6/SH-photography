@@ -7,7 +7,7 @@ export function FloatingHeroCamera() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 -top-20 sm:-top-24 md:-top-24 pointer-events-none -z-10 select-none w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[85vw]">
+    <div className="absolute right-[-20px] xs:right-[-10px] sm:right-auto sm:left-1/2 translate-x-0 sm:-translate-x-1/2 -top-20 sm:-top-24 md:-top-24 pointer-events-none -z-10 select-none w-56 sm:w-64 md:w-72 lg:w-80 xl:w-96 max-w-[85vw]">
       <motion.div
         animate={
           shouldReduceMotion

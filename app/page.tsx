@@ -43,15 +43,17 @@ export default function HomePage() {
                 </div>
               </StaggerItem>
 
-              <h1 className="mt-2 font-display text-[3.25rem] xs:text-[3.5rem] sm:text-6xl md:text-7xl lg:text-7xl xl:text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.90] md:leading-[0.92] tracking-tight">
+              <h1 className="mt-3 font-display text-[3.5rem] xs:text-[4rem] sm:text-[4.75rem] md:text-[5.5rem] lg:text-[6rem] xl:text-[7rem] text-ink drop-shadow-sm flex flex-col leading-[0.88] tracking-[-0.035em]">
                 <StaggerItem variant="fadeUpLarge">
-                  <span>Photographing</span>
+                  <span className="font-medium">Photographing</span>
                 </StaggerItem>
                 <StaggerItem variant="fadeUpLarge">
-                  <span><span className="italic text-accent">people,</span> brands</span>
+                  <span className="font-medium">
+                    <span className="italic font-normal text-accent pr-1">people,</span> brands
+                  </span>
                 </StaggerItem>
                 <StaggerItem variant="fadeUpLarge">
-                  <span>&amp; products</span>
+                  <span className="font-medium">&amp; products</span>
                 </StaggerItem>
               </h1>
 
@@ -65,18 +67,29 @@ export default function HomePage() {
             <StaggerItem variant="fadeScale" className="shrink-0 pb-2 mt-6 sm:mt-8 md:mt-0 md:pb-3">
               <div className="relative inline-flex items-center justify-center">
                 <FloatingHeroCamera />
-                <div className="relative z-10 flex flex-row items-center gap-3 sm:gap-4">
+                <div className="relative z-10 flex flex-row items-center gap-3 sm:gap-4.5">
                   <Link
                     href="/portfolio"
-                    className="inline-flex items-center justify-center rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent shadow-md"
+                    className="group/btn relative inline-flex items-center justify-center gap-2.5 rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-paper shadow-[0_8px_25px_rgba(21,19,15,0.3)] ring-1 ring-white/15 transition-all duration-300 hover:bg-accent hover:shadow-[0_10px_30px_rgba(232,73,28,0.4)] hover:scale-[1.03] active:scale-[0.98]"
                   >
-                    View my work
+                    <span>View my work</span>
+                    <span className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-white/15 transition-all duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:bg-white/25">
+                      <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-paper" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </span>
                   </Link>
+
                   <Link
                     href="/book"
-                    className="inline-flex items-center justify-center rounded-full border border-ink/40 px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold bg-paper/80 backdrop-blur-md transition-colors hover:border-ink hover:bg-sand shadow-sm"
+                    className="group/btn2 relative inline-flex items-center justify-center gap-2.5 rounded-full border border-ink/30 bg-paper/85 px-6 sm:px-7 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-ink backdrop-blur-xl shadow-[0_4px_20px_rgba(21,19,15,0.08)] ring-1 ring-black/5 transition-all duration-300 hover:border-ink hover:bg-sand hover:shadow-[0_8px_25px_rgba(21,19,15,0.16)] hover:scale-[1.03] active:scale-[0.98]"
                   >
-                    Book a shoot
+                    <span>Book a shoot</span>
+                    <span className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-ink/5 transition-all duration-300 group-hover/btn2:bg-accent/15 group-hover/btn2:rotate-12">
+                      <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-ink transition-colors duration-300 group-hover/btn2:text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 7.5h18M4.5 4.5h15a1.5 1.5 0 0 1 1.5 1.5v13.5a1.5 1.5 0 0 1-1.5 1.5h-15a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z" />
+                      </svg>
+                    </span>
                   </Link>
                 </div>
               </div>
