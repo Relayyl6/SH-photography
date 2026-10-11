@@ -31,7 +31,7 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[190px] pb-10 sm:pt-[205px] sm:pb-12 md:pt-[215px] md:pb-14 lg:pt-[230px] z-10" staggerVariant="fast">
+        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[190px] pb-14 sm:pt-[205px] sm:pb-16 md:pt-[215px] md:pb-16 lg:pt-[230px] z-20" staggerVariant="fast">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 lg:gap-12">
             <div>
               <StaggerItem variant="fadeDown">
@@ -43,7 +43,7 @@ export default function HomePage() {
                 </div>
               </StaggerItem>
 
-              <h1 className="mt-2 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.95] md:leading-[0.92] tracking-tight">
+              <h1 className="mt-2 font-display text-[3.25rem] xs:text-[3.5rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.90] md:leading-[0.92] tracking-tight">
                 <StaggerItem variant="fadeUpLarge">
                   <span>Photographing</span>
                 </StaggerItem>
@@ -85,7 +85,7 @@ export default function HomePage() {
         </StaggerReveal>
 
         {/* Real Staggered Editorial Photography Showcase - Visible above fold on mobile */}
-        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-10 mt-8 sm:mt-12 md:mt-14" staggerVariant="slow">
+        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-10 mt-10 sm:mt-12 md:mt-14" staggerVariant="slow">
           
           {/* 1. Weddings */}
           <StaggerItem variant="fadeUp">
