@@ -8,12 +8,13 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { PlaceholderImage } from "@/components/PlaceholderImage";
 import { Reveal } from "@/components/Reveal";
 import { StaggerReveal, StaggerItem } from "@/components/StaggerReveal";
+import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
 
 export default function HomePage() {
   return (
     <>
       {/* ---------- Hero ---------- */}
-      <section className="relative overflow-hidden bg-paper -mt-[120px]">
+      <section className="relative overflow-hidden bg-paper -mt-[96px] md:-mt-[112px]">
         
         {/* Blurred Background Video with Poster Fallback */}
         <video 
@@ -30,7 +31,7 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[130px] pb-6 sm:pb-8 md:pt-[160px] md:pb-10 z-10" staggerVariant="fast">
+        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[205px] pb-12 sm:pt-[225px] sm:pb-16 md:pt-[240px] md:pb-16 lg:pt-[260px] z-10" staggerVariant="fast">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
               <StaggerItem variant="fadeDown">
@@ -62,26 +63,29 @@ export default function HomePage() {
             </div>
 
             <StaggerItem variant="fadeScale" className="shrink-0 pb-2">
-              <div className="flex flex-row items-center gap-3 sm:gap-4">
-                <Link
-                  href="/portfolio"
-                  className="inline-flex items-center justify-center rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent shadow-sm"
-                >
-                  View my work
-                </Link>
-                <Link
-                  href="/book"
-                  className="inline-flex items-center justify-center rounded-full border border-ink/40 px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold bg-paper/60 backdrop-blur-sm transition-colors hover:border-ink hover:bg-sand"
-                >
-                  Book a shoot
-                </Link>
+              <div className="relative inline-flex items-center justify-center">
+                <FloatingHeroCamera />
+                <div className="relative z-10 flex flex-row items-center gap-3 sm:gap-4">
+                  <Link
+                    href="/portfolio"
+                    className="inline-flex items-center justify-center rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold text-paper transition-colors hover:bg-accent shadow-md"
+                  >
+                    View my work
+                  </Link>
+                  <Link
+                    href="/book"
+                    className="inline-flex items-center justify-center rounded-full border border-ink/40 px-6 sm:px-7 py-3 sm:py-3.5 text-sm font-semibold bg-paper/80 backdrop-blur-md transition-colors hover:border-ink hover:bg-sand shadow-sm"
+                  >
+                    Book a shoot
+                  </Link>
+                </div>
               </div>
             </StaggerItem>
           </div>
         </StaggerReveal>
 
         {/* Real Staggered Editorial Photography Showcase - Visible above fold on mobile */}
-        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-10 mt-6 md:mt-10" staggerVariant="slow">
+        <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-10 mt-8 sm:mt-12 md:mt-14" staggerVariant="slow">
           
           {/* 1. Weddings */}
           <StaggerItem variant="fadeUp">
