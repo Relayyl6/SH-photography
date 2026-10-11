@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <>
       {/* ---------- Hero ---------- */}
-      <section className="relative overflow-hidden bg-paper -mt-[96px] md:-mt-[112px]">
+      <section className="relative overflow-hidden bg-paper -mt-[84px] md:-mt-[96px]">
         
         {/* Blurred Background Video with Poster Fallback */}
         <video 
@@ -31,8 +31,8 @@ export default function HomePage() {
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
-        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[205px] pb-12 sm:pt-[225px] sm:pb-16 md:pt-[240px] md:pb-16 lg:pt-[260px] z-10" staggerVariant="fast">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <StaggerReveal className="relative container-site flex flex-col justify-center pt-[190px] pb-10 sm:pt-[205px] sm:pb-12 md:pt-[215px] md:pb-14 lg:pt-[230px] z-10" staggerVariant="fast">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 lg:gap-12">
             <div>
               <StaggerItem variant="fadeDown">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sand/90 border border-line/60 backdrop-blur-sm mb-3">
@@ -43,7 +43,7 @@ export default function HomePage() {
                 </div>
               </StaggerItem>
 
-              <h1 className="mt-2 font-display text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.92] tracking-tight">
+              <h1 className="mt-2 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-display-xl text-ink drop-shadow-sm flex flex-col leading-[0.95] md:leading-[0.92] tracking-tight">
                 <StaggerItem variant="fadeUpLarge">
                   <span>Photographing</span>
                 </StaggerItem>
