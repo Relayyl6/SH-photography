@@ -32,24 +32,24 @@ export default function HomePage() {
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
 
         <StaggerReveal className="relative container-site flex flex-col justify-center pt-[190px] pb-8 sm:pt-[205px] sm:pb-12 md:pt-[215px] md:pb-14 lg:pt-[230px] z-10" staggerVariant="fast">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 lg:gap-12">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 lg:gap-12">
             <div>
               <StaggerItem variant="fadeDown">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sand/90 border border-line/60 backdrop-blur-sm mb-3">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-sand/90 border border-line/60 backdrop-blur-sm mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                  <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-accent">
                     {siteConfig.location} · Est. 2020
                   </p>
                 </div>
               </StaggerItem>
 
-              <h1 className="mt-3 font-display text-[3.5rem] xs:text-[4rem] sm:text-[4.75rem] md:text-[5.5rem] lg:text-[6rem] xl:text-[7rem] text-ink drop-shadow-sm flex flex-col leading-[0.88] tracking-[-0.035em]">
+              <h1 className="mt-3 font-display text-[3.5rem] xs:text-[4rem] sm:text-[5.25rem] md:text-[6.25rem] lg:text-[7.25rem] xl:text-[8.5rem] 2xl:text-[9.5rem] text-ink drop-shadow-sm flex flex-col leading-[0.88] sm:leading-[0.92] md:leading-[0.92] lg:leading-[0.92] xl:leading-[0.92] tracking-[-0.035em] sm:tracking-[-0.02em] md:tracking-[-0.015em] lg:tracking-[-0.015em]">
                 <StaggerItem variant="fadeUpLarge">
                   <span className="font-medium">Photographing</span>
                 </StaggerItem>
                 <StaggerItem variant="fadeUpLarge">
                   <span className="font-medium">
-                    <span className="italic font-normal text-accent pr-1">people,</span> brands
+                    <span className="italic font-normal text-accent pr-1.5">People,</span> brands
                   </span>
                 </StaggerItem>
                 <StaggerItem variant="fadeUpLarge">
@@ -58,13 +58,13 @@ export default function HomePage() {
               </h1>
 
               <StaggerItem variant="fadeUp">
-                <p className="mt-4 md:mt-6 max-w-xl text-base md:text-lg text-ink/80 drop-shadow-sm">
+                <p className="mt-4 md:mt-6 max-w-xl text-base sm:text-lg md:text-xl lg:text-2xl text-ink/80 drop-shadow-sm">
                   {siteConfig.heroSubline}
                 </p>
               </StaggerItem>
             </div>
 
-            <StaggerItem variant="fadeScale" className="shrink-0 pb-2 mt-6 sm:mt-8 md:mt-0 md:pb-3">
+            <StaggerItem variant="fadeScale" className="shrink-0 pb-2 mt-8 sm:mt-10 lg:mt-0 lg:pb-3">
               <div className="relative inline-flex items-center justify-center">
                 <FloatingHeroCamera />
                 <div className="relative z-10 flex flex-row items-center gap-3 sm:gap-4.5">
