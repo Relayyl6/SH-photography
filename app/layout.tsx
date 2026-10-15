@@ -16,7 +16,7 @@ import { siteConfig } from "@/lib/site-config";
 // then add `${fraunces.variable} ${inter.variable}` back to <html className>.
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.siteUrlPlaceholder),
+  metadataBase: new URL(siteConfig.siteUrl),
   title: {
     default: `${siteConfig.businessName} — Photographer in Manchester`,
     template: `%s — ${siteConfig.businessName}`,

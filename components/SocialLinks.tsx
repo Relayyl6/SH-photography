@@ -1,18 +1,12 @@
 import { socialLinks } from "@/lib/site-config";
 
-// Reads social_links (DATA-MODEL.md); handles an empty set gracefully
-// (DATA-MODEL.md §3 — no broken icons when none are supplied yet).
 export function SocialLinks({ className = "" }: { className?: string }) {
   if (socialLinks.length === 0) {
-    return (
-      <p className={`text-sm text-ink/50 ${className}`}>
-        [PLACEHOLDER: social links — Instagram / Facebook / TikTok / YouTube]
-      </p>
-    );
+    return null;
   }
 
   return (
-    <ul className={`flex items-center gap-4 ${className}`}>
+    <ul className={`flex items-center gap-5 ${className}`}>
       {socialLinks.map((link) => (
         <li key={link.platform}>
           <a
@@ -20,7 +14,7 @@ export function SocialLinks({ className = "" }: { className?: string }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.label}
-            className="text-sm font-medium uppercase tracking-wide underline-offset-4 hover:underline"
+            className="text-xs sm:text-sm font-medium tracking-wider uppercase text-ink/80 hover:text-accent transition-colors underline-offset-4 hover:underline"
           >
             {link.label}
           </a>

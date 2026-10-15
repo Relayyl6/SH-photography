@@ -1,6 +1,4 @@
 // site_settings + social_links seed — DATA-MODEL.md §3.
-// Empty until the client supplies real accounts/video (OPEN-QUESTIONS.md #1, #2).
-// UI must handle both gracefully (hide, don't show broken links/embeds).
 
 export interface SocialLink {
   id: string;
@@ -10,6 +8,10 @@ export interface SocialLink {
   isVisible: boolean;
 }
 
-export const socialLinks: SocialLink[] = [];
+export const socialLinks: SocialLink[] = [
+  { id: "1", platform: "instagram", label: "Instagram", url: "https://instagram.com/shfotography1", isVisible: true },
+  { id: "2", platform: "youtube", label: "YouTube", url: "https://youtube.com/@shphotography", isVisible: true },
+  { id: "3", platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/447350156054", isVisible: true },
+];
 
-export const featuredVideoId = ""; // empty => video section hides itself
+export const featuredVideoId = "Z8mnzVNaiD0";

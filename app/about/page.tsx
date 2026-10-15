@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
-import { PlaceholderImage } from "@/components/PlaceholderImage";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
@@ -35,8 +35,21 @@ export default function AboutPage() {
                 </svg>
               </div>
 
-              <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden shadow-2xl">
-                <PlaceholderImage label="Benedict Henry" ratio="4 / 5" />
+              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl bg-ink border border-line/40 group">
+                <Image
+                  src="/bento_portrait.jpg"
+                  alt="Benedict Henry — SH Photography"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 40vw"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
+                  <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white border border-white/30">
+                    Benedict Henry · Founder &amp; Lead Photographer
+                  </span>
+                </div>
               </div>
             </div>
           </div>

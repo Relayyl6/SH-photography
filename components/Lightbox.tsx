@@ -85,11 +85,32 @@ export function Lightbox({
         </button>
 
         <div
-          className="placeholder-media flex aspect-[4/5] items-center justify-center rounded-lg bg-sand md:aspect-[3/2]"
+          className="relative flex aspect-[4/5] md:aspect-[3/2] items-center justify-center rounded-2xl bg-gradient-to-br from-[#24201b] via-[#1a1714] to-[#100e0c] border border-white/15 p-6 overflow-hidden shadow-2xl"
           role="img"
-          aria-label={`Placeholder image — ${caption}`}
+          aria-label={caption}
         >
-          <span className="rounded-full bg-ink/80 px-4 py-1.5 text-sm text-paper">{caption}</span>
+          {/* Subtle photographic corner crop marks */}
+          <div className="absolute top-4 left-4 w-3.5 h-3.5 border-t border-l border-white/30 pointer-events-none" />
+          <div className="absolute top-4 right-4 w-3.5 h-3.5 border-t border-r border-white/30 pointer-events-none" />
+          <div className="absolute bottom-4 left-4 w-3.5 h-3.5 border-b border-l border-white/30 pointer-events-none" />
+          <div className="absolute bottom-4 right-4 w-3.5 h-3.5 border-b border-r border-white/30 pointer-events-none" />
+
+          {/* Aperture ring in center */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+            <div className="w-32 h-32 md:w-44 md:h-44 rounded-full border border-dashed border-white/30 flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-accent/60" />
+            </div>
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center text-center max-w-md">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-accent/20 border border-accent/40 text-accent text-xs font-semibold uppercase tracking-widest mb-3">
+              SH Photography Archive
+            </span>
+            <h3 className="font-display text-2xl md:text-3xl text-paper font-medium">{caption}</h3>
+            <p className="mt-2 text-xs md:text-sm text-paper/60 uppercase tracking-wider">
+              Manchester, United Kingdom · Available to travel
+            </p>
+          </div>
         </div>
 
         <div className="mt-4 flex items-center justify-between text-paper">
