@@ -83,14 +83,6 @@ export const sessions: Session[] = [
     galleryCount: 9,
     featuredImage: "/photos/personal/personal_01.jpg",
   },
-  {
-    slug: "corporate",
-    title: "Corporate",
-    intro:
-      "Contemporary executive headshots and brand lifestyle imagery crafted to elevate your professional presence with warmth and confidence.",
-    previewCount: 6,
-    galleryCount: 12,
-  },
 ];
 
 export function getSession(slug: string) {

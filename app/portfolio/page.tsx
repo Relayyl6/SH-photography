@@ -5,7 +5,7 @@ import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 
 export const metadata: Metadata = {
   title: "Portfolio",
-  description: "Curated portfolio sessions by Benedict Henry — Weddings, Portraits, Family, Events, Sports, Birthdays, Personal Branding, Behind the Scenes, Corporate.",
+  description: "Curated portfolio sessions by Benedict Henry — Weddings, Portraits, Family, Events, Sports, Birthdays, Personal Branding, Behind the Scenes.",
 };
 
 export default function PortfolioPage() {

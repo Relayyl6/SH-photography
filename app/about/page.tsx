@@ -37,7 +37,7 @@ export default function AboutPage() {
 
               <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl bg-ink border border-line/40 group">
                 <Image
-                  src="/bento_portrait.jpg"
+                  src="/photos/personal/personal_01.jpg"
                   alt="Benedict Henry — SH Photography"
                   fill
                   sizes="(max-width: 768px) 100vw, 40vw"
@@ -45,6 +45,19 @@ export default function AboutPage() {
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
+                {/* Corner edge marks */}
+                <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-white/60 pointer-events-none z-10" />
+                <div className="absolute top-4 right-4 w-3 h-3 border-t border-r border-white/60 pointer-events-none z-10" />
+                <div className="absolute bottom-4 left-4 w-3 h-3 border-b border-l border-white/60 pointer-events-none z-10" />
+                <div className="absolute bottom-4 right-4 w-3 h-3 border-b border-r border-white/60 pointer-events-none z-10" />
+                <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-accent/90 bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/10">
+                    SH Archive
+                  </span>
+                  <span className="text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                    MCR · UK
+                  </span>
+                </div>
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
                   <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white border border-white/30">
                     Benedict Henry · Founder &amp; Lead Photographer

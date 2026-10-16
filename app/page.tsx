@@ -246,7 +246,7 @@ export default function HomePage() {
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Sessions</p>
-            <h2 className="mt-3 font-display text-display-md">Five ways I tell your story</h2>
+            <h2 className="mt-3 font-display text-display-md">How I tell your story</h2>
           </div>
           <Link href="/portfolio" className="text-sm font-semibold underline underline-offset-4">
             See the full portfolio →
@@ -257,7 +257,11 @@ export default function HomePage() {
           {sessions.map((session) => (
             <StaggerItem key={session.slug} variant="fadeUp">
               <Link href={`/portfolio/${session.slug}`} className="group block">
-                <SessionPreviewCarousel sessionTitle={session.title} count={session.previewCount} />
+                <SessionPreviewCarousel
+                  sessionSlug={session.slug}
+                  sessionTitle={session.title}
+                  count={session.previewCount}
+                />
                 <h3 className="mt-4 font-display text-2xl group-hover:text-accent">{session.title}</h3>
                 <p className="mt-1 text-sm text-ink/60">{session.intro}</p>
               </Link>
@@ -272,7 +276,7 @@ export default function HomePage() {
           <div className="container-site grid gap-12 py-24 md:grid-cols-2 md:items-center">
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-[2rem] shadow-xl border border-line/60 group bg-ink">
               <Image
-                src="/frame-circle.jpg"
+                src="/photos/personal/personal_01.jpg"
                 alt="Benedict Henry — SH Photography"
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
@@ -322,8 +326,13 @@ export default function HomePage() {
             {/* 1. Weddings (2 cols wide on mobile/tab, 2x2 on desktop) */}
             <StaggerItem className="col-span-2 md:col-span-2 md:row-span-2" variant="fadeUpLarge">
               <Link href="/services/weddings" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-8 min-h-[260px] sm:min-h-[320px] md:min-h-0 h-full w-full block">
-                 <Image src="/bento_wedding.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings" />
+                 <Image src="/photos/weddings/weddings_02.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="Weddings by SH Photography" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                 {/* Corner edge lines */}
+                 <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute top-4 right-4 w-3 h-3 border-t border-r border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-4 left-4 w-3 h-3 border-b border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-4 right-4 w-3 h-3 border-b border-r border-white/60 pointer-events-none z-10" />
                  <div className="relative z-10">
                     <p className="text-white/70 font-sans text-[10px] sm:text-xs tracking-widest uppercase font-bold mb-2 sm:mb-3 border border-white/30 rounded-full px-3 sm:px-4 py-0.5 sm:py-1 inline-block backdrop-blur-sm">Photography</p>
                     <h3 className="font-display text-3xl sm:text-4xl md:text-5xl text-white leading-none tracking-tight">Weddings</h3>
@@ -334,8 +343,13 @@ export default function HomePage() {
             {/* 2. General Photography (tall 1 col, 2 rows on mobile & desktop) */}
             <StaggerItem className="col-span-1 row-span-2 md:col-span-1 md:row-span-2" variant="fadeUpLarge">
               <Link href="/services/general-photography" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 min-h-[320px] sm:min-h-[360px] md:min-h-0 h-full w-full block">
-                 <Image src="/bento_portrait.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="General Photography" />
+                 <Image src="/photos/portraits/portraits_02.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100" alt="General Photography by SH Photography" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                 {/* Corner edge lines */}
+                 <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-white/60 pointer-events-none z-10" />
                  <div className="relative z-10">
                     <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1 sm:mb-2">Portfolio</p>
                     <h3 className="font-display text-xl sm:text-2xl md:text-3xl text-white leading-tight tracking-tight">General<br/>Photography</h3>
@@ -374,8 +388,13 @@ export default function HomePage() {
             {/* 5. Gen Photo Classes (2 cols wide on mobile/tab, 2x1 on desktop) */}
             <StaggerItem className="col-span-2 md:col-span-2 md:row-span-1" variant="fadeUpLarge">
               <Link href="/services/general-photography-classes" className="group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-5 sm:p-6 min-h-[170px] sm:min-h-[200px] md:min-h-0 h-full w-full block">
-                 <Image src="/bento_classes.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-70 group-hover:opacity-90" alt="Classes" />
+                 <Image src="/photos/behind-the-scenes/behind-the-scenes_01.jpg" fill className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100" alt="Photography Classes by SH Photography" />
                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                 {/* Corner edge lines */}
+                 <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-white/60 pointer-events-none z-10" />
+                 <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-white/60 pointer-events-none z-10" />
                  <div className="relative z-10">
                     <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1">Education</p>
                     <h3 className="font-display text-2xl sm:text-3xl text-white leading-tight tracking-tight">Photography Classes</h3>
