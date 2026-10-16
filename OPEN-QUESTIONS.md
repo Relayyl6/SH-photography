@@ -74,7 +74,7 @@ All 13 open questions have been systematically reviewed, scaffolded, and address
 
 ### 10. Video Placement
 - **Resolution**: **RESOLVED**
-- **Details**: The featured video facade is placed on the **Home page** directly beneath the Bento services showcase in a dedicated "A quick tutorial" editorial section.
+- **Details**: The featured video facade is placed on the **Home page** directly beneath the Bento services showcase in a dedicated "Behind the scenes on set" editorial section, embedding a studio beauty photoshoot behind-the-scenes video (`38xsz4Qoez4`).
 
 ---
 

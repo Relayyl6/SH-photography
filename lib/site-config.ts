@@ -25,5 +25,5 @@ export const socialLinks: { platform: string; label: string; url: string }[] = [
   { platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/447350156054" },
 ];
 
-// Featured portrait retouching masterclass tutorial (Z8mnzVNaiD0)
-export const featuredVideoId = "Z8mnzVNaiD0";
+// Featured photography photoshoot behind-the-scenes
+export const featuredVideoId = "38xsz4Qoez4";

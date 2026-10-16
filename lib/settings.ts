@@ -14,4 +14,4 @@ export const socialLinks: SocialLink[] = [
   { id: "3", platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/447350156054", isVisible: true },
 ];
 
-export const featuredVideoId = "Z8mnzVNaiD0";
+export const featuredVideoId = "38xsz4Qoez4";

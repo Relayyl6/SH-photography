@@ -465,10 +465,10 @@ export default function HomePage() {
       {featuredVideoId && (
         <Reveal>
           <section className="container-site pb-24">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Watch</p>
-            <h2 className="mt-3 font-display text-display-md">A quick tutorial</h2>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Behind the Lens</p>
+            <h2 className="mt-3 font-display text-display-md">Behind the scenes on set</h2>
             <div className="mt-8">
-              <VideoFacade videoId={featuredVideoId} title="SH Photography tutorial" />
+              <VideoFacade videoId={featuredVideoId} title="Photoshoot behind the scenes" />
             </div>
           </section>
         </Reveal>
