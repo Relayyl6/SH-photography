@@ -39,15 +39,6 @@ export const sessions: Session[] = [
     featuredImage: "/photos/family/family_01.jpg",
   },
   {
-    slug: "behind-the-scenes",
-    title: "Behind the Scenes",
-    intro:
-      "Documenting the creative energy, intense craft, and genuine camaraderie unfolding behind the camera on set and stage.",
-    previewCount: 6,
-    galleryCount: 24,
-    featuredImage: "/photos/behind-the-scenes/behind-the-scenes_01.jpg",
-  },
-  {
     slug: "events",
     title: "Events",
     intro:
@@ -55,15 +46,6 @@ export const sessions: Session[] = [
     previewCount: 6,
     galleryCount: 24,
     featuredImage: "/photos/events/events_01.jpg",
-  },
-  {
-    slug: "sports",
-    title: "Sports & Athletics",
-    intro:
-      "High-octane action, athletic intensity, and triumphant decisive moments captured with precision timing and dramatic framing.",
-    previewCount: 6,
-    galleryCount: 24,
-    featuredImage: "/photos/sports/sports_01.jpg",
   },
   {
     slug: "birthday",
@@ -75,6 +57,15 @@ export const sessions: Session[] = [
     featuredImage: "/photos/birthday/birthday_01.jpg",
   },
   {
+    slug: "behind-the-scenes",
+    title: "Behind the Scenes",
+    intro:
+      "Documenting the creative energy, intense craft, and genuine camaraderie unfolding behind the camera on set and stage.",
+    previewCount: 6,
+    galleryCount: 24,
+    featuredImage: "/photos/behind-the-scenes/behind-the-scenes_01.jpg",
+  },
+  {
     slug: "personal",
     title: "Personal Branding",
     intro:
@@ -82,6 +73,15 @@ export const sessions: Session[] = [
     previewCount: 6,
     galleryCount: 9,
     featuredImage: "/photos/personal/personal_01.jpg",
+  },
+  {
+    slug: "sports",
+    title: "Sports & Athletics",
+    intro:
+      "High-octane action, athletic intensity, and triumphant decisive moments captured with precision timing and dramatic framing.",
+    previewCount: 6,
+    galleryCount: 24,
+    featuredImage: "/photos/sports/sports_01.jpg",
   },
 ];
 

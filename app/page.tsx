@@ -255,7 +255,7 @@ export default function HomePage() {
         </div>
 
         <StaggerReveal className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {sessions.map((session) => (
+          {sessions.slice(0, 6).map((session) => (
             <StaggerItem key={session.slug} variant="fadeUp">
               <Link href={`/portfolio/${session.slug}`} className="group block">
                 <SessionPreviewCarousel
@@ -269,6 +269,15 @@ export default function HomePage() {
             </StaggerItem>
           ))}
         </StaggerReveal>
+
+        <div className="mt-12 text-center">
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center justify-center rounded-full border border-ink/30 px-8 py-3.5 text-sm font-semibold text-ink transition-all duration-300 hover:border-ink hover:bg-ink hover:text-paper shadow-sm"
+          >
+            Explore all {sessions.length} sessions in full portfolio →
+          </Link>
+        </div>
       </section>
 
       {/* ---------- About teaser ---------- */}
