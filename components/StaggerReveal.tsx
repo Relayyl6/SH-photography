@@ -25,7 +25,7 @@ export function StaggerReveal({ children, className, staggerVariant = "fast" }: 
       variants={containerVariant}
       initial="hidden"
       animate={isInView ? "show" : "hidden"}
-      className={className}
+      className={`${className || ''} transform-gpu`}
     >
       {children}
     </motion.div>
@@ -42,7 +42,7 @@ export function StaggerItem({ children, className, variant = "fadeUp" }: { child
   };
   
   return (
-    <motion.div variants={variants[variant]} className={className}>
+    <motion.div variants={variants[variant]} className={`${className || ''} transform-gpu`}>
       {children}
     </motion.div>
   );

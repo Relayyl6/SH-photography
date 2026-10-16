@@ -22,6 +22,7 @@ export default function HomePage() {
           muted 
           loop 
           playsInline 
+          preload="metadata"
           poster="/hero-bg.jpg"
           className="hidden md:block absolute inset-0 h-full w-full object-cover opacity-[0.25] pointer-events-none select-none z-0 transform-gpu"
         >
@@ -236,7 +237,7 @@ export default function HomePage() {
 
       {/* ---------- Giant Watermark Crosswalk ---------- */}
       <div className="w-full relative z-0 flex items-center justify-center select-none pointer-events-none">
-        <h2 className="absolute w-full text-center font-display text-[11.5vw] leading-none text-ink/[0.06] blur-[3px] whitespace-nowrap m-0 p-0 tracking-tighter">
+        <h2 className="absolute w-full text-center font-display text-[11.5vw] leading-none text-ink/[0.04] whitespace-nowrap m-0 p-0 tracking-tighter">
           SH PHOTOGRAPHY
         </h2>
       </div>
@@ -276,13 +277,30 @@ export default function HomePage() {
           <div className="container-site grid gap-12 py-24 md:grid-cols-2 md:items-center">
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-[2rem] shadow-xl border border-line/60 group bg-ink">
               <Image
-                src="/photos/personal/personal_01.jpg"
-                alt="Benedict Henry — SH Photography"
+                src="/photos/personal/personal_06.jpg"
+                alt="Benedict Henry — Founder & Principal, SH Photography"
                 fill
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-6 left-6 right-6 text-white">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+              
+              {/* Corner edge marks */}
+              <div className="absolute top-4 left-4 w-3 h-3 border-t border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute top-4 right-4 w-3 h-3 border-t border-r border-white/60 pointer-events-none z-10" />
+              <div className="absolute bottom-4 left-4 w-3 h-3 border-b border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute bottom-4 right-4 w-3 h-3 border-b border-r border-white/60 pointer-events-none z-10" />
+              
+              <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-accent/90 bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/10">
+                  SH Archive
+                </span>
+                <span className="text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                  MCR · UK
+                </span>
+              </div>
+
+              <div className="absolute bottom-6 left-6 right-6 text-white z-10">
                 <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-semibold uppercase tracking-widest text-white border border-white/30 mb-2">
                   Founder &amp; Principal
                 </span>

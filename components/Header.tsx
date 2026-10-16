@@ -68,17 +68,17 @@ export function Header() {
   return (
     <header 
       ref={headerRef} 
-      className={`sticky z-[100] w-full container-site transition-all duration-500 ease-in-out ${scrolled ? 'top-2' : 'top-4'}`}
+      className="sticky z-[100] w-full container-site top-3 pointer-events-none"
     >
-      <div className="relative rounded-full border border-line/60 bg-paper/70 backdrop-blur-md shadow-sm pointer-events-auto">
-        <div className={`flex items-center justify-between px-5 sm:px-6 md:px-8 transition-all duration-500 ease-in-out ${scrolled ? 'h-12 md:h-14' : 'h-16 md:h-20'}`}>
+      <div className={`relative rounded-full border border-line/60 backdrop-blur-md transition-all duration-300 pointer-events-auto ${scrolled ? 'bg-paper/95 shadow-md' : 'bg-paper/75 shadow-sm'}`}>
+        <div className="flex items-center justify-between px-5 sm:px-6 md:px-8 h-16 md:h-18">
           <Link href="/" className="inline-flex items-center group py-0.5">
             <Image
               src="/logo.png"
               alt="SH Photography"
               width={140}
               height={100}
-              className={`w-auto object-contain transition-all duration-300 group-hover:opacity-80 ${scrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'}`}
+              className="w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 h-10 md:h-12"
               priority
             />
           </Link>
@@ -142,26 +142,26 @@ export function Header() {
             <div className="hidden lg:flex items-center gap-2">
               <Link
                 href="/book"
-                className={`rounded-full bg-ink text-sm font-semibold text-paper transition-all duration-500 hover:bg-accent inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
+                className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-paper transition-colors duration-300 hover:bg-accent inline-block"
               >
                 Book
               </Link>
               <Link
                 href="/contact"
-                className={`rounded-full border border-ink text-sm font-semibold text-ink bg-transparent transition-all duration-500 hover:bg-ink hover:text-paper inline-block ${scrolled ? 'px-4 py-2' : 'px-5 py-2.5'}`}
+                className="rounded-full border border-ink px-5 py-2.5 text-sm font-semibold text-ink bg-transparent transition-colors duration-300 hover:bg-ink hover:text-paper inline-block"
               >
                 Get in touch
               </Link>
             </div>
             <button
               type="button"
-              className={`inline-flex items-center justify-center rounded-full border border-line lg:hidden transition-all duration-500 ${scrolled ? 'h-8 w-8' : 'h-10 w-10'}`}
+              className="inline-flex items-center justify-center rounded-full border border-line lg:hidden h-10 w-10"
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileOpen((v) => !v)}
             >
-              <span aria-hidden="true" className={scrolled ? "text-base" : "text-lg"}>{mobileOpen ? "✕" : "☰"}</span>
+              <span aria-hidden="true" className="text-lg">{mobileOpen ? "✕" : "☰"}</span>
             </button>
           </div>
         </div>

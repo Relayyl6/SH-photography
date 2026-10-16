@@ -21,6 +21,7 @@ export function SessionPreviewCarousel({
 }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [isInView, setIsInView] = useState(false);
   const [announce, setAnnounce] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,13 +37,30 @@ export function SessionPreviewCarousel({
     return () => mq.removeEventListener("change", listener);
   }, []);
 
+  // Only run carousel interval when visible in viewport
   useEffect(() => {
-    if (!playing || reducedMotion) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry) {
+          setIsInView(entry.isIntersecting);
+        }
+      },
+      { rootMargin: "100px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!playing || reducedMotion || !isInView) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % effectiveCount);
     }, intervalMs);
     return () => clearInterval(id);
-  }, [playing, reducedMotion, effectiveCount, intervalMs]);
+  }, [playing, reducedMotion, isInView, effectiveCount, intervalMs]);
 
   function go(next: number, userInitiated = false) {
     setIndex(((next % effectiveCount) + effectiveCount) % effectiveCount);

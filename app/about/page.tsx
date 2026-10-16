@@ -41,7 +41,7 @@ export default function AboutPage() {
                   alt="Benedict Henry — SH Photography"
                   fill
                   sizes="(max-width: 768px) 100vw, 40vw"
-                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />

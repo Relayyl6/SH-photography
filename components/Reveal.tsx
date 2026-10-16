@@ -21,9 +21,9 @@ export function Reveal({ children, className, delay = 0 }: { children: ReactNode
     <motion.div
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, margin: "-100px" }}
+      viewport={{ once: true, margin: "-20px" }}
       variants={variant}
-      className={className}
+      className={`${className || ''} transform-gpu`}
     >
       {children}
     </motion.div>

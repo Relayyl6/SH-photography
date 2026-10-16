@@ -22,17 +22,17 @@ export function Footer() {
         <motion.div 
           animate={{ y: [0, -14, 0], rotate: [0, -3, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-1 sm:left-4 md:left-6 lg:left-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0"
+          className="absolute left-1 sm:left-4 md:left-6 lg:left-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0 transform-gpu will-change-transform"
         >
-          <Image src="/floating-camera.png" alt="Vintage Camera" fill className="object-contain" priority />
+          <Image src="/floating-camera.png" alt="Vintage Camera" fill className="object-contain" />
         </motion.div>
         
         <motion.div 
           animate={{ y: [0, 14, 0], rotate: [0, 3, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute right-1 sm:right-4 md:right-6 lg:right-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0"
+          className="absolute right-1 sm:right-4 md:right-6 lg:right-12 top-2 sm:top-4 md:top-1/2 md:-translate-y-1/2 w-16 h-16 sm:w-28 sm:h-28 md:w-44 md:h-44 lg:w-56 lg:h-56 pointer-events-none drop-shadow-md z-0 transform-gpu will-change-transform"
         >
-          <Image src="/floating-lens.png" alt="Camera Lens" fill className="object-contain" priority />
+          <Image src="/floating-lens.png" alt="Camera Lens" fill className="object-contain" />
         </motion.div>
 
         <p className="text-accent text-[11px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-2 relative z-10">
