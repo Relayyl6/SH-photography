@@ -310,7 +310,7 @@ export default async function ServiceDetailPage({ params }: Props) {
         </Link>
 
         {/* Top Header Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
           {/* Left Column: Details */}
           <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
             <div>
