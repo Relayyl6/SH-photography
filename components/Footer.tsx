@@ -84,7 +84,7 @@ export function Footer() {
             <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Portfolio</p>
             <ul className="space-y-4 text-sm font-medium text-ink/80">
               <li><Link href="/portfolio" className="hover:text-accent transition-colors">All sessions</Link></li>
-              {sessions.slice(0, 4).map((s) => (
+              {sessions.slice(0, 6).map((s) => (
                 <li key={s.slug}>
                   <Link href={`/portfolio/${s.slug}`} className="hover:text-accent transition-colors">
                     {s.title}

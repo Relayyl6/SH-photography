@@ -16,17 +16,23 @@ export default function HomePage() {
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden bg-paper -mt-[84px] md:-mt-[96px]">
         
-        {/* Blurred Background Video with Poster Fallback */}
+        {/* Background Video with Poster Fallback (Desktop/Tablet only) */}
         <video 
           autoPlay 
           muted 
           loop 
           playsInline 
           poster="/hero-bg.jpg"
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.35] blur-sm pointer-events-none select-none z-0"
+          className="hidden md:block absolute inset-0 h-full w-full object-cover opacity-[0.25] pointer-events-none select-none z-0 transform-gpu"
         >
           <source src="/photographer-bg.mp4" type="video/mp4" />
         </video>
+
+        {/* Lightweight Mobile Static Background (Fast & Smooth 60fps on phones) */}
+        <div 
+          className="md:hidden absolute inset-0 bg-cover bg-center opacity-[0.18] pointer-events-none z-0" 
+          style={{ backgroundImage: "url('/hero-bg.jpg')" }} 
+        />
 
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
@@ -97,21 +103,33 @@ export default function HomePage() {
           </div>
         </StaggerReveal>
 
-        {/* Real Staggered Editorial Photography Showcase - Visible above fold on mobile */}
+        {/* Real Staggered Editorial Photography Showcase - Real Client Work with Archive Badges */}
         <StaggerReveal className="relative container-site grid grid-cols-2 gap-3 sm:gap-4 pb-16 md:pb-24 md:grid-cols-4 z-20 mt-32 sm:mt-8 md:mt-12" staggerVariant="slow">
           
           {/* 1. Weddings */}
           <StaggerItem variant="fadeUp">
             <Link href="/portfolio/weddings" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
               <Image 
-                src="/bento_wedding.jpg" 
+                src="/photos/weddings/weddings_01.jpg" 
                 alt="Weddings by SH Photography" 
                 fill 
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover transition-transform duration-1000 group-hover:scale-105" 
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+              
+              {/* Corner crop marks */}
+              <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+
+              <div className="absolute top-3 right-3 z-10">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                  SH Archive
+                </span>
+              </div>
+
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10">
                 <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
                   Weddings
                 </span>
@@ -124,14 +142,26 @@ export default function HomePage() {
           <StaggerItem variant="fadeDown" className="mt-4 sm:mt-6 md:mt-12">
             <Link href="/portfolio/portraits" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
               <Image 
-                src="/bento_portrait.jpg" 
+                src="/photos/portraits/portraits_01.jpg" 
                 alt="Portraits by SH Photography" 
                 fill 
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover transition-transform duration-1000 group-hover:scale-105" 
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+              
+              {/* Corner crop marks */}
+              <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+
+              <div className="absolute top-3 right-3 z-10">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                  SH Archive
+                </span>
+              </div>
+
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10">
                 <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
                   Portraits
                 </span>
@@ -140,40 +170,64 @@ export default function HomePage() {
             </Link>
           </StaggerItem>
 
-          {/* 3. Fine Art */}
+          {/* 3. Events */}
           <StaggerItem variant="fadeUp">
-            <Link href="/portfolio" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+            <Link href="/portfolio/events" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
               <Image 
-                src="/frame-sq-1.jpg" 
-                alt="Editorial Photography by SH Photography" 
+                src="/photos/events/events_01.jpg" 
+                alt="Events Photography by SH Photography" 
                 fill 
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover transition-transform duration-1000 group-hover:scale-105" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
-                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
-                  Editorial
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+              
+              {/* Corner crop marks */}
+              <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+
+              <div className="absolute top-3 right-3 z-10">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                  SH Archive
                 </span>
-                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Regal Detail</p>
+              </div>
+
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Events
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Live Atmosphere</p>
               </div>
             </Link>
           </StaggerItem>
 
-          {/* 4. Education & Masterclasses (Staggered on Desktop & Tablet) */}
+          {/* 4. Sports & Athletics (Staggered on Desktop & Tablet) */}
           <StaggerItem variant="fadeDown" className="mt-4 sm:mt-6 md:mt-12">
-            <Link href="/services" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
+            <Link href="/portfolio/sports" className="group relative block aspect-[3/4] overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink shadow-lg border border-line/40">
               <Image 
-                src="/bento_classes.jpg" 
-                alt="Photography Masterclasses by SH Photography" 
+                src="/photos/sports/sports_01.jpg" 
+                alt="Sports Photography by SH Photography" 
                 fill 
+                sizes="(max-width: 640px) 50vw, 25vw"
                 className="object-cover transition-transform duration-1000 group-hover:scale-105" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6">
-                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
-                  Classes
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+              
+              {/* Corner crop marks */}
+              <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+              <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+
+              <div className="absolute top-3 right-3 z-10">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-paper/70 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10">
+                  SH Archive
                 </span>
-                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Craft &amp; Light</p>
+              </div>
+
+              <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-6 sm:left-6 sm:right-6 z-10">
+                <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] sm:text-[11px] font-semibold uppercase tracking-wider text-white border border-white/30 mb-1 sm:mb-2">
+                  Sports
+                </span>
+                <p className="font-display text-base sm:text-2xl text-white font-medium leading-tight">Decisive Action</p>
               </div>
             </Link>
           </StaggerItem>

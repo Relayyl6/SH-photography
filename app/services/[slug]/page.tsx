@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Media mapping depicting each service with authentic imagery and editorial highlights.
+// Media mapping depicting each service with authentic client photography by Benedict Henry.
 const serviceMedia: Record<
   string,
   {
@@ -32,28 +32,28 @@ const serviceMedia: Record<
 > = {
   graduations: {
     hero: {
-      src: "/service_graduations.jpg",
-      alt: "Graduation photography at University of Manchester by SH Photography",
-      caption: "University of Manchester Campus & Stone Archway · Manchester, UK",
+      src: "/photos/events/events_01.jpg",
+      alt: "Graduation and celebratory event photography by SH Photography",
+      caption: "University Graduation & Academic Milestones · Manchester & UK Wide",
     },
     gallery: [
       {
-        src: "/service_graduations.jpg",
+        src: "/photos/events/events_02.jpg",
         alt: "Academic Cap and Gown Portrait",
         title: "The Milestone",
         subtitle: "Classic regalia & iconic campus backdrops",
       },
       {
-        src: "/bento_portrait.jpg",
+        src: "/photos/portraits/portraits_02.jpg",
         alt: "Graduation Individual Portrait",
         title: "Proud Moments",
         subtitle: "Natural expression and editorial lighting",
       },
       {
-        src: "/frame-sq-1.jpg",
-        alt: "Framed Graduation Fine Art Portrait",
-        title: "Legacy Keepsakes",
-        subtitle: "Fine-art framing and family prints",
+        src: "/photos/events/events_03.jpg",
+        alt: "Celebration with family and colleagues",
+        title: "Shared Triumph",
+        subtitle: "Unscripted joy with family and mentors",
       },
     ],
     styleQuote:
@@ -61,25 +61,25 @@ const serviceMedia: Record<
   },
   birthdays: {
     hero: {
-      src: "/service_birthdays.jpg",
+      src: "/photos/birthday/birthday_01.jpg",
       alt: "Birthday celebration event photography by SH Photography",
       caption: "Evening Celebration & Candlelight · Manchester Venue",
     },
     gallery: [
       {
-        src: "/service_birthdays.jpg",
+        src: "/photos/birthday/birthday_02.jpg",
         alt: "Cake cutting and candlelight moments",
         title: "The Celebration",
         subtitle: "Candlelight, champagne & joyous energy",
       },
       {
-        src: "/bento_portrait.jpg",
+        src: "/photos/birthday/birthday_03.jpg",
         alt: "Celebration portraiture",
         title: "Guest Connections",
         subtitle: "Candid laughter and spontaneous moments",
       },
       {
-        src: "/frame-circle.jpg",
+        src: "/photos/birthday/birthday_04.jpg",
         alt: "Milestone celebration portrait",
         title: "Cherished Milestones",
         subtitle: "Timeless portraiture to remember forever",
@@ -90,25 +90,25 @@ const serviceMedia: Record<
   },
   weddings: {
     hero: {
-      src: "/bento_wedding.jpg",
+      src: "/photos/weddings/weddings_01.jpg",
       alt: "Wedding couple photography by SH Photography",
       caption: "Documentary Wedding Storytelling · Manchester & UK Wide",
     },
     gallery: [
       {
-        src: "/bento_wedding.jpg",
+        src: "/photos/weddings/weddings_02.jpg",
         alt: "Bride and groom portrait",
         title: "Golden Hour Romance",
         subtitle: "Raw emotion and cinematic intimacy",
       },
       {
-        src: "/service_anniversaries.jpg",
+        src: "/photos/weddings/weddings_03.jpg",
         alt: "Scenic couple embrace",
         title: "Enduring Connection",
         subtitle: "Breathtaking landscape & editorial framing",
       },
       {
-        src: "/frame-sq-2.jpg",
+        src: "/photos/weddings/weddings_04.jpg",
         alt: "Fine art bridal portrait",
         title: "Quiet Elegance",
         subtitle: "Sculptural lighting and timeless grace",
@@ -119,25 +119,25 @@ const serviceMedia: Record<
   },
   anniversaries: {
     hero: {
-      src: "/service_anniversaries.jpg",
+      src: "/photos/weddings/weddings_05.jpg",
       alt: "Couple anniversary photography outdoors by SH Photography",
       caption: "Scenic Outdoor Couple Portraiture · Golden Hour",
     },
     gallery: [
       {
-        src: "/service_anniversaries.jpg",
+        src: "/photos/weddings/weddings_06.jpg",
         alt: "Anniversary couple laughing in scenic landscape",
         title: "Enduring Love",
         subtitle: "Honest warmth and spontaneous joy",
       },
       {
-        src: "/bento_wedding.jpg",
+        src: "/photos/family/family_01.jpg",
         alt: "Romantic intimate embrace",
         title: "Intimate Chapters",
         subtitle: "Subtle romance and shared glances",
       },
       {
-        src: "/frame-sq-1.jpg",
+        src: "/photos/weddings/weddings_07.jpg",
         alt: "Classic framed couple heirloom portrait",
         title: "Legacy Memories",
         subtitle: "Artistry designed to last generations",
@@ -148,25 +148,25 @@ const serviceMedia: Record<
   },
   "general-photography": {
     hero: {
-      src: "/service_commercial.jpg",
+      src: "/photos/portraits/portraits_01.jpg",
       alt: "Commercial product and brand photography in studio by SH Photography",
       caption: "Studio Product & Commercial Campaign · Manchester Studio",
     },
     gallery: [
       {
-        src: "/service_commercial.jpg",
+        src: "/photos/portraits/portraits_03.jpg",
         alt: "Luxury product photography on stone plinth",
         title: "Brand Campaigns",
         subtitle: "Crisp lighting and tactile material styling",
       },
       {
-        src: "/bento_portrait.jpg",
+        src: "/photos/personal/personal_01.jpg",
         alt: "Commercial creative portrait",
         title: "Editorial Presence",
         subtitle: "Authentic character for brands & leaders",
       },
       {
-        src: "/hero-bg.jpg",
+        src: "/photos/events/events_04.jpg",
         alt: "Urban architecture and location backdrop",
         title: "On-Location Energy",
         subtitle: "Manchester streetscapes & studio setups",
@@ -177,25 +177,25 @@ const serviceMedia: Record<
   },
   "general-photography-classes": {
     hero: {
-      src: "/bento_classes.jpg",
+      src: "/photos/behind-the-scenes/behind-the-scenes_01.jpg",
       alt: "Photography class in action with Benedict Henry",
       caption: "Practical Camera Mastery & Shooting Guidance · Manchester",
     },
     gallery: [
       {
-        src: "/bento_classes.jpg",
+        src: "/photos/behind-the-scenes/behind-the-scenes_02.jpg",
         alt: "Instructor demonstrating camera controls",
         title: "Hands-on Mastery",
         subtitle: "ISO, shutter speed, aperture & light",
       },
       {
-        src: "/service_commercial.jpg",
+        src: "/photos/behind-the-scenes/behind-the-scenes_03.jpg",
         alt: "Studio lighting setup demonstration",
         title: "Studio & Natural Light",
         subtitle: "Learning composition and exposure control",
       },
       {
-        src: "/hero-bg.jpg",
+        src: "/photos/behind-the-scenes/behind-the-scenes_04.jpg",
         alt: "Manchester photo walk location",
         title: "Field Practice",
         subtitle: "Real-world shooting and composition critique",
@@ -206,25 +206,25 @@ const serviceMedia: Record<
   },
   "retouching-classes": {
     hero: {
-      src: "/service_retouching.jpg",
+      src: "/photos/behind-the-scenes/behind-the-scenes_05.jpg",
       alt: "Retouching masterclass with Photoshop editing suite by SH Photography",
       caption: "High-End Skin Retouching & Color Grading Suite · Manchester",
     },
     gallery: [
       {
-        src: "/service_retouching.jpg",
+        src: "/photos/portraits/portraits_04.jpg",
         alt: "Retoucher working with tablet on high-end beauty portrait",
         title: "Digital Craftsmanship",
         subtitle: "Frequency separation & micro dodge & burn",
       },
       {
-        src: "/bento_portrait.jpg",
+        src: "/photos/behind-the-scenes/behind-the-scenes_06.jpg",
         alt: "Retouched beauty portrait result",
         title: "Skin Texture Preservation",
         subtitle: "Flawless yet completely natural finish",
       },
       {
-        src: "/frame-circle.jpg",
+        src: "/photos/portraits/portraits_05.jpg",
         alt: "Editorial master portrait",
         title: "Tonal Harmony",
         subtitle: "Color grading and mood calibration",
@@ -237,25 +237,25 @@ const serviceMedia: Record<
 
 const defaultMedia = {
   hero: {
-    src: "/service_commercial.jpg",
+    src: "/photos/portraits/portraits_01.jpg",
     alt: "Commercial product and brand photography in studio by SH Photography",
     caption: "Studio Product & Commercial Campaign · Manchester Studio",
   },
   gallery: [
     {
-      src: "/service_commercial.jpg",
+      src: "/photos/portraits/portraits_02.jpg",
       alt: "Luxury product photography on stone plinth",
       title: "Brand Campaigns",
       subtitle: "Crisp lighting and tactile material styling",
     },
     {
-      src: "/bento_portrait.jpg",
+      src: "/photos/events/events_01.jpg",
       alt: "Commercial creative portrait",
       title: "Editorial Presence",
       subtitle: "Authentic character for brands & leaders",
     },
     {
-      src: "/hero-bg.jpg",
+      src: "/photos/weddings/weddings_01.jpg",
       alt: "Urban architecture and location backdrop",
       title: "On-Location Energy",
       subtitle: "Manchester streetscapes & studio setups",
@@ -303,80 +303,88 @@ export default async function ServiceDetailPage({ params }: Props) {
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            aria-hidden="true"
           >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Back to Services
+          Back to all services &amp; classes
         </Link>
 
-        {/* Top Details Grid */}
-        <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1fr_380px] items-start">
-          {/* Main content */}
-          <div>
-            {/* Category + format badge row */}
-            <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-6">
-              <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-                {isClass ? "Masterclass" : "Photography Service"}
-              </span>
-              {formatLabel && (
-                <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink/70">
-                  {formatLabel}
+        {/* Top Header Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+          {/* Left Column: Details */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-8">
+            <div>
+              {/* Category & Format Badges */}
+              <div className="flex flex-wrap items-center gap-2.5 mb-4">
+                <span className="rounded-full bg-sand px-3 py-1 text-xs font-semibold uppercase tracking-wider text-ink/80 border border-line">
+                  {isClass ? "Masterclass" : "Photography Service"}
                 </span>
-              )}
+                {formatLabel && (
+                  <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent border border-accent/30">
+                    {formatLabel}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink tracking-tight font-medium leading-[1.05]">
+                {pkg.name}
+              </h1>
+              <p className="mt-4 text-base sm:text-lg text-ink/75 leading-relaxed max-w-2xl">
+                {pkg.summary}
+              </p>
             </div>
 
-            {/* Heading */}
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink tracking-tight">
-              {pkg.name}
-            </h1>
-
-            {/* Summary */}
-            <p className="mt-4 sm:mt-6 max-w-2xl text-base sm:text-lg text-ink/80 leading-relaxed">
-              {pkg.summary}
-            </p>
-
-            {/* What's included */}
-            <section className="mt-10 sm:mt-12 rounded-2xl border border-line/60 bg-sand/40 p-6 sm:p-8">
-              <h2 className="font-display text-xl sm:text-2xl mb-5 sm:mb-6 text-ink">What&apos;s Included</h2>
-              <ul className="space-y-3.5 sm:space-y-4">
+            {/* Inclusions Card */}
+            <div className="rounded-2xl sm:rounded-3xl border border-line bg-sand/40 p-6 sm:p-8">
+              <h2 className="font-display text-xl sm:text-2xl text-ink font-semibold mb-4">
+                What&apos;s Included in This {isClass ? "Class" : "Session"}
+              </h2>
+              <ul className="space-y-3.5 text-sm sm:text-base text-ink/85">
                 {pkg.includes.map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-ink/85 text-sm sm:text-base">
-                    <span
-                      aria-hidden="true"
-                      className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-accent/15 text-accent flex items-center justify-center text-xs font-bold"
-                    >
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent text-xs font-bold mt-0.5">
                       ✓
                     </span>
-                    <span>{item}</span>
+                    <span className="leading-relaxed">{item}</span>
                   </li>
                 ))}
               </ul>
-            </section>
 
-            {/* Classes-only: delivery note */}
+              {pkg.notes && (
+                <div className="mt-6 border-t border-line/60 pt-4">
+                  <p className="text-xs sm:text-sm text-ink/60 italic leading-relaxed">
+                    Note: {pkg.notes}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Class-Specific Format Details */}
             {isClass && (
-              <section className="mt-8 rounded-2xl border border-line bg-sand p-6 sm:p-8">
-                <h2 className="font-display text-xl mb-2 text-ink">How It Works</h2>
-                <p className="text-ink/75 text-sm leading-relaxed">
-                  This class is available both <strong>online worldwide</strong> (via high-resolution screen
-                  share and live video) and <strong>in person in Manchester</strong>. You can book 1:1 tailored
-                  coaching or small cohort sessions. Let me know your preference and skill level when requesting a
-                  quote.
-                </p>
-              </section>
-            )}
-
-            {/* Notes */}
-            {pkg.notes && (
-              <p className="mt-6 text-xs sm:text-sm text-ink/60 italic border-l-2 border-accent/40 pl-3">
-                {pkg.notes}
-              </p>
+              <div className="rounded-2xl sm:rounded-3xl border border-line/70 bg-paper p-6 sm:p-8 flex flex-col gap-4">
+                <h3 className="font-display text-lg sm:text-xl font-semibold">
+                  How Classes Are Delivered
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-ink/75">
+                  <div className="rounded-xl border border-line/60 bg-sand/30 p-4">
+                    <p className="font-semibold text-ink mb-1">💻 Online Sessions</p>
+                    <p className="text-xs leading-relaxed">
+                      Conducted via high-definition screen sharing with live software demonstrations, project file breakdowns, and recorded sessions for your archives.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-line/60 bg-sand/30 p-4">
+                    <p className="font-semibold text-ink mb-1">📍 In-Person Studio (Manchester)</p>
+                    <p className="text-xs leading-relaxed">
+                      Hands-on studio guidance with real camera equipment, tethered shooting workflows, and tactile lighting control directly beside Benedict.
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Sticky CTA sidebar */}
-          <div className="w-full">
+          {/* Right Column: Floating Conversion CTA Card */}
+          <div className="lg:col-span-5 xl:col-span-4">
             <div className="lg:sticky lg:top-28 rounded-2xl sm:rounded-3xl border border-line bg-sand/80 backdrop-blur-md p-6 sm:p-8 flex flex-col gap-6 shadow-sm">
               <div>
                 <span className="inline-block px-2.5 py-1 rounded-full bg-accent/10 text-accent text-[11px] font-semibold uppercase tracking-wider mb-2">
@@ -438,12 +446,12 @@ export default async function ServiceDetailPage({ params }: Props) {
 
         {/* ---------- Visual Showcase Section Depicting The Service ---------- */}
         <section className="mt-20 md:mt-28 border-t border-line/60 pt-16 md:pt-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent mb-2">
                 Visual Showcase
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-ink tracking-tight">
+              <h2 className="font-display text-3xl sm:text-4xl text-ink tracking-tight font-medium">
                 Depicting {pkg.name}
               </h2>
             </div>
@@ -452,8 +460,8 @@ export default async function ServiceDetailPage({ params }: Props) {
             </p>
           </div>
 
-          {/* Large Hero Feature Photograph */}
-          <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl bg-ink border border-line/40 group">
+          {/* Panoramic Feature Photograph - Refined Proportions with Corner Marks */}
+          <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[2.4/1] max-h-[380px] w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl bg-ink border border-line/40 group">
             <Image
               src={media.hero.src}
               alt={media.hero.alt}
@@ -462,14 +470,27 @@ export default async function ServiceDetailPage({ params }: Props) {
               className="object-cover object-center transition-transform duration-1000 group-hover:scale-105"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
 
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            {/* Subtle photographic corner crop marks ("corner edge line stuff") */}
+            <div className="absolute top-4 left-4 w-3.5 h-3.5 border-t border-l border-white/60 pointer-events-none z-10 drop-shadow-sm" />
+            <div className="absolute top-4 right-4 w-3.5 h-3.5 border-t border-r border-white/60 pointer-events-none z-10 drop-shadow-sm" />
+            <div className="absolute bottom-4 left-4 w-3.5 h-3.5 border-b border-l border-white/60 pointer-events-none z-10 drop-shadow-sm" />
+            <div className="absolute bottom-4 right-4 w-3.5 h-3.5 border-b border-r border-white/60 pointer-events-none z-10 drop-shadow-sm" />
+
+            {/* Top Bar Archive Badge */}
+            <div className="absolute top-4 right-4 z-10">
+              <span className="text-[9px] uppercase tracking-widest text-paper/80 font-mono bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/15">
+                SH Archive · MCR
+              </span>
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 z-10">
               <div>
                 <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white border border-white/30 mb-2">
                   Featured Shot
                 </span>
-                <p className="font-display text-xl sm:text-3xl text-white font-medium">
+                <p className="font-display text-xl sm:text-2xl text-white font-medium">
                   {pkg.name} by SH Photography
                 </p>
                 <p className="text-xs sm:text-sm text-white/80 mt-1">
@@ -488,7 +509,7 @@ export default async function ServiceDetailPage({ params }: Props) {
           </div>
 
           {/* Supporting 3-Picture Editorial Gallery Grid */}
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             {media.gallery.map((item, index) => (
               <div
                 key={index}
@@ -504,8 +525,12 @@ export default async function ServiceDetailPage({ params }: Props) {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent pointer-events-none" />
 
-                  <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-4 sm:left-4 sm:right-4">
-                    <p className="font-display text-base sm:text-lg text-white font-medium leading-snug">
+                  {/* Corner marks */}
+                  <div className="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-white/50 pointer-events-none z-10" />
+                  <div className="absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-white/50 pointer-events-none z-10" />
+
+                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5">
+                    <p className="font-display text-base text-white font-medium leading-snug">
                       {item.title}
                     </p>
                     <p className="text-xs text-white/70 mt-0.5">
@@ -518,29 +543,31 @@ export default async function ServiceDetailPage({ params }: Props) {
           </div>
 
           {/* Bottom Pre-footer Booking Prompt */}
-          <div className="mt-14 rounded-2xl sm:rounded-3xl bg-sand/60 border border-line/60 p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div>
-              <h3 className="font-display text-2xl sm:text-3xl text-ink font-semibold">
-                Ready to plan your {pkg.name.toLowerCase()} session?
-              </h3>
-              <p className="mt-1 text-sm text-ink/70">
-                Manchester &amp; UK wide · Available to travel internationally.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+          <div className="mt-14 rounded-2xl sm:rounded-3xl bg-sand/60 border border-line p-8 sm:p-12 text-center flex flex-col items-center">
+            <span className="text-xs font-semibold uppercase tracking-widest text-accent mb-2">
+              Ready to Book?
+            </span>
+            <h3 className="font-display text-2xl sm:text-3xl text-ink font-semibold">
+              Reserve Your {pkg.name} Date
+            </h3>
+            <p className="mt-3 text-sm text-ink/70 max-w-lg leading-relaxed">
+              Dates fill quickly, especially across peak summer and autumn seasons. Submit an enquiry to check Benedict&apos;s availability and receive a custom quote.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3 justify-center">
               <Link
                 href={`/book?service=${pkg.slug}`}
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full bg-ink px-7 py-3.5 text-sm font-semibold text-paper hover:bg-accent transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-ink px-8 py-3.5 text-sm font-semibold text-paper shadow-md hover:bg-accent transition-colors"
               >
-                Request a Quote
+                <span>{isClass ? "Book This Class" : "Request a Quote"}</span>
+                <span>→</span>
               </Link>
               <a
                 href={`https://wa.me/${siteConfig.whatsappE164}?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-ink/30 px-6 py-3.5 text-sm font-semibold text-ink hover:border-ink hover:bg-white transition-colors"
+                className="inline-flex items-center gap-2 rounded-full border border-ink/20 bg-paper px-6 py-3.5 text-sm font-semibold text-ink hover:border-emerald-600 hover:text-emerald-700 transition-colors"
               >
-                WhatsApp Benedict
+                Chat on WhatsApp
               </a>
             </div>
           </div>

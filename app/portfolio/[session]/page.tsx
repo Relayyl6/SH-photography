@@ -29,7 +29,7 @@ export default function SessionPage({ params }: { params: { session: string } })
       <p className="mt-4 max-w-xl text-ink/70">{session.intro}</p>
 
       <div className="mt-14">
-        <GalleryGrid sessionTitle={session.title} count={session.galleryCount} />
+        <GalleryGrid sessionSlug={session.slug} sessionTitle={session.title} count={session.galleryCount} />
       </div>
     </div>
   );
