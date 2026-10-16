@@ -71,13 +71,13 @@ export default function HomePage() {
               </StaggerItem>
             </div>
 
-            <StaggerItem variant="fadeScale" className="shrink-0 pb-2 mt-8 sm:mt-10 lg:mt-0 lg:pb-3">
-              <div className="relative inline-flex items-center justify-center">
+            <StaggerItem variant="fadeScale" className="w-full lg:w-auto shrink-0 flex justify-center lg:justify-end pb-2 mt-8 sm:mt-10 lg:mt-0 lg:pb-3 lg:pr-6 xl:pr-10 2xl:pr-14">
+              <div className="relative inline-flex items-center justify-center max-w-full">
                 <FloatingHeroCamera />
-                <div className="relative z-10 flex flex-row items-center gap-3 sm:gap-4.5">
+                <div className="relative z-10 flex flex-row items-center justify-center gap-2.5 sm:gap-4 max-w-full">
                   <Link
                     href="/portfolio"
-                    className="group/btn relative inline-flex items-center justify-center gap-2.5 rounded-full bg-ink px-6 sm:px-7 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-paper shadow-[0_8px_25px_rgba(21,19,15,0.3)] ring-1 ring-white/15 transition-all duration-300 hover:bg-accent hover:shadow-[0_10px_30px_rgba(232,73,28,0.4)] hover:scale-[1.03] active:scale-[0.98]"
+                    className="group/btn relative inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4.5 sm:px-6 py-2.5 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-paper shadow-[0_8px_25px_rgba(21,19,15,0.3)] ring-1 ring-white/15 transition-all duration-300 hover:bg-accent hover:shadow-[0_10px_30px_rgba(232,73,28,0.4)] hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
                   >
                     <span>View my work</span>
                     <span className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-white/15 transition-all duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:bg-white/25">
@@ -89,7 +89,7 @@ export default function HomePage() {
 
                   <Link
                     href="/book"
-                    className="group/btn2 relative inline-flex items-center justify-center gap-2.5 rounded-full border border-ink/30 bg-paper/85 px-6 sm:px-7 py-3 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-ink backdrop-blur-xl shadow-[0_4px_20px_rgba(21,19,15,0.08)] ring-1 ring-black/5 transition-all duration-300 hover:border-ink hover:bg-sand hover:shadow-[0_8px_25px_rgba(21,19,15,0.16)] hover:scale-[1.03] active:scale-[0.98]"
+                    className="group/btn2 relative inline-flex items-center justify-center gap-2 rounded-full border border-ink/30 bg-paper/85 px-4.5 sm:px-6 py-2.5 sm:py-3.5 text-xs sm:text-sm font-semibold tracking-wide text-ink backdrop-blur-xl shadow-[0_4px_20px_rgba(21,19,15,0.08)] ring-1 ring-black/5 transition-all duration-300 hover:border-ink hover:bg-sand hover:shadow-[0_8px_25px_rgba(21,19,15,0.16)] hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap"
                   >
                     <span>Book a shoot</span>
                     <span className="flex h-5 w-5 sm:h-5.5 sm:w-5.5 items-center justify-center rounded-full bg-ink/5 transition-all duration-300 group-hover/btn2:bg-accent/15 group-hover/btn2:rotate-12">
