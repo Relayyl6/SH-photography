@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { sessions } from "@/lib/sessions";
 import { AnimatePresence, motion } from "framer-motion";
 import { easing } from "@/lib/animations";
@@ -28,8 +29,27 @@ export function Header() {
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
   
   const headerRef = useRef<HTMLElement>(null);
+
+  // Close menus on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setPortfolioOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll while mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   useEffect(() => {
     function onScroll() {
@@ -70,9 +90,9 @@ export function Header() {
       ref={headerRef} 
       className="sticky z-[100] w-full container-site top-3 pointer-events-none"
     >
-      <div className={`relative rounded-full border border-line/60 backdrop-blur-md transition-all duration-300 pointer-events-auto ${scrolled ? 'bg-paper/95 shadow-md' : 'bg-paper/75 shadow-sm'}`}>
+      <div className={`relative z-50 rounded-full border border-line/60 backdrop-blur-md transition-all duration-300 pointer-events-auto ${scrolled ? 'bg-paper/95 shadow-md' : 'bg-paper/75 shadow-sm'}`}>
         <div className="flex items-center justify-between px-5 sm:px-6 md:px-8 h-16 md:h-18">
-          <Link href="/" className="inline-flex items-center group py-0.5">
+          <Link href="/" className="inline-flex items-center group py-0.5" onClick={() => setMobileOpen(false)}>
             <Image
               src="/logo.png"
               alt="SH Photography"
@@ -169,66 +189,81 @@ export function Header() {
       
       <AnimatePresence>
         {mobileOpen && (
-          <motion.nav 
-            variants={mobileMenuVariant}
-            initial="hidden"
-            animate="show"
-            exit="hidden"
-            id="mobile-menu" 
-            aria-label="Mobile" 
-            className="absolute left-4 right-4 top-[calc(100%+8px)] rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-xl lg:hidden overflow-hidden origin-top"
-          >
-            <ul className="flex flex-col gap-1 px-5 sm:px-6 py-6">
-              <motion.li variants={mobileItemVariant}>
-                <p className="px-1 pb-1 text-xs font-semibold uppercase tracking-widest text-ink/50">
-                  Portfolio
-                </p>
-              </motion.li>
-              <motion.li variants={mobileItemVariant}>
-                <Link href="/portfolio" className="block rounded-lg px-1 py-2 font-medium" onClick={() => setMobileOpen(false)}>
-                  All sessions
-                </Link>
-              </motion.li>
-              {sessions.map((s) => (
-                <motion.li key={s.slug} variants={mobileItemVariant}>
-                  <Link
-                    href={`/portfolio/${s.slug}`}
-                    className="block rounded-lg px-1 py-2 pl-4 text-ink/80"
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-ink/20 backdrop-blur-xs pointer-events-auto z-40 lg:hidden"
+              onClick={() => setMobileOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.nav 
+              variants={mobileMenuVariant}
+              initial="hidden"
+              animate="show"
+              exit="hidden"
+              id="mobile-menu" 
+              aria-label="Mobile" 
+              className="pointer-events-auto absolute left-4 right-4 top-[calc(100%+8px)] z-50 rounded-3xl border border-line/60 bg-paper/95 backdrop-blur-xl shadow-2xl lg:hidden origin-top max-h-[calc(100vh-6.5rem)] overflow-y-auto overscroll-contain"
+            >
+              <ul className="flex flex-col gap-1 px-5 sm:px-6 py-6">
+                <motion.li variants={mobileItemVariant}>
+                  <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-widest text-ink/50">
+                    Portfolio
+                  </p>
+                </motion.li>
+                <motion.li variants={mobileItemVariant}>
+                  <Link 
+                    href="/portfolio" 
+                    className="block rounded-lg px-2 py-2 font-medium hover:bg-sand/60 active:bg-sand transition-colors" 
                     onClick={() => setMobileOpen(false)}
                   >
-                    {s.title}
+                    All sessions
                   </Link>
                 </motion.li>
-              ))}
-              {navLinks.map((link) => (
-                <motion.li key={link.href} variants={mobileItemVariant}>
+                {sessions.map((s) => (
+                  <motion.li key={s.slug} variants={mobileItemVariant}>
+                    <Link
+                      href={`/portfolio/${s.slug}`}
+                      className="block rounded-lg px-2 py-2 pl-4 text-ink/80 hover:bg-sand/60 hover:text-ink active:bg-sand transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {s.title}
+                    </Link>
+                  </motion.li>
+                ))}
+                {navLinks.map((link) => (
+                  <motion.li key={link.href} variants={mobileItemVariant}>
+                    <Link
+                      href={link.href}
+                      className="block rounded-lg px-2 py-2.5 font-medium hover:bg-sand/60 active:bg-sand transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.li>
+                ))}
+                <motion.li variants={mobileItemVariant} className="pt-4 pb-2 flex gap-2">
                   <Link
-                    href={link.href}
-                    className="block rounded-lg px-1 py-3 font-medium"
+                    href="/book"
+                    className="block flex-1 rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper active:bg-accent transition-colors"
                     onClick={() => setMobileOpen(false)}
                   >
-                    {link.label}
+                    Book
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="block flex-1 rounded-full border border-ink px-5 py-3 text-center font-semibold text-ink bg-transparent active:bg-ink active:text-paper transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Get in touch
                   </Link>
                 </motion.li>
-              ))}
-              <motion.li variants={mobileItemVariant} className="pt-4 pb-2 flex gap-2">
-                <Link
-                  href="/book"
-                  className="block flex-1 rounded-full bg-ink px-5 py-3 text-center font-semibold text-paper"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Book
-                </Link>
-                <Link
-                  href="/contact"
-                  className="block flex-1 rounded-full border border-ink px-5 py-3 text-center font-semibold text-ink bg-transparent"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Get in touch
-                </Link>
-              </motion.li>
-            </ul>
-          </motion.nav>
+              </ul>
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
     </header>
