@@ -75,16 +75,16 @@ export function PackageCard({ pkg, showIncludes = false }: { pkg: Package; showI
         </div>
       </div>
 
-      <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-2 flex flex-col gap-2.5 sm:flex-row">
+      <div className="px-5 pb-4 sm:px-6 sm:pb-5 pt-2 flex flex-row gap-2">
         <Link
           href={`/services/${pkg.slug}`}
-          className="inline-flex flex-1 items-center justify-center rounded-full border border-ink/25 px-4 py-2.5 text-xs sm:text-sm font-semibold text-ink transition-colors hover:border-ink hover:bg-sand"
+          className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-full border border-ink/25 px-4 py-2.5 text-xs font-semibold text-ink transition-colors hover:border-ink hover:bg-sand"
         >
           View Details
         </Link>
         <Link
           href={`/book?service=${pkg.slug}`}
-          className="inline-flex flex-1 items-center justify-center rounded-full bg-ink px-4 py-2.5 text-xs sm:text-sm font-semibold text-paper transition-colors hover:bg-accent"
+          className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-paper transition-colors hover:bg-accent"
         >
           {pkg.ctaLabel}
         </Link>
