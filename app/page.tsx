@@ -255,7 +255,7 @@ export default function HomePage() {
         </div>
 
         <StaggerReveal className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {sessions.slice(0, 6).map((session) => (
+          {sessions.slice(0, 3).map((session) => (
             <StaggerItem key={session.slug} variant="fadeUp">
               <Link href={`/portfolio/${session.slug}`} className="group block">
                 <SessionPreviewCarousel
