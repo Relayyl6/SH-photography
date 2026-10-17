@@ -30,7 +30,8 @@ export default function ServicesPage() {
 
       <section className="mt-20">
         <h2 className="font-display text-display-md">Photography services</h2>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <p className="mt-2 text-ink/60">Tailored editorial and documentary photography across Manchester and worldwide.</p>
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {photographyPackages.map((pkg) => (
             <PackageCard key={pkg.slug} pkg={pkg} />
           ))}

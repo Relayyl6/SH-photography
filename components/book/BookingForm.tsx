@@ -46,6 +46,7 @@ const slugToCategory: Record<string, BookingFormData['serviceCategory']> = {
   corporate: 'Portrait',
   'general-photography': 'Other',
   'general-photography-classes': 'Other',
+  'photography-classes': 'Other',
   'retouching-classes': 'Retouching',
 };
 
@@ -65,6 +66,7 @@ const slugToLabel: Record<string, string> = {
   corporate: 'Corporate Photography',
   'general-photography': 'General Photography',
   'general-photography-classes': 'Photography Classes',
+  'photography-classes': 'Photography Classes',
   'retouching-classes': 'Retouching Classes',
 };
 
