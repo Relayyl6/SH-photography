@@ -204,102 +204,159 @@ export default async function ServiceDetailPage({ params }: Props) {
         </div>
 
         {/* ---------- Visual Showcase Section Depicting The Service ---------- */}
-        <section className="mt-20 md:mt-28 border-t border-line/60 pt-16 md:pt-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10">
+        <section className="mt-14 md:mt-20 border-t border-line/60 pt-10 md:pt-14">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-6 mb-6 sm:mb-8">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-accent mb-1.5">
                 Visual Showcase
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl text-ink tracking-tight font-medium">
+              <h2 className="font-display text-2xl sm:text-3xl md:text-4xl text-ink tracking-tight font-medium">
                 Depicting {pkg.name}
               </h2>
             </div>
-            <p className="text-sm text-ink/60 max-w-md italic">
+            <p className="text-xs sm:text-sm text-ink/60 max-w-md italic">
               &quot;{media.styleQuote}&quot;
             </p>
           </div>
 
-          {/* Panoramic Feature Photograph - Refined Proportions with Corner Marks */}
-          <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[2.4/1] max-h-[380px] w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl bg-ink border border-line/40 group">
-            <Image
-              src={media.hero.src}
-              alt={media.hero.alt}
-              fill
-              sizes="(max-width: 1200px) 100vw, 1200px"
-              className="object-cover object-center transition-transform duration-1000 group-hover:scale-105"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 pointer-events-none" />
+          {/* Responsive Bento Grid: 2 columns on mobile/tablet, 4 columns on desktop with auto-rows */}
+          {(() => {
+            const g0 = media.gallery[0] ?? {
+              src: media.hero.src,
+              alt: media.hero.alt,
+              title: "Editorial Detail",
+              subtitle: "Curated portfolio piece",
+            };
+            const g1 = media.gallery[1] ?? g0;
+            const g2 = media.gallery[2] ?? g0;
 
-            {/* Subtle photographic corner crop marks ("corner edge line stuff") */}
-            <div className="absolute top-4 left-4 w-3.5 h-3.5 border-t border-l border-white/60 pointer-events-none z-10 drop-shadow-sm" />
-            <div className="absolute top-4 right-4 w-3.5 h-3.5 border-t border-r border-white/60 pointer-events-none z-10 drop-shadow-sm" />
-            <div className="absolute bottom-4 left-4 w-3.5 h-3.5 border-b border-l border-white/60 pointer-events-none z-10 drop-shadow-sm" />
-            <div className="absolute bottom-4 right-4 w-3.5 h-3.5 border-b border-r border-white/60 pointer-events-none z-10 drop-shadow-sm" />
-
-            {/* Top Bar Archive Badge */}
-            <div className="absolute top-4 right-4 z-10">
-              <span className="text-[9px] uppercase tracking-widest text-paper/80 font-mono bg-black/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/15">
-                SH Archive · MCR
-              </span>
-            </div>
-
-            <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 z-10">
-              <div>
-                <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white border border-white/30 mb-2">
-                  Featured Shot
-                </span>
-                <p className="font-display text-xl sm:text-2xl text-white font-medium">
-                  {pkg.name} by SH Photography
-                </p>
-                <p className="text-xs sm:text-sm text-white/80 mt-1">
-                  {media.hero.caption}
-                </p>
-              </div>
-
-              <Link
-                href={`/book?service=${pkg.slug}`}
-                className="inline-flex self-start sm:self-auto items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-lg transition-transform hover:scale-105"
-              >
-                <span>Book This Look</span>
-                <span>→</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Supporting 3-Picture Editorial Gallery Grid */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-            {media.gallery.map((item, index) => (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-2xl bg-ink border border-line/40 shadow-md transition-all duration-500 hover:shadow-xl"
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden">
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:auto-rows-[195px] lg:auto-rows-[215px]">
+                {/* 1. Hero Card: Spans 2 cols on mobile, 2 cols x 2 rows on desktop */}
+                <div className="group relative col-span-2 md:col-span-2 md:row-span-2 min-h-[220px] sm:min-h-[250px] md:min-h-0 overflow-hidden rounded-2xl sm:rounded-3xl bg-ink border border-line/40 shadow-md">
                   <Image
-                    src={item.src}
-                    alt={item.alt}
+                    src={media.hero.src}
+                    alt={media.hero.alt}
                     fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover object-center transition-transform duration-1000 group-hover:scale-105"
+                    priority
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 pointer-events-none" />
+
+                  {/* Corner crop marks */}
+                  <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+                  <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+                  <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-white/60 pointer-events-none z-10" />
+                  <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-white/60 pointer-events-none z-10" />
+
+                  {/* Top Badges */}
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pl-1 pr-1">
+                    <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider text-white bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
+                      Featured Shot
+                    </span>
+                    <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-paper/80 font-mono bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/15">
+                      SH Archive · MCR
+                    </span>
+                  </div>
+
+                  {/* Bottom Content with Compact CTA */}
+                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 z-10">
+                    <div className="max-w-md">
+                      <p className="font-display text-base sm:text-xl md:text-2xl text-white font-medium leading-snug">
+                        {pkg.name} by SH Photography
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-white/80 line-clamp-1 mt-0.5">
+                        {media.hero.caption}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/book?service=${pkg.slug}`}
+                      className="inline-flex self-start sm:self-auto items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-white shadow-md transition-transform hover:scale-105 active:scale-95 shrink-0"
+                    >
+                      <span>Book This Look</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 2. Gallery 0: Tall portrait on desktop (col 3, row-span 2), 1 col on mobile */}
+                <div className="group relative col-span-1 md:col-span-1 md:row-span-2 min-h-[170px] sm:min-h-[200px] md:min-h-0 overflow-hidden rounded-2xl sm:rounded-3xl bg-ink border border-line/40 shadow-md">
+                  <Image
+                    src={g0.src}
+                    alt={g0.alt}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
                   {/* Corner marks */}
                   <div className="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-white/50 pointer-events-none z-10" />
                   <div className="absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-white/50 pointer-events-none z-10" />
 
-                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5">
-                    <p className="font-display text-base text-white font-medium leading-snug">
-                      {item.title}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3.5 sm:left-3.5 sm:right-3.5 z-10">
+                    <p className="font-display text-xs sm:text-sm md:text-base text-white font-medium leading-snug">
+                      {g0.title}
                     </p>
-                    <p className="text-xs text-white/70 mt-0.5">
-                      {item.subtitle}
+                    <p className="text-[10px] sm:text-xs text-white/70 line-clamp-1 mt-0.5">
+                      {g0.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Gallery 1: Top right on desktop (col 4, row 1), 1 col on mobile */}
+                <div className="group relative col-span-1 md:col-span-1 md:row-span-1 min-h-[170px] sm:min-h-[200px] md:min-h-0 overflow-hidden rounded-2xl sm:rounded-3xl bg-ink border border-line/40 shadow-md">
+                  <Image
+                    src={g1.src}
+                    alt={g1.alt}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                  {/* Corner marks */}
+                  <div className="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-white/50 pointer-events-none z-10" />
+                  <div className="absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-white/50 pointer-events-none z-10" />
+
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 z-10">
+                    <p className="font-display text-xs sm:text-sm text-white font-medium leading-snug">
+                      {g1.title}
+                    </p>
+                    <p className="text-[10px] sm:text-[11px] text-white/70 line-clamp-1 mt-0.5">
+                      {g1.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4. Gallery 2: Bottom right on desktop (col 4, row 2), span 2 on mobile */}
+                <div className="group relative col-span-2 md:col-span-1 md:row-span-1 min-h-[140px] sm:min-h-[170px] md:min-h-0 overflow-hidden rounded-2xl sm:rounded-3xl bg-ink border border-line/40 shadow-md">
+                  <Image
+                    src={g2.src}
+                    alt={g2.alt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                  {/* Corner marks */}
+                  <div className="absolute top-2.5 left-2.5 w-2 h-2 border-t border-l border-white/50 pointer-events-none z-10" />
+                  <div className="absolute top-2.5 right-2.5 w-2 h-2 border-t border-r border-white/50 pointer-events-none z-10" />
+
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 z-10">
+                    <p className="font-display text-xs sm:text-sm text-white font-medium leading-snug">
+                      {g2.title}
+                    </p>
+                    <p className="text-[10px] sm:text-[11px] text-white/70 line-clamp-1 mt-0.5">
+                      {g2.subtitle}
                     </p>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           {/* Bottom Pre-footer Booking Prompt */}
           <div className="mt-14 rounded-2xl sm:rounded-3xl bg-sand/60 border border-line p-8 sm:p-12 text-center flex flex-col items-center">
