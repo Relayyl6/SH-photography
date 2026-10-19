@@ -1,21 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { PlaceholderImage } from "./PlaceholderImage";
 import { getPreviewImages, GalleryPhoto } from "@/lib/gallery";
 
 // Auto-advancing session preview slideshow. 
-// Dynamically scales to any array length, safely falls back for missing images,
-// and accepts the 'count' prop to satisfy TypeScript.
+// Dynamically fetches ALL photos, randomly shuffles them, and selects exactly 'count' (6) to display.
 export function SessionPreviewCarousel({
   sessionSlug,
   sessionTitle,
-  count = 24, // Accept the count prop passed from page.tsx
+  count = 6, 
   intervalMs = 3200,
 }: {
   sessionSlug?: string;
   sessionTitle: string;
-  count?: number; // Fixes the TypeScript build error
+  count?: number; 
   intervalMs?: number;
 }) {
   const [index, setIndex] = useState(0);
@@ -25,12 +24,31 @@ export function SessionPreviewCarousel({
   const [reducedMotion, setReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch up to the requested count. If fewer exist in the folder, 
-  // it gracefully returns only what is actually available.
-  const previewPhotos: GalleryPhoto[] = sessionSlug ? getPreviewImages(sessionSlug, count) : [];
-  
-  // Dynamically set the length based on what ACTUALLY exists to prevent empty slides
-  const effectiveCount = previewPhotos.length > 0 ? previewPhotos.length : 1;
+  // State to store our randomly selected 6 photos
+  const [displayPhotos, setDisplayPhotos] = useState<GalleryPhoto[]>([]);
+  const hasRandomized = useRef(false);
+
+  // 1. Fetch ALL photos from the folder (passing 100 ensures we get the full pool of 24)
+  const allPhotos = useMemo(() => {
+    return sessionSlug ? getPreviewImages(sessionSlug, 100) : [];
+  }, [sessionSlug]);
+
+  // 2. Randomly shuffle and select exactly 'count' (6) photos on client mount.
+  // This MUST be inside a useEffect to prevent Next.js Hydration errors!
+  useEffect(() => {
+    if (!hasRandomized.current && allPhotos.length > 0) {
+      // Shuffle the full array of 24 photos
+      const shuffled = [...allPhotos].sort(() => 0.5 - Math.random());
+      // Slice it to keep only the 6 we need
+      setDisplayPhotos(shuffled.slice(0, count));
+      hasRandomized.current = true; // Ensure it only randomizes once per page load
+    }
+  }, [allPhotos, count]);
+
+  // 3. During the initial split-second server render, fall back to the first 6 photos 
+  // so the UI doesn't look broken or flash blank before the randomizer kicks in.
+  const currentPhotos = displayPhotos.length > 0 ? displayPhotos : allPhotos.slice(0, count);
+  const effectiveCount = currentPhotos.length > 0 ? currentPhotos.length : 1;
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -72,8 +90,8 @@ export function SessionPreviewCarousel({
 
   const isPlaying = playing && !reducedMotion;
   
-  // Safely grab the current photo
-  const currentPhoto = previewPhotos[index];
+  // Safely grab the current photo from our pool of 6
+  const currentPhoto = currentPhotos[index];
 
   return (
     <div
@@ -98,22 +116,17 @@ export function SessionPreviewCarousel({
         aria-live={announce ? "polite" : "off"}
         className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 z-20"
       >
-        {/* Pagination Dots - Uses flex-wrap so if you have 24+ images, 
-            the dots wrap cleanly instead of breaking off the screen */}
+        {/* Pagination Dots - Will map exactly to the 6 effectiveCount items */}
         <div className="flex gap-1.5 flex-wrap max-w-[60%] items-center">
-          {Array.from({ length: Math.min(effectiveCount, 6) }).map((_, i) => {
-            // This maps your current picture index to one of the 6 dots
-            const activeDot = index % 6; 
-            return (
-              <span
-                key={i}
-                aria-hidden="true"
-                className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 flex-shrink-0 ${
-                  i === activeDot ? "bg-accent shadow-sm" : "bg-paper/60"
-                }`}
-              />
-            );
-          })}
+          {Array.from({ length: effectiveCount }).map((_, i) => (
+            <span
+              key={i}
+              aria-hidden="true"
+              className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 flex-shrink-0 ${
+                i === index ? "bg-accent shadow-sm" : "bg-paper/60"
+              }`}
+            />
+          ))}
         </div>
 
         <div className="pointer-events-auto flex gap-1 flex-shrink-0">
