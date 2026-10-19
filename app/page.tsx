@@ -473,7 +473,7 @@ export default function HomePage() {
       {/* ---------- Video ---------- */}
       {featuredVideoId && (
         <Reveal>
-          <section className="container-site pb-24">
+          <section className="container-site pb-12">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Behind the Lens</p>
             <h2 className="mt-3 font-display text-display-md">How the MAGIC happens, a walkthrough of my work</h2>
             <div className="mt-8">
