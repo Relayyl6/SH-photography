@@ -26,4 +26,4 @@ export const socialLinks: { platform: string; label: string; url: string }[] = [
 ];
 
 // Featured photography photoshoot behind-the-scenes
-export const featuredVideoId = "38xsz4Qoez4";
+export const featuredVideoId = "vE8pQC6XHoU";
