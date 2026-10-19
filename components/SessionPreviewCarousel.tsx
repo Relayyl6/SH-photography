@@ -4,15 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { PlaceholderImage } from "./PlaceholderImage";
 import { getPreviewImages, GalleryPhoto } from "@/lib/gallery";
 
-// Auto-advancing session preview slideshow (A5, FR-04). 
-// Updated to support infinite length arrays with dynamic fallbacks.
+// Auto-advancing session preview slideshow. 
+// Dynamically scales to any array length, safely falls back for missing images,
+// and accepts the 'count' prop to satisfy TypeScript.
 export function SessionPreviewCarousel({
   sessionSlug,
   sessionTitle,
+  count = 24, // Accept the count prop passed from page.tsx
   intervalMs = 3200,
 }: {
   sessionSlug?: string;
   sessionTitle: string;
+  count?: number; // Fixes the TypeScript build error
   intervalMs?: number;
 }) {
   const [index, setIndex] = useState(0);
@@ -22,11 +25,11 @@ export function SessionPreviewCarousel({
   const [reducedMotion, setReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch all available photos for this slug (passing no count, or a very high max limit like 100)
-  // Assuming getPreviewImages can handle a large or undefined count to return all images
-  const previewPhotos: GalleryPhoto[] = sessionSlug ? getPreviewImages(sessionSlug, 100) : [];
+  // Fetch up to the requested count. If fewer exist in the folder, 
+  // it gracefully returns only what is actually available.
+  const previewPhotos: GalleryPhoto[] = sessionSlug ? getPreviewImages(sessionSlug, count) : [];
   
-  // If previewPhotos is empty, default to 1 so the fallback renders at least once
+  // Dynamically set the length based on what ACTUALLY exists to prevent empty slides
   const effectiveCount = previewPhotos.length > 0 ? previewPhotos.length : 1;
 
   useEffect(() => {
@@ -69,7 +72,7 @@ export function SessionPreviewCarousel({
 
   const isPlaying = playing && !reducedMotion;
   
-  // Safely grab the current photo. If it's undefined, we rely on the fallback props in PlaceholderImage
+  // Safely grab the current photo
   const currentPhoto = previewPhotos[index];
 
   return (
@@ -95,24 +98,25 @@ export function SessionPreviewCarousel({
         aria-live={announce ? "polite" : "off"}
         className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 z-20"
       >
-        {/* Pagination Dots - Made scrollable/hidden if there are too many dots (e.g. 24+) */}
-        <div className="flex gap-1.5 max-w-[50%] flex-wrap overflow-hidden h-1.5 items-center">
-          {Array.from({ length: Math.min(effectiveCount, 12) }).map((_, i) => {
-             // For UI cleanliness, if there are 24 images, we only show up to 12 dots 
-             // but visually map the active index to them
-             const dotIndex = index % 12; 
-             return (
+        {/* Pagination Dots - Uses flex-wrap so if you have 24+ images, 
+            the dots wrap cleanly instead of breaking off the screen */}
+        <div className="flex gap-1.5 flex-wrap max-w-[60%] items-center">
+          {Array.from({ length: Math.min(effectiveCount, 6) }).map((_, i) => {
+            // This maps your current picture index to one of the 6 dots
+            const activeDot = index % 6; 
+            return (
               <span
                 key={i}
                 aria-hidden="true"
                 className={`h-1.5 w-1.5 rounded-full transition-colors duration-300 flex-shrink-0 ${
-                  i === dotIndex ? "bg-accent shadow-sm" : "bg-paper/60"
+                  i === activeDot ? "bg-accent shadow-sm" : "bg-paper/60"
                 }`}
               />
-          )})}
+            );
+          })}
         </div>
 
-        <div className="pointer-events-auto flex gap-1">
+        <div className="pointer-events-auto flex gap-1 flex-shrink-0">
           <button
             type="button"
             onClick={() => go(index - 1, true)}
