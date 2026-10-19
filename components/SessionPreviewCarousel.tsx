@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { PlaceholderImage } from "./PlaceholderImage";
 import { getPreviewImages, GalleryPhoto } from "@/lib/gallery";
 
-// Auto-advancing session preview slideshow. 
-// Dynamically fetches ALL photos, randomly shuffles them, and selects exactly 'count' (6) to display.
+// Auto-advancing session preview slideshow.
+// Fetches the full folder, displays exactly 6 images, and reshuffles 
+// to a completely NEW random set of 6 every time a loop completes.
 export function SessionPreviewCarousel({
   sessionSlug,
   sessionTitle,
@@ -24,29 +25,31 @@ export function SessionPreviewCarousel({
   const [reducedMotion, setReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // State to store our randomly selected 6 photos
+  // State to hold the CURRENT active batch of 6 random photos
   const [displayPhotos, setDisplayPhotos] = useState<GalleryPhoto[]>([]);
   const hasRandomized = useRef(false);
 
-  // 1. Fetch ALL photos from the folder (passing 100 ensures we get the full pool of 24)
+  // 1. Load the full pool of available photos (up to 100/all 24)
   const allPhotos = useMemo(() => {
     return sessionSlug ? getPreviewImages(sessionSlug, 100) : [];
   }, [sessionSlug]);
 
-  // 2. Randomly shuffle and select exactly 'count' (6) photos on client mount.
-  // This MUST be inside a useEffect to prevent Next.js Hydration errors!
-  useEffect(() => {
-    if (!hasRandomized.current && allPhotos.length > 0) {
-      // Shuffle the full array of 24 photos
-      const shuffled = [...allPhotos].sort(() => 0.5 - Math.random());
-      // Slice it to keep only the 6 we need
-      setDisplayPhotos(shuffled.slice(0, count));
-      hasRandomized.current = true; // Ensure it only randomizes once per page load
-    }
+  // 2. The Reshuffle Engine: Shuffles the full pool and locks in a new set of 6
+  const reshuffle = useCallback(() => {
+    if (allPhotos.length === 0) return;
+    const shuffled = [...allPhotos].sort(() => 0.5 - Math.random());
+    setDisplayPhotos(shuffled.slice(0, count));
   }, [allPhotos, count]);
 
-  // 3. During the initial split-second server render, fall back to the first 6 photos 
-  // so the UI doesn't look broken or flash blank before the randomizer kicks in.
+  // 3. Initial Page Load Shuffle (with Hydration protection)
+  useEffect(() => {
+    if (!hasRandomized.current && allPhotos.length > 0) {
+      reshuffle();
+      hasRandomized.current = true;
+    }
+  }, [allPhotos, reshuffle]);
+
+  // Hydration safety: use static first 6 on server, then immediately swap to random 6 on client
   const currentPhotos = displayPhotos.length > 0 ? displayPhotos : allPhotos.slice(0, count);
   const effectiveCount = currentPhotos.length > 0 ? currentPhotos.length : 1;
 
@@ -58,7 +61,6 @@ export function SessionPreviewCarousel({
     return () => mq.removeEventListener("change", listener);
   }, []);
 
-  // Only run carousel interval when visible in viewport
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -75,22 +77,39 @@ export function SessionPreviewCarousel({
     return () => observer.disconnect();
   }, []);
 
+  // 4. Navigation logic linked to the reshuffle engine
+  const go = useCallback(
+    (nextIndex: number, userInitiated = false) => {
+      // If we move past the last image in the current 6, trigger a reshuffle and reset to dot 1
+      if (nextIndex >= effectiveCount) {
+        reshuffle();
+        setIndex(0);
+      } 
+      // If going backward past the first image, trigger a reshuffle and jump to dot 6
+      else if (nextIndex < 0) {
+        reshuffle();
+        setIndex(effectiveCount - 1);
+      } 
+      // Standard navigation
+      else {
+        setIndex(nextIndex);
+      }
+      
+      if (userInitiated) setAnnounce(true);
+    },
+    [effectiveCount, reshuffle]
+  );
+
+  // Autoplay interval linked to the custom `go` function
   useEffect(() => {
     if (!playing || reducedMotion || !isInView) return;
     const id = setInterval(() => {
-      setIndex((i) => (i + 1) % effectiveCount);
+      go(index + 1);
     }, intervalMs);
     return () => clearInterval(id);
-  }, [playing, reducedMotion, isInView, effectiveCount, intervalMs]);
-
-  function go(next: number, userInitiated = false) {
-    setIndex(((next % effectiveCount) + effectiveCount) % effectiveCount);
-    if (userInitiated) setAnnounce(true);
-  }
+  }, [playing, reducedMotion, isInView, index, intervalMs, go]);
 
   const isPlaying = playing && !reducedMotion;
-  
-  // Safely grab the current photo from our pool of 6
   const currentPhoto = currentPhotos[index];
 
   return (
@@ -116,7 +135,7 @@ export function SessionPreviewCarousel({
         aria-live={announce ? "polite" : "off"}
         className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2 z-20"
       >
-        {/* Pagination Dots - Will map exactly to the 6 effectiveCount items */}
+        {/* Render exactly 6 dots */}
         <div className="flex gap-1.5 flex-wrap max-w-[60%] items-center">
           {Array.from({ length: effectiveCount }).map((_, i) => (
             <span
