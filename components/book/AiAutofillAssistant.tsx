@@ -56,17 +56,20 @@ export function AiAutofillAssistant({
   return (
     <section
       aria-label="AI Smart Booking Assistant"
-      className={`w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-accent/30 bg-gradient-to-br from-sand/80 via-paper to-sand/40 p-4 ${
-        isSidebar ? 'p-4 sm:p-5' : 'sm:p-6'
-      } shadow-md backdrop-blur-md transition-all duration-300 ${className}`}
+      className={`w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-accent/30 bg-gradient-to-br from-sand/80 via-paper to-sand/40 transition-all duration-300 ${
+        isOpen ? (isSidebar ? 'p-4 sm:p-5' : 'p-4 sm:p-6') : 'p-3 sm:p-3.5 hover:border-accent/60 hover:shadow-sm'
+      } shadow-sm backdrop-blur-md ${className}`}
     >
-      {/* Header bar */}
-      <div className="flex items-center justify-between gap-2.5">
-        <div className="flex items-center gap-2.5">
+      {/* Header bar (clickable to toggle open/close) */}
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between gap-2.5 cursor-pointer select-none"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
           <span className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-white shadow-sm ring-2 ring-accent/20">
             <Sparkles className="h-4 w-4 animate-pulse" />
           </span>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h2 className="font-display text-sm sm:text-base font-semibold text-ink leading-tight">
                 Smart Auto-Fill
@@ -75,18 +78,33 @@ export function AiAutofillAssistant({
                 Voice &amp; AI
               </span>
             </div>
-            <p className="text-[11px] text-ink/70 leading-snug">
-              {isSidebar ? 'Speak or type event details to fill form' : 'Speak or describe your entire event — AI fills out almost every entry for you.'}
+            <p className="text-[11px] text-ink/70 leading-snug truncate">
+              {isOpen
+                ? isSidebar
+                  ? 'Speak or type event details to fill form'
+                  : 'Speak or describe your entire event — AI fills out almost every entry for you.'
+                : 'Click or speak to auto-fill form with AI →'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
           {latestFilledCount !== null && (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
               <CheckCircle2 className="h-3 w-3 text-emerald-600" />
               <span>{latestFilledCount} filled</span>
             </span>
+          )}
+
+          {!isOpen && speechSupported && (
+            <button
+              type="button"
+              onClick={toggleListening}
+              className="inline-flex items-center gap-1 rounded-full bg-paper hover:bg-sand text-ink border border-ink/20 px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors"
+            >
+              <Mic className="h-3 w-3 text-accent" />
+              <span className="hidden xs:inline">Speak</span>
+            </button>
           )}
 
           <button

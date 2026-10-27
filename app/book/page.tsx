@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function BookPage() {
   return (
-    <main className="min-h-screen bg-paper pt-24 pb-12">
+    <main className="min-h-screen bg-paper pt-6 sm:pt-10 md:pt-14 pb-12">
       <div className="container-site">
         <Suspense fallback={<div className="py-24 text-center text-ink/40">Loading form…</div>}>
           <BookingForm />

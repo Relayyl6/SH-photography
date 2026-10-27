@@ -191,18 +191,18 @@ export default function BookingForm() {
   });
 
   return (
-    <div className="w-full py-12">
+    <div className="w-full pt-1 sm:pt-3 pb-12">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         <div className="flex-1">
-          <header className="mb-8 space-y-4">
-            <h1 className="font-display text-5xl md:text-6xl text-ink">Request a Quote</h1>
-            <p className="text-lg text-ink/70">
+          <header className="mb-6 space-y-2">
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink tracking-tight font-medium">Request a Quote</h1>
+            <p className="text-sm sm:text-base text-ink/70 max-w-2xl leading-relaxed">
               Please provide as much detail as possible about your upcoming session. This helps me understand your vision and prepare an accurate, custom quote for you.
             </p>
           </header>
 
-          {/* Mobile & Tablet: Top Auto-Fill Assistant */}
-          <div className="block lg:hidden mb-8 sm:mb-10">
+          {/* Mobile & Tablet: Top Auto-Fill Assistant (Closed by default, 1-click open) */}
+          <div className="block lg:hidden mb-6 sm:mb-8">
             <AiAutofillAssistant
               controller={aiAssistant}
               onJumpToReview={() => {
@@ -213,7 +213,7 @@ export default function BookingForm() {
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full mb-12">
+          <div className="w-full mb-8 sm:mb-10">
             <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
               <span>Step {currentStep + 1} of {steps.length}</span>
               <span className="font-display">{steps[currentStep]}</span>

@@ -16,7 +16,7 @@ interface UseAiAutofillOptions {
 }
 
 export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillOptions) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -100,6 +100,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
       setIsListening(false);
     } else {
       setErrorMsg(null);
+      setIsOpen(true);
       try {
         recognitionRef.current.start();
       } catch (err) {
