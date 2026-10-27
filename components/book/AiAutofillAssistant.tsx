@@ -100,10 +100,23 @@ export function AiAutofillAssistant({
             <button
               type="button"
               onClick={toggleListening}
-              className="inline-flex items-center gap-1 rounded-full bg-paper hover:bg-sand text-ink border border-ink/20 px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-colors"
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-sm transition-all ${
+                isListening
+                  ? 'bg-red-600 text-white animate-pulse ring-2 ring-red-400'
+                  : 'bg-paper hover:bg-sand text-ink border border-ink/20'
+              }`}
             >
-              <Mic className="h-3 w-3 text-accent" />
-              <span className="hidden xs:inline">Speak</span>
+              {isListening ? (
+                <>
+                  <MicOff className="h-3 w-3" />
+                  <span className="hidden xs:inline">Listening...</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="h-3 w-3 text-accent" />
+                  <span className="hidden xs:inline">Speak</span>
+                </>
+              )}
             </button>
           )}
 
@@ -190,7 +203,7 @@ export function AiAutofillAssistant({
                 rows={isSidebar ? 2 : 3}
                 placeholder={
                   isListening
-                    ? 'Listening... Speak now, your words appear here in real time.'
+                    ? 'Listening continuously across pauses... Speak freely. Tap the red mic or Auto-Fill when done.'
                     : 'Describe your event (date, venue, style, guest count, budget) or click the mic to speak...'
                 }
                 className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-ink placeholder:text-ink/40 focus:outline-none disabled:opacity-50"
@@ -220,7 +233,7 @@ export function AiAutofillAssistant({
                     {isListening ? (
                       <>
                         <MicOff className="h-3 w-3" />
-                        <span>Listening...</span>
+                        <span>Listening... (Tap to stop)</span>
                       </>
                     ) : (
                       <>
