@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { bookingSchema, BookingFormData } from './schema';
 import { BookingCalendar } from './BookingCalendar';
 import { QuoteReceipt } from './QuoteReceipt';
+import { AiAutofillAssistant } from './AiAutofillAssistant';
 import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
@@ -171,16 +172,38 @@ export default function BookingForm() {
   const serviceCat = watch('serviceCategory');
   const travelReq = watch('travelRequired');
 
+  const handleApplyAiFields = (fields: Partial<BookingFormData>) => {
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        setValue(key as any, value as any, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+      }
+    });
+  };
+
   return (
     <div className="w-full py-12">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
         <div className="flex-1">
-          <header className="mb-12 space-y-4">
+          <header className="mb-8 space-y-4">
             <h1 className="font-display text-5xl md:text-6xl text-ink">Request a Quote</h1>
             <p className="text-lg text-ink/70">
               Please provide as much detail as possible about your upcoming session. This helps me understand your vision and prepare an accurate, custom quote for you.
             </p>
           </header>
+
+          {/* AI Voice & Text Auto-Fill Assistant */}
+          <AiAutofillAssistant
+            currentFormData={formData}
+            onApplyFields={handleApplyAiFields}
+            onJumpToReview={() => {
+              setCurrentStep(steps.length - 1);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
 
           {/* Progress Bar */}
           <div className="w-full mb-12">
@@ -675,7 +698,12 @@ export default function BookingForm() {
         {/* Live Summary Sidebar (Sticky on desktop, stacked on mobile) */}
         <div className="w-full lg:w-80 shrink-0 mt-8 lg:mt-0">
           <div className="lg:sticky lg:top-28">
-            <h3 className="font-display text-xl mb-6 pb-4 border-b border-ink/10">Live Summary</h3>
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
+              <h3 className="font-display text-xl">Live Summary</h3>
+              <span className="text-[10px] uppercase font-bold text-accent tracking-wider bg-accent/10 px-2.5 py-0.5 rounded-full border border-accent/20">
+                Auto-sync
+              </span>
+            </div>
             
             <div className="space-y-6">
               {/* Service */}
