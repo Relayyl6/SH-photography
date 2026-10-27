@@ -20,8 +20,8 @@ export const siteConfig = {
 } as const;
 
 export const socialLinks: { platform: string; label: string; url: string }[] = [
-  { platform: "instagram", label: "Instagram", url: "https://instagram.com/shfotography1" },
-  { platform: "youtube", label: "YouTube", url: "https://youtube.com/@shphotography" },
+  { platform: "instagram", label: "Instagram", url: "https://www.instagram.com/_sh_fotography?rpxt=bTZyN2h4M3pubXVh" },
+  { platform: "youtube", label: "YouTube", url: "https://youtube.com/@shfotography?si=_beJ7rTNqElsJhEs" },
   { platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/447350156054" },
 ];
 

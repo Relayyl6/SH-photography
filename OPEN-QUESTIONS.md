@@ -7,8 +7,8 @@ All 13 open questions have been systematically reviewed, scaffolded, and address
 ### 1. Social Accounts
 - **Resolution**: **RESOLVED**
 - **Details**: Configured to SH Photography's primary channels in `lib/site-config.ts` and `lib/settings.ts`:
-  - **Instagram**: `https://instagram.com/shfotography1`
-  - **YouTube**: `https://youtube.com/@shphotography`
+  - **Instagram**: `https://www.instagram.com/_sh_fotography?rpxt=bTZyN2h4M3pubXVh`
+  - **YouTube**: `https://youtube.com/@shfotography?si=_beJ7rTNqElsJhEs`
   - **WhatsApp**: `https://wa.me/447350156054`
 - Both the header, mobile navigation, and footer now link directly to these active profiles.
 
