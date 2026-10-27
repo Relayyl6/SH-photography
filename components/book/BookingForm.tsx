@@ -9,6 +9,7 @@ import { bookingSchema, BookingFormData } from './schema';
 import { BookingCalendar } from './BookingCalendar';
 import { QuoteReceipt } from './QuoteReceipt';
 import { AiAutofillAssistant } from './AiAutofillAssistant';
+import { useAiAutofill } from './useAiAutofill';
 import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
@@ -184,9 +185,14 @@ export default function BookingForm() {
     });
   };
 
+  const aiAssistant = useAiAutofill({
+    currentFormData: formData,
+    onApplyFields: handleApplyAiFields,
+  });
+
   return (
     <div className="w-full py-12">
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
         <div className="flex-1">
           <header className="mb-8 space-y-4">
             <h1 className="font-display text-5xl md:text-6xl text-ink">Request a Quote</h1>
@@ -195,15 +201,16 @@ export default function BookingForm() {
             </p>
           </header>
 
-          {/* AI Voice & Text Auto-Fill Assistant */}
-          <AiAutofillAssistant
-            currentFormData={formData}
-            onApplyFields={handleApplyAiFields}
-            onJumpToReview={() => {
-              setCurrentStep(steps.length - 1);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
+          {/* Mobile & Tablet: Top Auto-Fill Assistant */}
+          <div className="block lg:hidden mb-8 sm:mb-10">
+            <AiAutofillAssistant
+              controller={aiAssistant}
+              onJumpToReview={() => {
+                setCurrentStep(steps.length - 1);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
 
           {/* Progress Bar */}
           <div className="w-full mb-12">
@@ -696,79 +703,93 @@ export default function BookingForm() {
         </div>
 
         {/* Live Summary Sidebar (Sticky on desktop, stacked on mobile) */}
-        <div className="w-full lg:w-80 shrink-0 mt-8 lg:mt-0">
-          <div className="lg:sticky lg:top-28">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
-              <h3 className="font-display text-xl">Live Summary</h3>
-              <span className="text-[10px] uppercase font-bold text-accent tracking-wider bg-accent/10 px-2.5 py-0.5 rounded-full border border-accent/20">
-                Auto-sync
-              </span>
-            </div>
-            
-            <div className="space-y-6">
-              {/* Service */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Service</h4>
-                  {currentStep > 0 && <button onClick={() => setCurrentStep(0)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
-                </div>
-                {formData.serviceCategory ? (
-                  <>
-                    <p className="text-sm font-semibold">{formData.serviceCategory} {formData.sessionSubType && `- ${formData.sessionSubType}`}</p>
-                    <p className="text-xs text-ink/80 mt-1">
-                      {formData.preferredDate}
-                      {formData.preferredStartTime && ` at ${formatTimeLabel(formData.preferredStartTime)}`}
-                      {formData.dateFlexible === 'Yes' ? ' (Flexible)' : ''}
-                    </p>
-                  </>
-                ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
+        <div className="w-full lg:w-88 xl:w-96 shrink-0 mt-8 lg:mt-0">
+          <div className="lg:sticky lg:top-28 space-y-6">
+            <div className="rounded-2xl sm:rounded-3xl border border-line/70 bg-sand/30 p-5 sm:p-6 backdrop-blur-sm shadow-sm">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">
+                <h3 className="font-display text-xl">Live Summary</h3>
+                <span className="text-[10px] uppercase font-bold text-accent tracking-wider bg-accent/10 px-2.5 py-0.5 rounded-full border border-accent/20">
+                  Auto-sync
+                </span>
               </div>
-
-              {/* Logistics */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Location</h4>
-                  {currentStep > 1 && <button onClick={() => setCurrentStep(1)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
-                </div>
-                {formData.locationType ? (
-                  <p className="text-sm">{formData.locationType} <br/><span className="text-xs text-ink/80">{formData.address || 'Address TBD'}</span></p>
-                ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
-              </div>
-
-              {/* Creative */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Style</h4>
-                  {currentStep > 2 && <button onClick={() => setCurrentStep(2)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
-                </div>
-                {formData.stylePreferences?.length > 0 ? (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {formData.stylePreferences.map(s => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
+              
+              <div className="space-y-6">
+                {/* Service */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Service</h4>
+                    {currentStep > 0 && <button onClick={() => setCurrentStep(0)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
                   </div>
-                ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
-              </div>
-
-              {/* Deliverables */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Deliverables</h4>
-                  {currentStep > 3 && <button onClick={() => setCurrentStep(3)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                  {formData.serviceCategory ? (
+                    <>
+                      <p className="text-sm font-semibold">{formData.serviceCategory} {formData.sessionSubType && `- ${formData.sessionSubType}`}</p>
+                      <p className="text-xs text-ink/80 mt-1">
+                        {formData.preferredDate}
+                        {formData.preferredStartTime && ` at ${formatTimeLabel(formData.preferredStartTime)}`}
+                        {formData.dateFlexible === 'Yes' ? ' (Flexible)' : ''}
+                      </p>
+                    </>
+                  ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
                 </div>
-                {formData.deliverables?.length > 0 ? (
-                  <p className="text-xs leading-relaxed">{formData.deliverables.join(', ')}</p>
-                ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
-              </div>
 
-              {/* Budget */}
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Budget</h4>
-                  {currentStep > 4 && <button onClick={() => setCurrentStep(4)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                {/* Logistics */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Location</h4>
+                    {currentStep > 1 && <button onClick={() => setCurrentStep(1)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                  </div>
+                  {formData.locationType ? (
+                    <p className="text-sm">{formData.locationType} <br/><span className="text-xs text-ink/80">{formData.address || 'Address TBD'}</span></p>
+                  ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
                 </div>
-                {formData.budgetRange ? (
-                  <p className="text-sm font-medium text-[#e8491c]">{formData.budgetRange}</p>
-                ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
+
+                {/* Creative */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Style</h4>
+                    {currentStep > 2 && <button onClick={() => setCurrentStep(2)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                  </div>
+                  {formData.stylePreferences?.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {formData.stylePreferences.map(s => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
+                    </div>
+                  ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
+                </div>
+
+                {/* Deliverables */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Deliverables</h4>
+                    {currentStep > 3 && <button onClick={() => setCurrentStep(3)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                  </div>
+                  {formData.deliverables?.length > 0 ? (
+                    <p className="text-xs leading-relaxed">{formData.deliverables.join(', ')}</p>
+                  ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
+                </div>
+
+                {/* Budget */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Budget</h4>
+                    {currentStep > 4 && <button onClick={() => setCurrentStep(4)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
+                  </div>
+                  {formData.budgetRange ? (
+                    <p className="text-sm font-medium text-[#e8491c]">{formData.budgetRange}</p>
+                  ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
+                </div>
               </div>
+            </div>
+
+            {/* Desktop: Auto-Fill Assistant placed directly below Live Summary */}
+            <div className="hidden lg:block">
+              <AiAutofillAssistant
+                controller={aiAssistant}
+                layout="sidebar"
+                onJumpToReview={() => {
+                  setCurrentStep(steps.length - 1);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              />
             </div>
           </div>
         </div>
