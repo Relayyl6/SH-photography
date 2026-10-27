@@ -156,19 +156,6 @@ export default function BookingForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (isSubmitted && submittedData) {
-    return (
-      <QuoteReceipt
-        data={submittedData}
-        onReset={() => {
-          setIsSubmitted(false);
-          setSubmittedData(null);
-          setCurrentStep(0);
-        }}
-      />
-    );
-  }
-
   const formData = watch();
   const serviceCat = watch('serviceCategory');
   const travelReq = watch('travelRequired');
@@ -189,6 +176,19 @@ export default function BookingForm() {
     currentFormData: formData,
     onApplyFields: handleApplyAiFields,
   });
+
+  if (isSubmitted && submittedData) {
+    return (
+      <QuoteReceipt
+        data={submittedData}
+        onReset={() => {
+          setIsSubmitted(false);
+          setSubmittedData(null);
+          setCurrentStep(0);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="w-full pt-1 sm:pt-3 pb-12">
