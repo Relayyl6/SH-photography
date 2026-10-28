@@ -260,12 +260,10 @@ export function AiAutofillAssistant({
                 disabled={isLoading || isTranscribing}
                 rows={isSidebar ? 2 : 3}
                 placeholder={
-                  isRecordingAudio
-                    ? 'Recording your voice... Speak freely, take all the pauses you need! When done, click "Done Speaking" to review.'
+                  isListening || isRecordingAudio
+                    ? 'Listening... Speak freely, your words appear here in real time.'
                     : isTranscribing
                     ? 'Transcribing your words into this box...'
-                    : isListening
-                    ? 'Listening... Speak freely, your words appear here in real time.'
                     : 'Describe your event (date, venue, style, guest count, budget) or tap Speak...'
                 }
                 className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-ink placeholder:text-ink/40 focus:outline-none disabled:opacity-50"

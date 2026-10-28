@@ -53,35 +53,6 @@ export function cleanSpeechDuplicates(text: string): string {
   return cleaned.replace(/\s+/g, ' ').trim();
 }
 
-function appendSpeechChunk(existing: string, newChunk: string): string {
-  const cleanExisting = existing.trim();
-  const cleanNew = cleanSpeechDuplicates(newChunk.trim());
-  if (!cleanNew) return cleanExisting;
-  if (!cleanExisting) return cleanNew;
-
-  const existingLower = cleanExisting.toLowerCase();
-  const newLower = cleanNew.toLowerCase();
-
-  if (existingLower.endsWith(newLower)) {
-    return cleanExisting;
-  }
-
-  const existingWords = cleanExisting.split(/\s+/);
-  const newWords = cleanNew.split(/\s+/);
-
-  for (let overlap = Math.min(existingWords.length, newWords.length); overlap > 0; overlap--) {
-    const existingTail = existingWords.slice(-overlap).join(' ').toLowerCase();
-    const newHead = newWords.slice(0, overlap).join(' ').toLowerCase();
-    if (existingTail === newHead) {
-      const rest = newWords.slice(overlap).join(' ');
-      const combined = rest ? `${cleanExisting} ${rest}` : cleanExisting;
-      return cleanSpeechDuplicates(combined);
-    }
-  }
-
-  return cleanSpeechDuplicates(`${cleanExisting} ${cleanNew}`);
-}
-
 function getSupportedMimeType(): string {
   if (typeof window === 'undefined' || typeof MediaRecorder === 'undefined') {
     return 'audio/webm';
@@ -121,27 +92,32 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
 
   const recognitionRef = useRef<any>(null);
   const isUserWantsListeningRef = useRef<boolean>(false);
-  const committedTextRef = useRef<string>('');
-  const interimTextRef = useRef<string>('');
+  const baseTextRef = useRef<string>('');
+  const liveSpeechTextRef = useRef<string>('');
+  const inputStateRef = useRef<string>('');
   const restartTimeoutRef = useRef<any>(null);
   const isMobileRef = useRef<boolean>(false);
 
-  // MediaRecorder refs for zero-beep continuous voice capture with pauses
+  // MediaRecorder refs for audio capture
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<any>(null);
 
+  useEffect(() => {
+    inputStateRef.current = input;
+  }, [input]);
+
   const setInput = useCallback((value: string | ((prev: string) => string)) => {
     setInputState((prev) => {
       const next = typeof value === 'function' ? value(prev) : value;
-      committedTextRef.current = next;
-      interimTextRef.current = '';
+      baseTextRef.current = next;
+      liveSpeechTextRef.current = '';
       return next;
     });
   }, []);
 
-  // Initialize environment detection & Web Speech API for desktop
+  // Initialize environment detection & Web Speech API for real-time live typing
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -163,7 +139,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-GB';
+        recognition.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-GB';
 
         recognition.onstart = () => {
           setIsListening(true);
@@ -171,32 +147,25 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
         };
 
         recognition.onresult = (event: any) => {
-          let finalChunk = '';
-          let interimChunk = '';
+          let sessionFinal = '';
+          let sessionInterim = '';
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
+          for (let i = 0; i < event.results.length; i++) {
             const item = event.results[i];
             const text = item[0]?.transcript || '';
             if (item.isFinal) {
-              finalChunk += text + ' ';
+              sessionFinal += text + ' ';
             } else {
-              interimChunk += text;
+              sessionInterim += text;
             }
           }
 
-          if (finalChunk.trim()) {
-            committedTextRef.current = appendSpeechChunk(
-              committedTextRef.current,
-              finalChunk
-            );
-            interimTextRef.current = '';
-            setInputState(committedTextRef.current);
-          } else if (interimChunk.trim()) {
-            interimTextRef.current = cleanSpeechDuplicates(interimChunk.trim());
-            const base = committedTextRef.current.trim();
-            const live = base ? `${base} ${interimTextRef.current}` : interimTextRef.current;
-            setInputState(live);
-          }
+          const currentSpoken = `${sessionFinal}${sessionInterim}`.trim();
+          const base = baseTextRef.current.trim();
+          const liveText = base && currentSpoken ? `${base} ${currentSpoken}` : (currentSpoken || base);
+
+          liveSpeechTextRef.current = currentSpoken;
+          setInputState(liveText);
         };
 
         recognition.onerror = (event: any) => {
@@ -204,28 +173,20 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
             return;
           }
           if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-            isUserWantsListeningRef.current = false;
-            setIsListening(false);
-            setErrorMsg('Microphone access was denied. Please allow microphone permissions or type details.');
-          } else if (event.error === 'audio-capture') {
-            isUserWantsListeningRef.current = false;
-            setIsListening(false);
-            setErrorMsg('No microphone was detected on this device.');
+            console.warn('SpeechRecognition permission notice:', event.error);
+            if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
+              isUserWantsListeningRef.current = false;
+              setIsListening(false);
+              setErrorMsg('Microphone access was denied. Please allow microphone permissions or type details.');
+            }
           }
         };
 
         recognition.onend = () => {
-          if (interimTextRef.current) {
-            committedTextRef.current = appendSpeechChunk(
-              committedTextRef.current,
-              interimTextRef.current
-            );
-            interimTextRef.current = '';
-            setInputState(committedTextRef.current);
-          }
-
-          // On desktop, auto-restart allows pauses without annoying OS tones
-          if (!isMobileRef.current && isUserWantsListeningRef.current) {
+          if (isUserWantsListeningRef.current) {
+            // When auto-restarting after natural pauses, lock in what has been spoken so far as base
+            baseTextRef.current = (inputStateRef.current || '').trim();
+            liveSpeechTextRef.current = '';
             clearTimeout(restartTimeoutRef.current);
             restartTimeoutRef.current = setTimeout(() => {
               if (isUserWantsListeningRef.current && recognitionRef.current) {
@@ -233,7 +194,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
                   recognitionRef.current.start();
                 } catch (_) {}
               }
-            }, 100);
+            }, 150);
           } else {
             setIsListening(false);
           }
@@ -259,7 +220,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     };
   }, []);
 
-  // Submit audio or text to /api/ai-autofill
+  // Submit text to /api/ai-autofill
   const sendToAiEndpoint = useCallback(
     async (payload: { transcript?: string; audio?: { base64: string; mimeType: string } }) => {
       setIsLoading(true);
@@ -308,15 +269,15 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
           },
         ]);
 
-        committedTextRef.current = '';
-        interimTextRef.current = '';
+        baseTextRef.current = '';
+        liveSpeechTextRef.current = '';
         setInputState('');
       } catch (err: any) {
         console.error('Auto-fill error:', err);
         setErrorMsg(err.message || 'Unable to autofill. Please try again.');
         if (payload.transcript) {
           setInputState(payload.transcript);
-          committedTextRef.current = payload.transcript;
+          baseTextRef.current = payload.transcript;
         }
       } finally {
         setIsLoading(false);
@@ -331,8 +292,13 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
       clearInterval(recordingTimerRef.current);
       setRecordingSeconds(0);
       setIsRecordingAudio(false);
-      setIsListening(false);
       isUserWantsListeningRef.current = false;
+
+      // Also stop Web Speech if it was running alongside for live preview
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+      }
+      setIsListening(false);
 
       if (!mediaRecorderRef.current || mediaRecorderRef.current.state === 'inactive') {
         if (mediaStreamRef.current) {
@@ -381,35 +347,37 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
   const stopVoiceCapture = useCallback(async () => {
     setErrorMsg(null);
 
-    // 1. Desktop Web Speech: stop recognition and finalize text in the input box
+    // 1. Speech-only (desktop, no MediaRecorder): stop recognition and finalize text
     if (!isRecordingAudio && isListening) {
       isUserWantsListeningRef.current = false;
       clearTimeout(restartTimeoutRef.current);
       if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (_) {}
+        try { recognitionRef.current.stop(); } catch (_) {}
       }
       setIsListening(false);
 
-      if (interimTextRef.current) {
-        committedTextRef.current = appendSpeechChunk(
-          committedTextRef.current,
-          interimTextRef.current
-        );
-        interimTextRef.current = '';
-      }
-      const cleanText = cleanSpeechDuplicates(committedTextRef.current.trim());
+      // Lock in whatever is currently in the input box
+      const cleanText = cleanSpeechDuplicates((inputStateRef.current || '').trim());
+      baseTextRef.current = cleanText;
+      liveSpeechTextRef.current = '';
       setInputState(cleanText);
       return;
     }
 
-    // 2. Mobile / MediaRecorder: stop recorder and transcribe audio to text (WITHOUT autofilling)
+    // 2. MediaRecorder path (mobile): stop recorder, stop speech, transcribe audio to text
     if (isRecordingAudio) {
+      // Capture what Web Speech has typed so far as a preview (it will be replaced by server transcription)
+      const livePreview = (inputStateRef.current || '').trim();
+
       setIsTranscribing(true);
       const audioData = await stopAudioRecording();
       if (!audioData) {
         setIsTranscribing(false);
+        // Keep any live preview text that was typed
+        if (livePreview) {
+          baseTextRef.current = livePreview;
+          setInputState(livePreview);
+        }
         return;
       }
 
@@ -430,16 +398,21 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
 
         if (data.transcript && typeof data.transcript === 'string') {
           const transcribed = data.transcript.trim();
-          setInputState((prev) => {
-            const prevClean = prev.trim();
-            if (!prevClean) return transcribed;
-            return `${prevClean} ${transcribed}`;
-          });
-          committedTextRef.current = transcribed;
+          // Server transcription replaces the live preview with a cleaner version
+          const preBase = baseTextRef.current.trim();
+          const finalText = preBase ? `${preBase} ${transcribed}` : transcribed;
+          baseTextRef.current = finalText;
+          liveSpeechTextRef.current = '';
+          setInputState(finalText);
         }
       } catch (err: any) {
         console.error('Transcription error:', err);
         setErrorMsg(err.message || 'Could not transcribe voice. You can type your details directly.');
+        // Keep the live preview on error so user doesn't lose what they said
+        if (livePreview) {
+          baseTextRef.current = livePreview;
+          setInputState(livePreview);
+        }
       } finally {
         setIsTranscribing(false);
       }
@@ -455,14 +428,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
         return;
       }
 
-      // Flush any lingering interim voice text
-      let rawText = textToSubmit ?? input;
-      if (interimTextRef.current) {
-        rawText = appendSpeechChunk(rawText, interimTextRef.current);
-        interimTextRef.current = '';
-      }
-
-      const text = cleanSpeechDuplicates(rawText.trim());
+      const text = cleanSpeechDuplicates((textToSubmit ?? input).trim());
       if (!text) {
         setErrorMsg('Please describe your event or speak into the microphone first.');
         return;
@@ -484,14 +450,20 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
       return;
     }
 
-    // 2. Start Voice Capture:
-    // On mobile devices, use MediaRecorder for ZERO-BEEP continuous recording with unlimited pauses.
-    // On desktop, use Web Speech API for real-time live typing (fallback to MediaRecorder if unsupported).
-    const useMediaRecording = isMobileRef.current || !recognitionRef.current;
+    // 2. Start Voice Capture
+    // Save current input text as the base, so new speech appends after it
+    baseTextRef.current = input.trim();
+    liveSpeechTextRef.current = '';
+    isUserWantsListeningRef.current = true;
 
-    if (useMediaRecording) {
+    const hasSpeechRecognition = !!recognitionRef.current;
+    const needsMediaRecorder = isMobileRef.current || !hasSpeechRecognition;
+
+    // Start MediaRecorder for high-quality audio capture (mobile always, desktop fallback)
+    if (needsMediaRecorder) {
       if (!navigator.mediaDevices?.getUserMedia) {
         setErrorMsg('Voice recording is not supported in this browser. Please type your details.');
+        isUserWantsListeningRef.current = false;
         return;
       }
 
@@ -514,25 +486,30 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
         mediaRecorderRef.current = recorder;
         setIsRecordingAudio(true);
         setIsListening(true);
-        isUserWantsListeningRef.current = true;
 
         setRecordingSeconds(0);
         clearInterval(recordingTimerRef.current);
         recordingTimerRef.current = setInterval(() => {
           setRecordingSeconds((s) => s + 1);
         }, 1000);
+
+        // Also start Web Speech API alongside for live typing preview on mobile
+        if (hasSpeechRecognition) {
+          try {
+            recognitionRef.current.start();
+          } catch (_) {
+            // Speech recognition failed to start alongside — that's OK, audio recording continues
+          }
+        }
       } catch (err: any) {
         console.error('Microphone start error:', err);
         setIsRecordingAudio(false);
         setIsListening(false);
+        isUserWantsListeningRef.current = false;
         setErrorMsg('Microphone access was denied. Please allow microphone permissions or type details.');
       }
     } else {
-      // Desktop live dictation
-      isUserWantsListeningRef.current = true;
-      committedTextRef.current = input.trim();
-      interimTextRef.current = '';
-
+      // Desktop-only: Web Speech API for real-time live typing (no MediaRecorder needed)
       try {
         recognitionRef.current.start();
         setIsListening(true);
@@ -553,8 +530,8 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     setChatHistory([]);
     setLatestFilledCount(null);
     setInputState('');
-    committedTextRef.current = '';
-    interimTextRef.current = '';
+    baseTextRef.current = '';
+    liveSpeechTextRef.current = '';
     setErrorMsg(null);
   }, []);
 
@@ -566,10 +543,11 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     setIsTranscribing(false);
     isUserWantsListeningRef.current = false;
 
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (_) {}
+    }
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch (_) {}
+      try { mediaRecorderRef.current.stop(); } catch (_) {}
     }
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((t) => t.stop());
