@@ -142,7 +142,16 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-medium text-ink/60 md:flex-row md:items-center">
           <p>Copyright {siteConfig.businessName} {new Date().getFullYear()}</p>
-          <p>❤️ Made with love in Manchester</p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p>
+              Made By Yemuel -{' '}
+              <a href="tel:09064982841" className="hover:text-ink transition-colors">
+                09064982841
+              </a>
+            </p>
+            <span className="hidden sm:inline text-ink/30">•</span>
+            <p>❤️ Made with love in Manchester</p>
+          </div>
         </div>
       </div>
 
