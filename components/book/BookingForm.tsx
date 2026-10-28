@@ -72,6 +72,70 @@ const slugToLabel: Record<string, string> = {
   'retouching-classes': 'Retouching Classes',
 };
 
+function normalizeDate(val: any): string {
+  if (!val || typeof val !== 'string') return '';
+  const trimmed = val.trim();
+  const m = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m && m[1] && m[2] && m[3]) {
+    return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  }
+  const d = new Date(trimmed);
+  if (!isNaN(d.getTime())) {
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${day}`;
+  }
+  return trimmed;
+}
+
+function normalizeTime(val: any): string {
+  if (!val || typeof val !== 'string') return '';
+  const s = val.trim().toLowerCase();
+  const m24 = s.match(/^(\d{1,2}):(\d{2})/);
+  if (m24 && m24[1] && m24[2]) {
+    return `${m24[1].padStart(2, '0')}:${m24[2]}`;
+  }
+  const m12 = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/);
+  if (m12 && m12[1]) {
+    let h = Number(m12[1]);
+    const min = m12[2] || '00';
+    if (m12[3] === 'pm' && h < 12) h += 12;
+    if (m12[3] === 'am' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${min}`;
+  }
+  return val;
+}
+
+function normalizeBudget(val: any): string {
+  if (!val) return '';
+  const valid = ['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss'];
+  if (valid.includes(val)) return val;
+  const num = Number(String(val).replace(/[^0-9]/g, ''));
+  if (num > 0) {
+    if (num < 500) return 'Under £500';
+    if (num <= 1000) return '£500–£1,000';
+    if (num <= 2500) return '£1,000–£2,500';
+    if (num <= 5000) return '£2,500–£5,000';
+    return '£5,000+';
+  }
+  return val;
+}
+
+function normalizeDuration(val: any): string {
+  if (!val) return '';
+  const valid = ['30 min', '1 hr', '2 hrs', 'Half Day (4 hrs)', 'Full Day (8 hrs)', 'Multi-Day', 'Not sure'];
+  if (valid.includes(val)) return val;
+  const s = String(val).toLowerCase();
+  if (s.includes('30') || s.includes('half hour')) return '30 min';
+  if (s.includes('1') && (s.includes('hr') || s.includes('hour'))) return '1 hr';
+  if (s.includes('2') && (s.includes('hr') || s.includes('hour'))) return '2 hrs';
+  if (s.includes('half') || s.includes('4')) return 'Half Day (4 hrs)';
+  if (s.includes('full') || s.includes('8') || s.includes('all day')) return 'Full Day (8 hrs)';
+  if (s.includes('multi') || s.includes('days') || s.includes('weekend')) return 'Multi-Day';
+  return val;
+}
+
 export default function BookingForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -161,7 +225,28 @@ export default function BookingForm() {
   const travelReq = watch('travelRequired');
 
   const handleApplyAiFields = (fields: Partial<BookingFormData>) => {
-    Object.entries(fields).forEach(([key, value]) => {
+    const sanitized: Record<string, any> = { ...fields };
+
+    if (sanitized.preferredDate) {
+      sanitized.preferredDate = normalizeDate(sanitized.preferredDate);
+      if (!sanitized.preferredStartTime) {
+        sanitized.preferredStartTime = '11:00';
+      }
+    }
+    if (sanitized.alternateDate) {
+      sanitized.alternateDate = normalizeDate(sanitized.alternateDate);
+    }
+    if (sanitized.preferredStartTime) {
+      sanitized.preferredStartTime = normalizeTime(sanitized.preferredStartTime);
+    }
+    if (sanitized.budgetRange) {
+      sanitized.budgetRange = normalizeBudget(sanitized.budgetRange);
+    }
+    if (sanitized.estimatedDuration) {
+      sanitized.estimatedDuration = normalizeDuration(sanitized.estimatedDuration);
+    }
+
+    Object.entries(sanitized).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         setValue(key as any, value as any, {
           shouldValidate: true,

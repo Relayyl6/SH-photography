@@ -32,7 +32,8 @@ The allowed values and exact field names are:
 - numSubjects: string (e.g. '1-2', '3-5', '50-100', '120 guests')
 - estimatedDuration: exactly one of: '30 min' | '1 hr' | '2 hrs' | 'Half Day (4 hrs)' | 'Full Day (8 hrs)' | 'Multi-Day' | 'Not sure'
 - preferredDate: string in 'YYYY-MM-DD' format (e.g. '2026-09-12'). Leave null if not mentioned.
-- preferredStartTime: string in 'HH:mm' format (e.g. '10:00', '14:00', '18:00'). Leave null if not mentioned.
+- alternateDate: string in 'YYYY-MM-DD' format (backup date if user mentions 'or backup date...', 'alternatively...', 'or next week...', 'either X or Y', 'backup is...'). Leave null if not mentioned.
+- preferredStartTime: string in 'HH:mm' format (e.g. '10:00', '11:00', '14:00', '15:00'). Leave null if not mentioned.
 - dateFlexible: 'Yes' | 'No'
 - locationType: exactly one of: 'Studio' | "Client's Location" | 'Outdoor' | 'Venue' | 'Multiple Locations' | 'Other'
 - address: string (venue name or street)
@@ -61,24 +62,30 @@ The allowed values and exact field names are:
 - preferredContact: exactly one of: 'Email' | 'Phone' | 'WhatsApp'
 - companyName: string
 - instagramHandle: string
-- howDidYouFindMe: string
+- howDidYouFindMe: exactly one of: 'Instagram' | 'Google' | 'Referral' | 'Venue' | 'Repeat Client' | 'Other'
 
 - depositAck: boolean (set to true when user requests a quote)
-- termsAgreed: boolean (set to true if user mentions terms or booking)
-- contactConsent: boolean (set to true if user provides phone/email/contact)
+- termsAgreed: boolean (set to true when user requests a quote)
+- privacyAgreed: boolean (set to true when user requests a quote)
+- contactConsent: boolean (set to true when user requests a quote)
 
 CRITICAL RULES:
-1. ONLY include fields in the 'fields' object if there is evidence or clear inference for them in the transcript. DO NOT invent fake contact info (email/phone/name) or dates if not mentioned.
+1. ONLY include fields in the 'fields' object if there is evidence or clear inference for them in the transcript. DO NOT invent fake contact info (email/phone/name) if not mentioned.
 2. If the user mentions a preferredDate, ALWAYS also provide a valid preferredStartTime (e.g. '10:00', '11:00', '14:00', '15:00'). If the user didn't mention an exact hour, infer a sensible slot (e.g. '14:00' for afternoon/evening, '10:00' for morning).
-3. If dateFlexible is not explicitly specified, set dateFlexible: 'Yes'.
-4. If turnaroundTime is not explicitly specified, set turnaroundTime: 'Standard (2–3 weeks)'.
-5. If budgetFlexible is not explicitly specified, set budgetFlexible: 'Yes'.
-6. If depositAck is not set, set depositAck: true so the quote request is ready to review.
-7. Use the exact keys listed above. Do NOT use alternative names like 'clientName' or 'locationDetails'.
-8. If previous data already has fields filled, preserve them unless the user explicitly updates them in the latest transcript.
-9. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).
-10. In 'missingFields', list the key missing items that Benedict needs to finalize the quote (e.g. ["Phone number", "Approximate budget"]).
-11. In 'assistantMessage', write a warm, personal 1-2 sentence response acknowledging what was captured, and asking a direct, friendly follow-up question for 1 or 2 of the most critical missing fields to help complete their booking.
+3. If user mentions an alternate, backup, or secondary date option (e.g. 'or the 21st', 'backup date is...', 'either Saturday or Sunday'), ALWAYS extract and format as alternateDate (YYYY-MM-DD).
+4. If a numerical budget is stated (e.g. '£800' -> '£500–£1,000', '£1500' or '2000' -> '£1,000–£2,500', '3000' -> '£2,500–£5,000', 'under 500' -> 'Under £500'), map it to the exact budgetRange enum.
+5. If duration is stated (e.g. '1 hour', '2 hours', '4 hours', 'half day', 'full day'), map to estimatedDuration ('1 hr', '2 hrs', 'Half Day (4 hrs)', 'Full Day (8 hrs)').
+6. If phone number is spoken with 'oh' or spaces, convert to clean digits and spaces (e.g. '07700 900123').
+7. If email is spoken with 'at' or 'dot', convert to valid email format (e.g. 'name@example.com').
+8. If dateFlexible is not explicitly specified, set dateFlexible: 'Yes'.
+9. If turnaroundTime is not explicitly specified, set turnaroundTime: 'Standard (2–3 weeks)'.
+10. If budgetFlexible is not explicitly specified, set budgetFlexible: 'Yes'.
+11. If depositAck is not set, set depositAck: true, termsAgreed: true, privacyAgreed: true, contactConsent: true so the quote request is ready to review.
+12. Use the exact keys listed above. Do NOT use alternative names like 'clientName' or 'locationDetails'.
+13. If previous data already has fields filled, preserve them unless the user explicitly updates them in the latest transcript.
+14. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Alternate: 21 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).
+15. In 'missingFields', list the key missing items that Benedict needs to finalize the quote (e.g. ["Phone number", "Approximate budget"]).
+16. In 'assistantMessage', write a warm, personal 1-2 sentence response acknowledging what was captured, and asking a direct, friendly follow-up question for 1 or 2 of the most critical missing fields to help complete their booking.
 
 Respond ONLY with a valid JSON object with the following schema:
 {
