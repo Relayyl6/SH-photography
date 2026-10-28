@@ -255,7 +255,7 @@ export default function BookingForm() {
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                         {['Wedding', 'Portrait', 'Event', 'Retouching', 'Other'].map(cat => (
                           <label key={cat} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.serviceCategory === cat ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
-                            <input type="radio" value={cat} {...register('serviceCategory')} className="hidden" />
+                            <input type="radio" value={cat} checked={formData.serviceCategory === cat} {...register('serviceCategory')} className="hidden" />
                             <span className="block text-center text-sm sm:text-base">{cat}</span>
                           </label>
                         ))}
@@ -266,18 +266,18 @@ export default function BookingForm() {
                     {serviceCat && (
                       <div>
                         <label className="block text-sm font-medium mb-2">Session Sub-Type</label>
-                        <input type="text" {...register('sessionSubType')} placeholder={serviceCat === 'Wedding' ? 'e.g., Full Day, Ceremony Only' : 'e.g., Individual, Family'} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.sessionSubType ?? ''} {...register('sessionSubType')} placeholder={serviceCat === 'Wedding' ? 'e.g., Full Day, Ceremony Only' : 'e.g., Individual, Family'} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Number of Subjects/People</label>
-                        <input type="text" {...register('numSubjects')} placeholder="e.g., 2, or 50+" className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.numSubjects ?? ''} {...register('numSubjects')} placeholder="e.g., 2, or 50+" className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Estimated Duration</label>
-                        <select {...register('estimatedDuration')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.estimatedDuration ?? ''} {...register('estimatedDuration')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select duration...</option>
                           <option value="30 min">30 min</option>
                           <option value="1 hr">1 hr</option>
@@ -320,14 +320,14 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Alternate Date</label>
-                        <input type="date" {...register('alternateDate')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="date" value={formData.alternateDate ?? ''} {...register('alternateDate')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         <p className="text-xs text-ink/50 mt-1">Optional backup.</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Is the date flexible? *</label>
                         <div className="flex gap-4 h-[50px] items-center">
-                          <label className="flex items-center gap-2"><input type="radio" value="Yes" {...register('dateFlexible')} className="accent-ink" /> Yes</label>
-                          <label className="flex items-center gap-2"><input type="radio" value="No" {...register('dateFlexible')} className="accent-ink" /> No</label>
+                          <label className="flex items-center gap-2"><input type="radio" value="Yes" checked={formData.dateFlexible === 'Yes'} {...register('dateFlexible')} className="accent-ink" /> Yes</label>
+                          <label className="flex items-center gap-2"><input type="radio" value="No" checked={formData.dateFlexible === 'No'} {...register('dateFlexible')} className="accent-ink" /> No</label>
                         </div>
                         {errors.dateFlexible && <p className="text-red-500 text-sm">{errors.dateFlexible.message}</p>}
                       </div>
@@ -342,7 +342,7 @@ export default function BookingForm() {
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Shoot Location Type *</label>
-                      <select {...register('locationType')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                      <select value={formData.locationType ?? ''} {...register('locationType')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                         <option value="">Select location type...</option>
                         <option value="Studio">Studio</option>
                         <option value="Client's Location">Client's Location</option>
@@ -357,15 +357,15 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div className="sm:col-span-2">
                         <label className="block text-sm font-medium mb-2">Full Address / Venue Name</label>
-                        <input type="text" {...register('address')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.address ?? ''} {...register('address')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">City, Postcode</label>
-                        <input type="text" {...register('cityPostcode')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.cityPostcode ?? ''} {...register('cityPostcode')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Indoors or Outdoors?</label>
-                        <select {...register('indoorsOutdoors')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.indoorsOutdoors ?? ''} {...register('indoorsOutdoors')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Indoors">Indoors</option>
                           <option value="Outdoors">Outdoors</option>
@@ -378,8 +378,8 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Travel required? *</label>
                       <div className="flex gap-4 mb-2">
-                        <label className="flex items-center gap-2"><input type="radio" value="Yes" {...register('travelRequired')} className="accent-ink" /> Yes</label>
-                        <label className="flex items-center gap-2"><input type="radio" value="No" {...register('travelRequired')} className="accent-ink" /> No</label>
+                        <label className="flex items-center gap-2"><input type="radio" value="Yes" checked={formData.travelRequired === 'Yes'} {...register('travelRequired')} className="accent-ink" /> Yes</label>
+                        <label className="flex items-center gap-2"><input type="radio" value="No" checked={formData.travelRequired === 'No'} {...register('travelRequired')} className="accent-ink" /> No</label>
                       </div>
                       {errors.travelRequired && <p className="text-red-500 text-sm">{errors.travelRequired.message}</p>}
                     </div>
@@ -387,13 +387,13 @@ export default function BookingForm() {
                     {travelReq === 'Yes' && (
                       <div>
                         <label className="block text-sm font-medium mb-2">Travel Details (Distance / Overnight stay?)</label>
-                        <textarea {...register('travelDetails')} rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                        <textarea value={formData.travelDetails ?? ''} {...register('travelDetails')} rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                       </div>
                     )}
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Parking / Access notes</label>
-                      <textarea {...register('parkingNotes')} rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                      <textarea value={formData.parkingNotes ?? ''} {...register('parkingNotes')} rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                     </div>
                   </div>
                 )}
@@ -406,19 +406,22 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Describe your vision *</label>
                       <p className="text-xs text-ink/60 mb-2">What mood, story, or feeling do you want captured?</p>
-                      <textarea {...register('vision')} rows={4} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                      <textarea value={formData.vision ?? ''} {...register('vision')} rows={4} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                       {errors.vision && <p className="text-red-500 text-sm mt-1">{errors.vision.message}</p>}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-3">Preferred Photography Style *</label>
                       <div className="flex flex-wrap gap-2 sm:gap-3">
-                        {['Candid', 'Posed', 'Documentary', 'Editorial', 'Fine Art', 'Lifestyle', 'Dramatic', 'Natural Light', 'Studio Lit', 'Vintage', 'Modern', 'Moody', 'Bright & Airy'].map(style => (
-                          <label key={style} className="flex items-center gap-2 p-2 px-3 border border-ink/20 rounded-full cursor-pointer hover:border-ink text-sm">
-                            <input type="checkbox" value={style} {...register('stylePreferences')} className="accent-ink" />
-                            {style}
-                          </label>
-                        ))}
+                        {['Candid', 'Posed', 'Documentary', 'Editorial', 'Fine Art', 'Lifestyle', 'Dramatic', 'Natural Light', 'Studio Lit', 'Vintage', 'Modern', 'Moody', 'Bright & Airy'].map(style => {
+                          const isSelected = formData.stylePreferences?.includes(style) ?? false;
+                          return (
+                            <label key={style} className={`flex items-center gap-2 p-2 px-3 border rounded-full cursor-pointer transition-colors text-sm ${isSelected ? 'border-ink bg-ink text-paper font-medium' : 'border-ink/20 hover:border-ink'}`}>
+                              <input type="checkbox" value={style} checked={isSelected} {...register('stylePreferences')} className="accent-ink" />
+                              {style}
+                            </label>
+                          );
+                        })}
                       </div>
                       {errors.stylePreferences && <p className="text-red-500 text-sm mt-2">{errors.stylePreferences.message}</p>}
                     </div>
@@ -426,7 +429,7 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Color Preference *</label>
-                        <select {...register('colorPreference')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.colorPreference ?? ''} {...register('colorPreference')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Color">Color</option>
                           <option value="Black & White">Black & White</option>
@@ -437,18 +440,18 @@ export default function BookingForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Inspiration Links</label>
-                        <input type="text" {...register('inspirationLinks')} placeholder="Pinterest, Instagram, etc." className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.inspirationLinks ?? ''} {...register('inspirationLinks')} placeholder="Pinterest, Instagram, etc." className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Must-have shots</label>
-                      <textarea {...register('mustHaveShots')} placeholder="e.g., family group photo, first dance, detail shots" rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                      <textarea value={formData.mustHaveShots ?? ''} {...register('mustHaveShots')} placeholder="e.g., family group photo, first dance, detail shots" rows={3} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Any special requests?</label>
-                      <textarea {...register('specialRequests')} rows={2} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                      <textarea value={formData.specialRequests ?? ''} {...register('specialRequests')} rows={2} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                     </div>
                   </div>
                 )}
@@ -461,12 +464,15 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-3">What do you want delivered? *</label>
                       <div className="flex flex-col gap-3">
-                        {['Edited digital images', 'Prints', 'Album/Book', 'Canvas/Wall art', 'Social media package', 'Video/Hybrid coverage'].map(item => (
-                          <label key={item} className="flex items-center gap-3">
-                            <input type="checkbox" value={item} {...register('deliverables')} className="accent-ink w-4 h-4" />
-                            <span>{item}</span>
-                          </label>
-                        ))}
+                        {['Edited digital images', 'Prints', 'Album/Book', 'Canvas/Wall art', 'Social media package', 'Video/Hybrid coverage'].map(item => {
+                          const isSelected = formData.deliverables?.includes(item) ?? false;
+                          return (
+                            <label key={item} className="flex items-center gap-3 cursor-pointer">
+                              <input type="checkbox" value={item} checked={isSelected} {...register('deliverables')} className="accent-ink w-4 h-4" />
+                              <span className={isSelected ? 'font-medium text-ink' : 'text-ink/80'}>{item}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                       {errors.deliverables && <p className="text-red-500 text-sm mt-2">{errors.deliverables.message}</p>}
                     </div>
@@ -474,7 +480,7 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Edited images expected</label>
-                        <select {...register('editedImagesExpected')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.editedImagesExpected ?? ''} {...register('editedImagesExpected')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="10–25">10–25</option>
                           <option value="25–50">25–50</option>
@@ -486,7 +492,7 @@ export default function BookingForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Turnaround time needed *</label>
-                        <select {...register('turnaroundTime')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.turnaroundTime ?? ''} {...register('turnaroundTime')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Standard (2–3 weeks)">Standard (2–3 weeks)</option>
                           <option value="Rush (under 1 week)">Rush (under 1 week)</option>
@@ -499,7 +505,7 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Usage Rights Needed</label>
-                        <select {...register('usageRights')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.usageRights ?? ''} {...register('usageRights')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Personal use">Personal use</option>
                           <option value="Social media">Social media</option>
@@ -511,7 +517,7 @@ export default function BookingForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Do you need a second shooter?</label>
-                        <select {...register('secondShooter')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.secondShooter ?? ''} {...register('secondShooter')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -532,7 +538,7 @@ export default function BookingForm() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                         {['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss'].map(range => (
                           <label key={range} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.budgetRange === range ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
-                            <input type="radio" value={range} {...register('budgetRange')} className="hidden" />
+                            <input type="radio" value={range} checked={formData.budgetRange === range} {...register('budgetRange')} className="hidden" />
                             <span className="block text-center text-sm">{range}</span>
                           </label>
                         ))}
@@ -543,7 +549,7 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Is budget flexible? *</label>
-                        <select {...register('budgetFlexible')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.budgetFlexible ?? ''} {...register('budgetFlexible')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Yes">Yes</option>
                           <option value="No">No</option>
@@ -553,7 +559,7 @@ export default function BookingForm() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">How soon do you need to book? *</label>
-                        <select {...register('howSoon')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.howSoon ?? ''} {...register('howSoon')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="ASAP">ASAP</option>
                           <option value="Within 2 weeks">Within 2 weeks</option>
@@ -567,7 +573,7 @@ export default function BookingForm() {
 
                     <div className="pt-4 border-t border-ink/10">
                       <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" {...register('depositAck')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
+                        <input type="checkbox" checked={!!formData.depositAck} {...register('depositAck')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
                         <span className="text-sm">I understand a deposit is required to secure the date *</span>
                       </label>
                       {errors.depositAck && <p className="text-red-500 text-sm mt-1 ml-7">{errors.depositAck.message}</p>}
@@ -583,12 +589,12 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Full Name *</label>
-                        <input type="text" {...register('fullName')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.fullName ?? ''} {...register('fullName')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Email *</label>
-                        <input type="email" {...register('email')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="email" value={formData.email ?? ''} {...register('email')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
                       </div>
                     </div>
@@ -596,12 +602,12 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Phone *</label>
-                        <input type="tel" {...register('phone')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="tel" value={formData.phone ?? ''} {...register('phone')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Preferred contact method *</label>
-                        <select {...register('preferredContact')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                        <select value={formData.preferredContact ?? ''} {...register('preferredContact')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           <option value="Email">Email</option>
                           <option value="Phone">Phone</option>
@@ -614,17 +620,17 @@ export default function BookingForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2">Company/Brand Name</label>
-                        <input type="text" {...register('companyName')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.companyName ?? ''} {...register('companyName')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Instagram Handle</label>
-                        <input type="text" {...register('instagramHandle')} placeholder="@username" className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
+                        <input type="text" value={formData.instagramHandle ?? ''} {...register('instagramHandle')} placeholder="@username" className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-2">How did you find me?</label>
-                      <select {...register('howDidYouFindMe')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
+                      <select value={formData.howDidYouFindMe ?? ''} {...register('howDidYouFindMe')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                         <option value="">Select...</option>
                         <option value="Instagram">Instagram</option>
                         <option value="Google">Google</option>
@@ -644,19 +650,19 @@ export default function BookingForm() {
 
                     <div className="space-y-4 pt-4">
                       <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" {...register('termsAgreed')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
+                        <input type="checkbox" checked={!!formData.termsAgreed} {...register('termsAgreed')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
                         <span className="text-sm">I agree to the Terms & Conditions *</span>
                       </label>
                       {errors.termsAgreed && <p className="text-red-500 text-sm ml-7">{errors.termsAgreed.message}</p>}
 
                       <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" {...register('privacyAgreed')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
+                        <input type="checkbox" checked={!!formData.privacyAgreed} {...register('privacyAgreed')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
                         <span className="text-sm">I agree to the Privacy Policy *</span>
                       </label>
                       {errors.privacyAgreed && <p className="text-red-500 text-sm ml-7">{errors.privacyAgreed.message}</p>}
 
                       <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" {...register('contactConsent')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
+                        <input type="checkbox" checked={!!formData.contactConsent} {...register('contactConsent')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
                         <span className="text-sm">I consent to being contacted about this inquiry *</span>
                       </label>
                       {errors.contactConsent && <p className="text-red-500 text-sm ml-7">{errors.contactConsent.message}</p>}

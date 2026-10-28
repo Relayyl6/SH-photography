@@ -11,20 +11,20 @@
 
 export type DayHours = { start: string; end: string } | null; // null = closed
 
-// 0 = Sunday … 6 = Saturday. [SUGGESTED] — edit to match real hours.
+// 0 = Sunday … 6 = Saturday. Sundays open for weddings & bespoke sessions.
 export const OPENING_HOURS: Record<number, DayHours> = {
-  0: null,
+  0: { start: "10:00", end: "16:00" },
   1: { start: "09:00", end: "17:00" },
   2: { start: "09:00", end: "17:00" },
   3: { start: "09:00", end: "17:00" },
   4: { start: "09:00", end: "17:00" },
   5: { start: "09:00", end: "17:00" },
-  6: { start: "10:00", end: "15:00" },
+  6: { start: "10:00", end: "16:00" },
 };
 
 export const SLOT_DURATION_MINUTES = 60; // [SUGGESTED]
 export const BOOKING_LEAD_DAYS = 2; // earliest bookable day is today + 2
-export const BOOKING_WINDOW_DAYS = 120; // furthest bookable day
+export const BOOKING_WINDOW_DAYS = 540; // 18 months ahead (essential for weddings & future events)
 
 // [PLACEHOLDER] specific dates Benedict is closed (holidays, already booked
 // elsewhere) — add ISO "YYYY-MM-DD" strings here until this reads from a

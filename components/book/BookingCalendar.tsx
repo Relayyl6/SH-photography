@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   BOOKING_LEAD_DAYS,
   BOOKING_WINDOW_DAYS,
@@ -56,6 +56,16 @@ export function BookingCalendar({
   const [viewMonth, setViewMonth] = useState(() =>
     startOfMonth(selectedDate ? new Date(`${selectedDate}T00:00:00`) : today)
   );
+
+  // Keep calendar month view aligned whenever a date is selected or autofilled by AI
+  useEffect(() => {
+    if (selectedDate) {
+      const d = new Date(`${selectedDate}T00:00:00`);
+      if (!isNaN(d.getTime())) {
+        setViewMonth(startOfMonth(d));
+      }
+    }
+  }, [selectedDate]);
   const gridRef = useRef<HTMLDivElement>(null);
   const headingId = useId();
   const slotsHeadingId = useId();

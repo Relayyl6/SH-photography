@@ -118,9 +118,8 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
 
     try {
       const recognition = new SpeechRecognition();
-      // On mobile (Android & iOS), continuous = false avoids Chromium's duplicate words bug.
-      // Auto-restart in onend provides seamless continuous listening when user pauses.
-      recognition.continuous = !isMobileRef.current;
+      // continuous = true keeps the microphone open without stopping on pauses or triggering annoying OS beeps
+      recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-GB';
 
@@ -130,7 +129,6 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
       };
 
       recognition.onresult = (event: any) => {
-        silentRestartCountRef.current = 0; // speech received, reset silence counter
         let finalChunk = '';
         let interimChunk = '';
 
@@ -178,7 +176,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
       };
 
       recognition.onend = () => {
-        // Flush any pending interim speech (e.g. mobile Chrome ended without setting isFinal)
+        // Flush any pending interim speech
         if (interimTextRef.current) {
           committedTextRef.current = appendSpeechChunk(
             committedTextRef.current,
@@ -188,31 +186,9 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
           setInputState(committedTextRef.current);
         }
 
-        // If user still wants listening active, auto-restart seamlessly across pauses
-        if (isUserWantsListeningRef.current) {
-          silentRestartCountRef.current += 1;
-          // Guard against runaway loop if user walks away or stays silent for prolonged time (12 cycles ≈ 25s)
-          if (silentRestartCountRef.current > 12) {
-            isUserWantsListeningRef.current = false;
-            setIsListening(false);
-            return;
-          }
-
-          clearTimeout(restartTimeoutRef.current);
-          restartTimeoutRef.current = setTimeout(() => {
-            if (isUserWantsListeningRef.current && recognitionRef.current) {
-              try {
-                recognitionRef.current.start();
-              } catch (err: any) {
-                if (err?.name !== 'InvalidStateError') {
-                  console.warn('Recognition auto-restart notice:', err);
-                }
-              }
-            }
-          }, 150);
-        } else {
-          setIsListening(false);
-        }
+        // Clean finish without annoying restart-beep loops
+        isUserWantsListeningRef.current = false;
+        setIsListening(false);
       };
 
       recognitionRef.current = recognition;

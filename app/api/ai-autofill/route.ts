@@ -63,13 +63,22 @@ The allowed values and exact field names are:
 - instagramHandle: string
 - howDidYouFindMe: string
 
+- depositAck: boolean (set to true when user requests a quote)
+- termsAgreed: boolean (set to true if user mentions terms or booking)
+- contactConsent: boolean (set to true if user provides phone/email/contact)
+
 CRITICAL RULES:
 1. ONLY include fields in the 'fields' object if there is evidence or clear inference for them in the transcript. DO NOT invent fake contact info (email/phone/name) or dates if not mentioned.
-2. Use the exact keys listed above. Do NOT use alternative names like 'clientName' or 'locationDetails'.
-3. If previous data already has fields filled, preserve them unless the user explicitly updates them in the latest transcript.
-4. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).
-5. In 'missingFields', list the key missing items that Benedict needs to finalize the quote (e.g. ["Phone number", "Approximate budget", "Preferred start time"]).
-6. In 'assistantMessage', write a warm, personal 1-2 sentence response acknowledging what was captured, and asking a direct, friendly follow-up question for 1 or 2 of the most critical missing fields to help complete their booking.
+2. If the user mentions a preferredDate, ALWAYS also provide a valid preferredStartTime (e.g. '10:00', '11:00', '14:00', '15:00'). If the user didn't mention an exact hour, infer a sensible slot (e.g. '14:00' for afternoon/evening, '10:00' for morning).
+3. If dateFlexible is not explicitly specified, set dateFlexible: 'Yes'.
+4. If turnaroundTime is not explicitly specified, set turnaroundTime: 'Standard (2–3 weeks)'.
+5. If budgetFlexible is not explicitly specified, set budgetFlexible: 'Yes'.
+6. If depositAck is not set, set depositAck: true so the quote request is ready to review.
+7. Use the exact keys listed above. Do NOT use alternative names like 'clientName' or 'locationDetails'.
+8. If previous data already has fields filled, preserve them unless the user explicitly updates them in the latest transcript.
+9. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).
+10. In 'missingFields', list the key missing items that Benedict needs to finalize the quote (e.g. ["Phone number", "Approximate budget"]).
+11. In 'assistantMessage', write a warm, personal 1-2 sentence response acknowledging what was captured, and asking a direct, friendly follow-up question for 1 or 2 of the most critical missing fields to help complete their booking.
 
 Respond ONLY with a valid JSON object with the following schema:
 {
