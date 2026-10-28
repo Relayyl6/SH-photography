@@ -5,7 +5,7 @@ const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.
 
 export async function POST(req: Request) {
   try {
-    const { transcript, audio, currentData, conversationHistory } = await req.json();
+    const { transcript, audio, currentData, conversationHistory, mode } = await req.json();
 
     if (!GEMINI_API_KEY) {
       return NextResponse.json(
@@ -16,6 +16,66 @@ export async function POST(req: Request) {
 
     const hasTranscript = typeof transcript === 'string' && transcript.trim().length > 0;
     const hasAudio = audio && typeof audio.base64 === 'string' && audio.base64.length > 0;
+
+    // Transcribe-only mode: transcribes audio into text so user can review and edit in the input pane first
+    if (mode === 'transcribe') {
+      if (!hasAudio && !hasTranscript) {
+        return NextResponse.json({ error: 'No audio or text provided to transcribe.' }, { status: 400 });
+      }
+      if (!hasAudio && hasTranscript) {
+        return NextResponse.json({ transcript });
+      }
+
+      const transcribeParts: any[] = [
+        {
+          inlineData: {
+            mimeType: audio.mimeType || 'audio/webm',
+            data: audio.base64,
+          },
+        },
+        {
+          text: `Accurately transcribe all spoken words from this audio recording into clean, natural English text.
+- Faithfully preserve all details: dates, numbers, names, locations, email addresses, phone numbers, and photography event requests.
+- Add natural punctuation and capitalization.
+- Return ONLY the clean transcribed text. Do NOT add preamble, quotes, markdown code blocks, or explanatory notes.`,
+        },
+      ];
+
+      let transcribeError = null;
+      for (const model of FALLBACK_MODELS) {
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: transcribeParts }],
+              generationConfig: {
+                temperature: 0.1,
+              },
+            }),
+          });
+          const data = await response.json();
+          if (data.error) {
+            transcribeError = data.error.message || JSON.stringify(data.error);
+            continue;
+          }
+          const transcribed = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (transcribed && typeof transcribed === 'string' && transcribed.trim()) {
+            return NextResponse.json({
+              transcript: transcribed.trim().replace(/^["']|["']$/g, ''),
+            });
+          }
+        } catch (err: any) {
+          transcribeError = err.message || String(err);
+        }
+      }
+
+      return NextResponse.json(
+        { error: `Could not transcribe audio. ${transcribeError || 'Please try again or type directly.'}` },
+        { status: 500 }
+      );
+    }
 
     if (!hasTranscript && !hasAudio) {
       return NextResponse.json({ error: 'Please describe your event or record your voice.' }, { status: 400 });

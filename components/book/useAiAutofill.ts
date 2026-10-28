@@ -82,6 +82,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInputState] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -348,28 +349,82 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     });
   }, []);
 
-  // Main Submit action
-  const handleSubmit = useCallback(
-    async (textToSubmit?: string) => {
-      // If voice recording is in progress, stop it and submit audio
-      if (isRecordingAudio) {
-        const audioData = await stopAudioRecording();
-        if (audioData) {
-          await sendToAiEndpoint({ audio: audioData });
-          return;
-        }
+  // Stop voice capture and load transcribed text into the input box for user review & editing
+  const stopVoiceCapture = useCallback(async () => {
+    setErrorMsg(null);
+
+    // 1. Desktop Web Speech: stop recognition and finalize text in the input box
+    if (!isRecordingAudio && isListening) {
+      isUserWantsListeningRef.current = false;
+      clearTimeout(restartTimeoutRef.current);
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (_) {}
+      }
+      setIsListening(false);
+
+      if (interimTextRef.current) {
+        committedTextRef.current = appendSpeechChunk(
+          committedTextRef.current,
+          interimTextRef.current
+        );
+        interimTextRef.current = '';
+      }
+      const cleanText = cleanSpeechDuplicates(committedTextRef.current.trim());
+      setInputState(cleanText);
+      return;
+    }
+
+    // 2. Mobile / MediaRecorder: stop recorder and transcribe audio to text (WITHOUT autofilling)
+    if (isRecordingAudio) {
+      setIsTranscribing(true);
+      const audioData = await stopAudioRecording();
+      if (!audioData) {
+        setIsTranscribing(false);
+        return;
       }
 
-      // If Web Speech API was running on desktop, stop it
-      if (isListening) {
-        isUserWantsListeningRef.current = false;
-        clearTimeout(restartTimeoutRef.current);
-        if (recognitionRef.current) {
-          try {
-            recognitionRef.current.stop();
-          } catch (_) {}
+      try {
+        const res = await fetch('/api/ai-autofill', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'transcribe',
+            audio: audioData,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Failed to transcribe audio.');
         }
-        setIsListening(false);
+
+        if (data.transcript && typeof data.transcript === 'string') {
+          const transcribed = data.transcript.trim();
+          setInputState((prev) => {
+            const prevClean = prev.trim();
+            if (!prevClean) return transcribed;
+            return `${prevClean} ${transcribed}`;
+          });
+          committedTextRef.current = transcribed;
+        }
+      } catch (err: any) {
+        console.error('Transcription error:', err);
+        setErrorMsg(err.message || 'Could not transcribe voice. You can type your details directly.');
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
+  }, [isRecordingAudio, isListening, stopAudioRecording]);
+
+  // Main Submit action — autofills form from the text in the input pane
+  const handleSubmit = useCallback(
+    async (textToSubmit?: string) => {
+      // If voice recording is still running, stop and transcribe first so the user can review
+      if (isRecordingAudio || isListening) {
+        await stopVoiceCapture();
+        return;
       }
 
       // Flush any lingering interim voice text
@@ -387,7 +442,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
 
       await sendToAiEndpoint({ transcript: text });
     },
-    [isRecordingAudio, isListening, input, stopAudioRecording, sendToAiEndpoint]
+    [isRecordingAudio, isListening, input, stopVoiceCapture, sendToAiEndpoint]
   );
 
   // Toggle listening / voice recording
@@ -395,9 +450,9 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     setErrorMsg(null);
     setIsOpen(true);
 
-    // 1. If currently active, STOP and SUBMIT cleanly
+    // 1. If currently active, STOP and load text into the input pane for review (DO NOT autofill)
     if (isListening || isRecordingAudio) {
-      await handleSubmit();
+      await stopVoiceCapture();
       return;
     }
 
@@ -464,7 +519,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
         }
       }
     }
-  }, [isListening, isRecordingAudio, input, handleSubmit]);
+  }, [isListening, isRecordingAudio, input, stopVoiceCapture]);
 
   const handleClearHistory = useCallback(() => {
     setChatHistory([]);
@@ -480,6 +535,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     setRecordingSeconds(0);
     setIsRecordingAudio(false);
     setIsListening(false);
+    setIsTranscribing(false);
     isUserWantsListeningRef.current = false;
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -500,6 +556,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     input,
     setInput,
     isLoading,
+    isTranscribing,
     isListening,
     isRecordingAudio,
     recordingSeconds,
@@ -508,6 +565,7 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     chatHistory,
     latestFilledCount,
     toggleListening,
+    stopVoiceCapture,
     handleSubmit,
     handleClearHistory,
     cancelRecording,

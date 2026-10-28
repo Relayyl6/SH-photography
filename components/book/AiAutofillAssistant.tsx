@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
@@ -46,6 +46,7 @@ export function AiAutofillAssistant({
     input,
     setInput,
     isLoading,
+    isTranscribing,
     isListening,
     isRecordingAudio,
     recordingSeconds,
@@ -54,6 +55,7 @@ export function AiAutofillAssistant({
     chatHistory,
     latestFilledCount,
     toggleListening,
+    stopVoiceCapture,
     handleSubmit,
     handleClearHistory,
     cancelRecording,
@@ -61,6 +63,17 @@ export function AiAutofillAssistant({
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isSidebar = layout === 'sidebar';
+
+  // Automatically focus textarea after audio transcription finishes so user can edit right away
+  const prevTranscribingRef = useRef(isTranscribing);
+  useEffect(() => {
+    if (prevTranscribingRef.current && !isTranscribing && textareaRef.current) {
+      textareaRef.current.focus();
+      const len = textareaRef.current.value.length;
+      textareaRef.current.setSelectionRange(len, len);
+    }
+    prevTranscribingRef.current = isTranscribing;
+  }, [isTranscribing]);
 
   return (
     <section
@@ -219,6 +232,15 @@ export function AiAutofillAssistant({
                 </div>
               )}
 
+              {/* Active Audio Transcription Status Bar */}
+              {isTranscribing && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-accent/10 border-b border-accent/20 text-xs text-ink">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />
+                  <span className="font-semibold text-accent">Transcribing your voice...</span>
+                  <span className="text-[11px] text-ink/70 hidden xs:inline">Words will appear below for you to review and edit.</span>
+                </div>
+              )}
+
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -229,14 +251,16 @@ export function AiAutofillAssistant({
                     handleSubmit();
                   }
                 }}
-                disabled={isLoading}
+                disabled={isLoading || isTranscribing}
                 rows={isSidebar ? 2 : 3}
                 placeholder={
                   isRecordingAudio
-                    ? 'Recording your voice... Speak freely, take all the pauses you need! When done, click Finish & Auto-Fill.'
+                    ? 'Recording your voice... Speak freely, take all the pauses you need! When done, click "Done Speaking" to review.'
+                    : isTranscribing
+                    ? 'Transcribing your words into this box...'
                     : isListening
                     ? 'Listening... Speak freely, your words appear here in real time.'
-                    : 'Describe your event (date, venue, style, guest count, budget) or click the mic to speak...'
+                    : 'Describe your event (date, venue, style, guest count, budget) or tap Speak...'
                 }
                 className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-ink placeholder:text-ink/40 focus:outline-none disabled:opacity-50"
               />
@@ -248,12 +272,12 @@ export function AiAutofillAssistant({
                   <button
                     type="button"
                     onClick={toggleListening}
-                    disabled={isLoading || !speechSupported}
+                    disabled={isLoading || isTranscribing || !speechSupported}
                     title={
                       !speechSupported
                         ? 'Speech recognition not supported in this browser'
                         : isListening
-                        ? 'Finish & Submit'
+                        ? 'Stop recording and review text'
                         : 'Click to speak'
                     }
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
@@ -267,22 +291,28 @@ export function AiAutofillAssistant({
                         <MicOff className="h-3 w-3" />
                         <span>
                           {isRecordingAudio
-                            ? `${formatSeconds(recordingSeconds)} (Tap to finish)`
+                            ? `${formatSeconds(recordingSeconds)} (Tap to stop)`
                             : 'Listening... (Tap to stop)'}
                         </span>
                       </>
                     ) : (
                       <>
                         <Mic className="h-3 w-3 text-accent" />
-                        <span>Speak</span>
+                        <span>{input.trim() ? 'Speak More' : 'Speak'}</span>
                       </>
                     )}
                   </button>
+
+                  {!isListening && !isTranscribing && input.trim() && (
+                    <span className="text-[10px] text-ink/60 font-medium hidden md:inline ml-1">
+                      ✏️ Edit words above, then click Auto-Fill
+                    </span>
+                  )}
                 </div>
 
                 {/* Submit & Reset Actions */}
                 <div className="flex items-center gap-1.5">
-                  {chatHistory.length > 0 && !isListening && (
+                  {chatHistory.length > 0 && !isListening && !isTranscribing && (
                     <button
                       type="button"
                       onClick={handleClearHistory}
@@ -293,29 +323,41 @@ export function AiAutofillAssistant({
                     </button>
                   )}
 
-                  <button
-                    type="button"
-                    onClick={() => handleSubmit()}
-                    disabled={isLoading || (!input.trim() && !isListening)}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        <span>Analyzing...</span>
-                      </>
-                    ) : isListening ? (
-                      <>
-                        <Sparkles className="h-3 w-3" />
-                        <span>Finish &amp; Auto-Fill</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-3 w-3" />
-                        <span>Auto-Fill</span>
-                      </>
-                    )}
-                  </button>
+                  {isListening ? (
+                    <button
+                      type="button"
+                      onClick={() => stopVoiceCapture()}
+                      disabled={isTranscribing}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm active:scale-95 transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Done Speaking (Review)</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSubmit()}
+                      disabled={isLoading || isTranscribing || !input.trim()}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>Auto-Filling...</span>
+                        </>
+                      ) : isTranscribing ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>Transcribing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3 w-3" />
+                          <span>Auto-Fill Form</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
