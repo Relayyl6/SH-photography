@@ -9,6 +9,7 @@ import { PlaceholderImage } from "@/components/PlaceholderImage";
 import { Reveal } from "@/components/Reveal";
 import { StaggerReveal, StaggerItem } from "@/components/StaggerReveal";
 import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
+import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 
 export default function HomePage() {
   return (
@@ -16,24 +17,8 @@ export default function HomePage() {
       {/* ---------- Hero ---------- */}
       <section className="relative overflow-hidden bg-paper -mt-[84px] md:-mt-[96px]">
         
-        {/* Background Video with Poster Fallback (Desktop/Tablet only) */}
-        <video
-          autoPlay 
-          muted 
-          loop 
-          playsInline 
-          preload="metadata"
-          poster="/hero-bg.jpg"
-          className="hidden md:block absolute inset-0 h-full w-full object-cover opacity-[0.25] pointer-events-none select-none z-0 transform-gpu"
-        >
-          <source src="/photographer-bg.mp4" type="video/mp4" />
-        </video>
-
-        {/* Lightweight Mobile Static Background (Fast & Smooth 60fps on phones) */}
-        <div 
-          className="md:hidden absolute inset-0 bg-cover bg-center opacity-[0.18] pointer-events-none z-0" 
-          style={{ backgroundImage: "url('/hero-bg.jpg')" }} 
-        />
+        {/* Background Video with Poster Fallback (Mobile & Desktop) */}
+        <HeroBackgroundVideo />
 
         {/* Bottom Fade Gradient */}
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-paper to-transparent pointer-events-none z-0"></div>
