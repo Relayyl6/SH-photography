@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { packages } from "@/lib/packages";
 import { sessions } from "@/lib/sessions";
 import { enquirySchema, EnquiryInput } from "@/lib/validators";
-import { buildWhatsappUrl, buildEnquiryMailtoUrl } from "@/lib/whatsapp";
+import { buildWhatsappUrl, buildEnquiryMailtoUrl, buildGmailComposeUrl } from "@/lib/whatsapp";
 import { siteConfig } from "@/lib/site-config";
 
 type FieldErrors = Partial<Record<string, string>>;
@@ -71,18 +71,15 @@ export function ContactForm() {
     setErrors({});
     setStatus("sending");
     const sLabel = getServiceLabel(parsed.data.service);
+    const gmailUrl = buildGmailComposeUrl(parsed.data, sLabel);
     const mailtoUrl = buildEnquiryMailtoUrl(parsed.data, sLabel);
 
-    // Save lead in background before routing
-    try {
-      await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, serviceLabel: sLabel, channel: "email" }),
-      });
-    } catch (err) {
-      console.warn("Enquiry API logging:", err);
-    }
+    // Save lead in background before routing (non-blocking)
+    fetch("/api/enquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...parsed.data, serviceLabel: sLabel, channel: "email" }),
+    }).catch((err) => console.warn("Enquiry API logging:", err));
 
     setLastSentData({
       values: parsed.data,
@@ -91,8 +88,18 @@ export function ContactForm() {
     });
     setStatus("sent");
 
-    // Open user's email client directly pre-addressed to Benedict's email
-    window.location.href = mailtoUrl;
+    // On desktop, open Gmail website directly in a new tab with compose open and pre-filled.
+    // On mobile, trigger the native mail handler.
+    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (!isMobile) {
+      const win = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+      if (!win) {
+        window.location.href = gmailUrl;
+      }
+    } else {
+      window.location.href = mailtoUrl;
+    }
+
     queueMicrotask(() => confirmationRef.current?.focus());
   }
 
@@ -133,13 +140,22 @@ export function ContactForm() {
     });
     setStatus("sent");
 
-    // Launch WhatsApp directly with pre-filled message
-    window.location.href = whatsappUrl;
+    // Launch WhatsApp directly
+    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = whatsappUrl;
+    } else {
+      const win = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+      if (!win) {
+        window.location.href = whatsappUrl;
+      }
+    }
     queueMicrotask(() => confirmationRef.current?.focus());
   }
 
   if (status === "sent" && lastSentData) {
     const { values, serviceLabel, method } = lastSentData;
+    const gmailUrl = buildGmailComposeUrl(values, serviceLabel);
     const mailtoUrl = buildEnquiryMailtoUrl(values, serviceLabel);
     const whatsappUrl = buildWhatsappUrl(values, serviceLabel);
 
@@ -152,12 +168,12 @@ export function ContactForm() {
           <div>
             <h2 ref={confirmationRef} tabIndex={-1} className="font-display text-2xl sm:text-3xl text-ink font-medium leading-snug">
               {method === "email"
-                ? "Your message is routed to Benedict Henry's email!"
+                ? "Opening Gmail to send to Benedict Henry!"
                 : "Opening WhatsApp chat with Benedict Henry!"}
             </h2>
             <p className="mt-1 text-sm text-ink/75 leading-relaxed">
               {method === "email"
-                ? `Addressed to ${siteConfig.email}. If your email app didn't launch automatically, tap the button below.`
+                ? `Pre-filled and addressed to ${siteConfig.email}. If Gmail didn't launch automatically, choose an option below.`
                 : `Connected to WhatsApp (${siteConfig.phoneDisplay}) with your message details.`}
             </p>
           </div>
@@ -194,16 +210,26 @@ export function ContactForm() {
         {/* Direct Routing Action Buttons */}
         <div className="space-y-2.5 pt-1">
           <p className="text-xs text-ink/60 font-medium">Quick routing links:</p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <a
+              href={gmailUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-red-600 hover:bg-red-700 px-4 py-3 text-xs sm:text-sm font-semibold text-white transition-colors shadow-sm"
+            >
+              <span>✉️ Send with Gmail Website</span>
+            </a>
             <a
               href={mailtoUrl}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-paper hover:bg-accent transition-colors shadow-sm"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-ink hover:bg-accent px-4 py-3 text-xs sm:text-sm font-semibold text-paper transition-colors shadow-sm"
             >
-              <span>✉️ Open Email App ({siteConfig.email})</span>
+              <span>📬 Default Mail App</span>
             </a>
             <a
               href={whatsappUrl}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-ink/30 bg-paper hover:bg-sand px-5 py-3 text-sm font-semibold text-ink hover:border-ink transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-ink/30 bg-paper hover:bg-sand px-4 py-3 text-xs sm:text-sm font-semibold text-ink hover:border-ink transition-colors"
             >
               <span>💬 Open in WhatsApp</span>
             </a>
