@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { packages } from "@/lib/packages";
 import { sessions } from "@/lib/sessions";
 import { enquirySchema, EnquiryInput } from "@/lib/validators";
-import { buildWhatsappUrl, buildEnquiryMailtoUrl, buildGmailComposeUrl } from "@/lib/whatsapp";
+import { buildWhatsappUrl, buildEnquiryMailtoUrl, buildGmailComposeUrl, buildOutlookComposeUrl } from "@/lib/whatsapp";
 import { siteConfig } from "@/lib/site-config";
 
 type FieldErrors = Partial<Record<string, string>>;
@@ -88,16 +88,15 @@ export function ContactForm() {
     });
     setStatus("sent");
 
-    // On desktop, open Gmail website directly in a new tab with compose open and pre-filled.
-    // On mobile, trigger the native mail handler.
-    const isMobile = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (!isMobile) {
+    // Open Gmail website directly in a new tab with compose open and pre-filled.
+    // Never call mailto: automatically, which causes OS "Open another app" prompts.
+    try {
       const win = window.open(gmailUrl, "_blank", "noopener,noreferrer");
-      if (!win) {
+      if (!win || win.closed || typeof win.closed === "undefined") {
         window.location.href = gmailUrl;
       }
-    } else {
-      window.location.href = mailtoUrl;
+    } catch (_) {
+      window.location.href = gmailUrl;
     }
 
     queueMicrotask(() => confirmationRef.current?.focus());
@@ -156,6 +155,7 @@ export function ContactForm() {
   if (status === "sent" && lastSentData) {
     const { values, serviceLabel, method } = lastSentData;
     const gmailUrl = buildGmailComposeUrl(values, serviceLabel);
+    const outlookUrl = buildOutlookComposeUrl(values, serviceLabel);
     const mailtoUrl = buildEnquiryMailtoUrl(values, serviceLabel);
     const whatsappUrl = buildWhatsappUrl(values, serviceLabel);
 
@@ -173,7 +173,7 @@ export function ContactForm() {
             </h2>
             <p className="mt-1 text-sm text-ink/75 leading-relaxed">
               {method === "email"
-                ? `Pre-filled and addressed to ${siteConfig.email}. If Gmail didn't launch automatically, choose an option below.`
+                ? `Pre-filled and addressed to ${siteConfig.email}. If Gmail didn't launch automatically, tap below.`
                 : `Connected to WhatsApp (${siteConfig.phoneDisplay}) with your message details.`}
             </p>
           </div>
@@ -209,7 +209,7 @@ export function ContactForm() {
 
         {/* Direct Routing Action Buttons */}
         <div className="space-y-2.5 pt-1">
-          <p className="text-xs text-ink/60 font-medium">Quick routing links:</p>
+          <p className="text-xs text-ink/60 font-medium">Quick web routing links (zero app prompts):</p>
           <div className="flex flex-col sm:flex-row gap-2.5">
             <a
               href={gmailUrl}
@@ -217,13 +217,15 @@ export function ContactForm() {
               rel="noopener noreferrer"
               className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-red-600 hover:bg-red-700 px-4 py-3 text-xs sm:text-sm font-semibold text-white transition-colors shadow-sm"
             >
-              <span>✉️ Send with Gmail Website</span>
+              <span>✉️ Open in Gmail</span>
             </a>
             <a
-              href={mailtoUrl}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-ink hover:bg-accent px-4 py-3 text-xs sm:text-sm font-semibold text-paper transition-colors shadow-sm"
+              href={outlookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-4 py-3 text-xs sm:text-sm font-semibold text-white transition-colors shadow-sm"
             >
-              <span>📬 Default Mail App</span>
+              <span>📫 Open in Outlook Web</span>
             </a>
             <a
               href={whatsappUrl}
@@ -236,16 +238,21 @@ export function ContactForm() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setStatus("idle");
-            setLastSentData(null);
-          }}
-          className="text-xs text-ink/60 hover:text-ink hover:underline inline-block pt-1"
-        >
-          ← Send another message or edit
-        </button>
+        <div className="flex items-center justify-between pt-1 text-xs text-ink/60">
+          <button
+            type="button"
+            onClick={() => {
+              setStatus("idle");
+              setLastSentData(null);
+            }}
+            className="hover:text-ink hover:underline"
+          >
+            ← Send another message or edit
+          </button>
+          <a href={mailtoUrl} className="hover:text-ink hover:underline text-[11px] text-ink/40">
+            use device mail client
+          </a>
+        </div>
       </div>
     );
   }

@@ -105,6 +105,44 @@ export function buildGmailComposeUrl(values: EnquiryFormValues, serviceLabel?: s
   return `https://mail.google.com/mail/?${params.toString()}`;
 }
 
+export function buildOutlookComposeUrl(values: EnquiryFormValues, serviceLabel?: string): string {
+  const isBooking = values.enquiryType === "booking";
+  const sLabel = serviceLabel || values.service;
+  const subject = `New ${isBooking ? "Booking Request" : "Enquiry"}: ${values.name}${sLabel ? ` (${sLabel})` : ""}`;
+
+  const bodyLines = [
+    `Hi Benedict,`,
+    ``,
+    `You have a new ${isBooking ? "booking request" : "enquiry"} from your SH Photography website:`,
+    ``,
+    `CLIENT INFORMATION`,
+    `• Name: ${values.name}`,
+    `• Email: ${values.email}`,
+  ];
+  if (values.phone) bodyLines.push(`• Phone: ${values.phone}`);
+  bodyLines.push(`• Type: ${isBooking ? "Booking Request" : "General Message"}`);
+  if (sLabel) bodyLines.push(`• Service / Package: ${sLabel}`);
+  if (values.preferredDate) bodyLines.push(`• Preferred Date: ${values.preferredDate}`);
+  if (values.location) bodyLines.push(`• Location: ${values.location}`);
+
+  bodyLines.push(
+    ``,
+    `MESSAGE:`,
+    values.message,
+    ``,
+    `---`,
+    `Sent from SH Photography contact form`
+  );
+
+  const params = new URLSearchParams({
+    to: siteConfig.email,
+    subject: subject,
+    body: bodyLines.join("\n"),
+  });
+
+  return `https://outlook.live.com/mail/0/deeplink/compose?${params.toString()}`;
+}
+
 export function buildMailtoUrl(subject: string, body?: string): string {
   const params = new URLSearchParams();
   if (subject) params.set("subject", subject);
