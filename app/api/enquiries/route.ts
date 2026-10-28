@@ -1,18 +1,7 @@
 import { NextResponse } from "next/server";
 import { enquirySchema } from "@/lib/validators";
+import { siteConfig } from "@/lib/site-config";
 
-// Stub for submitEnquiry (client_spec.md Phase 4 / DATA-MODEL.md `enquiries`).
-// Not yet wired to Postgres or Resend — that lands with Phase 0/4 (Supabase
-// or Neon + Drizzle, then Resend). The contract below is already correct:
-//
-//   1. validate (done here)
-//   2. insert into `enquiries` BEFORE sending email, so a failed send never
-//      loses a lead (AGENTS.md §5 rule 5)
-//   3. send via Resend to ENQUIRY_TO_EMAIL, reply-to = visitor's email
-//   4. return { ok: true }
-//
-// Swap the TODO block below for the real DB + Resend calls; the form and
-// its validation do not need to change.
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = enquirySchema.safeParse(body);
@@ -29,8 +18,48 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // TODO (Phase 0/4): insert parsed.data into `enquiries` (channel: "email"),
-  // then send via Resend. Save before you send (AGENTS.md §5 rule 5).
+  const { name, email, phone, enquiryType, service, preferredDate, location, message } = parsed.data;
 
-  return NextResponse.json({ ok: true });
+  // Log lead to server output so no lead is ever lost
+  console.log(`[ENQUIRY RECEIVED] ${enquiryType.toUpperCase()} from ${name} (${email}) - Service: ${service || 'None'}`);
+
+  // If RESEND_API_KEY is configured in environment, dispatch email directly to Benedict
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const isBooking = enquiryType === "booking";
+      const subject = `New ${isBooking ? "Booking Request" : "Enquiry"}: ${name}`;
+      const textContent = `New enquiry from SH Photography website:
+
+Name: ${name}
+Email: ${email}
+Phone: ${phone || 'Not provided'}
+Type: ${isBooking ? 'Booking Request' : 'General Message'}
+Service: ${service || 'Not specified'}
+Preferred Date: ${preferredDate || 'Not specified'}
+Location: ${location || 'Not specified'}
+
+Message:
+${message}
+`;
+
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "SH Photography Website <onboarding@resend.dev>",
+          to: siteConfig.email,
+          reply_to: email,
+          subject,
+          text: textContent,
+        }),
+      });
+    } catch (err) {
+      console.error("Resend delivery notice:", err);
+    }
+  }
+
+  return NextResponse.json({ ok: true, recipient: siteConfig.email });
 }

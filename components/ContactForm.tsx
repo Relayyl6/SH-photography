@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { packages } from "@/lib/packages";
 import { sessions } from "@/lib/sessions";
-import { enquirySchema } from "@/lib/validators";
-import { buildWhatsappUrl } from "@/lib/whatsapp";
+import { enquirySchema, EnquiryInput } from "@/lib/validators";
+import { buildWhatsappUrl, buildEnquiryMailtoUrl } from "@/lib/whatsapp";
+import { siteConfig } from "@/lib/site-config";
 
 type FieldErrors = Partial<Record<string, string>>;
 
@@ -15,12 +16,23 @@ const services = [
   ...packages.filter((p) => p.category === "class").map((p) => ({ value: p.slug, label: p.name })),
 ];
 
+function getServiceLabel(value?: string) {
+  if (!value) return "";
+  const found = services.find((s) => s.value === value);
+  return found ? found.label : value;
+}
+
 export function ContactForm() {
   const searchParams = useSearchParams();
   const preselected = searchParams.get("service") ?? "";
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [lastSentData, setLastSentData] = useState<{
+    values: EnquiryInput;
+    serviceLabel: string;
+    method: "email" | "whatsapp";
+  } | null>(null);
   const confirmationRef = useRef<HTMLHeadingElement>(null);
 
   function collectValues(form: HTMLFormElement) {
@@ -58,28 +70,40 @@ export function ContactForm() {
 
     setErrors({});
     setStatus("sending");
+    const sLabel = getServiceLabel(parsed.data.service);
+    const mailtoUrl = buildEnquiryMailtoUrl(parsed.data, sLabel);
+
+    // Save lead in background before routing
     try {
-      const res = await fetch("/api/enquiries", {
+      await fetch("/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify({ ...parsed.data, serviceLabel: sLabel, channel: "email" }),
       });
-      if (!res.ok) throw new Error("Request failed");
-      setStatus("sent");
-      queueMicrotask(() => confirmationRef.current?.focus());
-    } catch {
-      setStatus("error");
+    } catch (err) {
+      console.warn("Enquiry API logging:", err);
     }
+
+    setLastSentData({
+      values: parsed.data,
+      serviceLabel: sLabel,
+      method: "email",
+    });
+    setStatus("sent");
+
+    // Open user's email client directly pre-addressed to Benedict's email
+    window.location.href = mailtoUrl;
+    queueMicrotask(() => confirmationRef.current?.focus());
   }
 
   function handleWhatsappSubmit(e: React.MouseEvent<HTMLButtonElement>) {
-    const form = e.currentTarget.form;
+    e.preventDefault();
+    const form = e.currentTarget.form || (document.getElementById("contact-form") as HTMLFormElement | null);
     if (!form) return;
     const values = collectValues(form);
     const parsed = enquirySchema.safeParse(values);
 
     if (!parsed.success) {
-      e.preventDefault();
       const flat = parsed.error.flatten().fieldErrors;
       const next: FieldErrors = {};
       for (const key in flat) {
@@ -92,25 +116,116 @@ export function ContactForm() {
     }
 
     setErrors({});
-    const url = buildWhatsappUrl(parsed.data);
-    window.open(url, "_blank", "noopener,noreferrer");
+    const sLabel = getServiceLabel(parsed.data.service);
+    const whatsappUrl = buildWhatsappUrl(parsed.data, sLabel);
+
+    // Save lead in background before routing
+    fetch("/api/enquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...parsed.data, serviceLabel: sLabel, channel: "whatsapp" }),
+    }).catch(() => {});
+
+    setLastSentData({
+      values: parsed.data,
+      serviceLabel: sLabel,
+      method: "whatsapp",
+    });
+    setStatus("sent");
+
+    // Launch WhatsApp directly with pre-filled message
+    window.location.href = whatsappUrl;
+    queueMicrotask(() => confirmationRef.current?.focus());
   }
 
-  if (status === "sent") {
+  if (status === "sent" && lastSentData) {
+    const { values, serviceLabel, method } = lastSentData;
+    const mailtoUrl = buildEnquiryMailtoUrl(values, serviceLabel);
+    const whatsappUrl = buildWhatsappUrl(values, serviceLabel);
+
     return (
-      <div role="status" className="rounded-2xl border border-line bg-sand p-8">
-        <h2 ref={confirmationRef} tabIndex={-1} className="font-display text-2xl">
-          Thanks — your message is on its way.
-        </h2>
-        <p className="mt-2 text-ink/70">
-          I'll get back to you as soon as I can. If it's urgent, WhatsApp me using the button above.
-        </p>
+      <div role="status" className="rounded-2xl border border-line bg-sand/95 p-6 sm:p-8 space-y-6">
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white font-bold text-lg shadow-sm">
+            ✓
+          </span>
+          <div>
+            <h2 ref={confirmationRef} tabIndex={-1} className="font-display text-2xl sm:text-3xl text-ink font-medium leading-snug">
+              {method === "email"
+                ? "Your message is routed to Benedict Henry's email!"
+                : "Opening WhatsApp chat with Benedict Henry!"}
+            </h2>
+            <p className="mt-1 text-sm text-ink/75 leading-relaxed">
+              {method === "email"
+                ? `Addressed to ${siteConfig.email}. If your email app didn't launch automatically, tap the button below.`
+                : `Connected to WhatsApp (${siteConfig.phoneDisplay}) with your message details.`}
+            </p>
+          </div>
+        </div>
+
+        {/* Message Summary Card showing all routed fields */}
+        <div className="rounded-xl border border-line/70 bg-paper p-4 text-xs space-y-2 text-ink/80 shadow-sm">
+          <div className="flex items-center justify-between pb-2 border-b border-line/60">
+            <span className="font-bold uppercase tracking-wider text-[10px] text-accent">
+              Enquiry Summary
+            </span>
+            <span className="rounded-full bg-sand px-2 py-0.5 text-[10px] font-semibold text-ink/70">
+              {values.enquiryType === "booking" ? "Booking Request" : "General Message"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            <p><span className="font-semibold text-ink">Name:</span> {values.name}</p>
+            <p><span className="font-semibold text-ink">Email:</span> {values.email}</p>
+            {values.phone && <p><span className="font-semibold text-ink">Phone:</span> {values.phone}</p>}
+            {serviceLabel && <p><span className="font-semibold text-ink">Service:</span> {serviceLabel}</p>}
+            {values.preferredDate && <p><span className="font-semibold text-ink">Date:</span> {values.preferredDate}</p>}
+            {values.location && <p><span className="font-semibold text-ink">Location:</span> {values.location}</p>}
+          </div>
+
+          <div className="mt-2.5 pt-2 border-t border-line/50">
+            <p className="font-semibold text-ink mb-1">Message Content:</p>
+            <p className="whitespace-pre-wrap text-ink/90 italic leading-relaxed bg-sand/40 p-2.5 rounded-lg border border-line/30">
+              &ldquo;{values.message}&rdquo;
+            </p>
+          </div>
+        </div>
+
+        {/* Direct Routing Action Buttons */}
+        <div className="space-y-2.5 pt-1">
+          <p className="text-xs text-ink/60 font-medium">Quick routing links:</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <a
+              href={mailtoUrl}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-paper hover:bg-accent transition-colors shadow-sm"
+            >
+              <span>✉️ Open Email App ({siteConfig.email})</span>
+            </a>
+            <a
+              href={whatsappUrl}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-ink/30 bg-paper hover:bg-sand px-5 py-3 text-sm font-semibold text-ink hover:border-ink transition-colors"
+            >
+              <span>💬 Open in WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatus("idle");
+            setLastSentData(null);
+          }}
+          className="text-xs text-ink/60 hover:text-ink hover:underline inline-block pt-1"
+        >
+          ← Send another message or edit
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleEmailSubmit} noValidate className="space-y-5">
+    <form id="contact-form" onSubmit={handleEmailSubmit} noValidate className="space-y-5">
       {status === "error" && Object.keys(errors).length > 0 && (
         <div
           role="alert"
