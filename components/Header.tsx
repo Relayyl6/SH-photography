@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { sessions } from "@/lib/sessions";
 import { AnimatePresence, motion } from "framer-motion";
 import { easing } from "@/lib/animations";
+import { ChevronDown } from "lucide-react";
 
 const mobileMenuVariant = {
   hidden: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.2 } },
@@ -28,6 +29,7 @@ const navLinks = [
 export function Header() {
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobilePortfolioOpen, setMobilePortfolioOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   
@@ -37,6 +39,7 @@ export function Header() {
   useEffect(() => {
     setMobileOpen(false);
     setPortfolioOpen(false);
+    setMobilePortfolioOpen(false);
   }, [pathname]);
 
   // Lock body scroll while mobile menu is open
@@ -64,6 +67,7 @@ export function Header() {
       if (e.key === "Escape") {
         setPortfolioOpen(false);
         setMobileOpen(false);
+        setMobilePortfolioOpen(false);
       }
     }
     
@@ -71,6 +75,7 @@ export function Header() {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
         setPortfolioOpen(false);
         setMobileOpen(false);
+        setMobilePortfolioOpen(false);
       }
     }
 
@@ -179,7 +184,12 @@ export function Header() {
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => {
+                setMobileOpen((v) => {
+                  if (!v) setMobilePortfolioOpen(false);
+                  return !v;
+                });
+              }}
             >
               <span aria-hidden="true" className="text-lg">{mobileOpen ? "✕" : "☰"}</span>
             </button>
@@ -210,30 +220,70 @@ export function Header() {
             >
               <ul className="flex flex-col gap-1 px-5 sm:px-6 py-6">
                 <motion.li variants={mobileItemVariant}>
-                  <p className="px-2 pb-1 text-xs font-semibold uppercase tracking-widest text-ink/50">
-                    Portfolio
-                  </p>
+                  <div className="flex items-center justify-between px-2 pb-1">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-ink/50">
+                      Portfolio
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setMobilePortfolioOpen((v) => !v)}
+                      className="text-[11px] font-medium text-ink/40 hover:text-ink transition-colors"
+                      aria-expanded={mobilePortfolioOpen}
+                    >
+                      {mobilePortfolioOpen ? "Collapse" : "Explore"}
+                    </button>
+                  </div>
                 </motion.li>
-                <motion.li variants={mobileItemVariant}>
-                  <Link 
-                    href="/portfolio" 
-                    className="block rounded-lg px-2 py-2 font-medium hover:bg-sand/60 active:bg-sand transition-colors" 
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    All sessions
-                  </Link>
-                </motion.li>
-                {sessions.map((s) => (
-                  <motion.li key={s.slug} variants={mobileItemVariant}>
-                    <Link
-                      href={`/portfolio/${s.slug}`}
-                      className="block rounded-lg px-2 py-2 pl-4 text-ink/80 hover:bg-sand/60 hover:text-ink active:bg-sand transition-colors"
+                <motion.li variants={mobileItemVariant} className="flex flex-col">
+                  <div className="flex items-center justify-between rounded-xl hover:bg-sand/60 active:bg-sand transition-colors">
+                    <Link 
+                      href="/portfolio" 
+                      className="flex-1 rounded-xl px-2 py-2.5 font-medium hover:text-accent transition-colors" 
                       onClick={() => setMobileOpen(false)}
                     >
-                      {s.title}
+                      All sessions
                     </Link>
-                  </motion.li>
-                ))}
+                    <button
+                      type="button"
+                      onClick={() => setMobilePortfolioOpen((v) => !v)}
+                      className="p-2 -mr-1 rounded-lg text-ink/60 hover:text-ink hover:bg-sand/80 active:scale-95 transition-all"
+                      aria-expanded={mobilePortfolioOpen}
+                      aria-label={mobilePortfolioOpen ? "Collapse portfolio sessions" : "Expand portfolio sessions"}
+                    >
+                      <ChevronDown
+                        className={`w-5 h-5 transition-transform duration-300 ease-out ${
+                          mobilePortfolioOpen ? "rotate-180 text-accent" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {mobilePortfolioOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: easing }}
+                        className="overflow-hidden"
+                      >
+                        <ul className="flex flex-col gap-0.5 pl-3 py-1.5 border-l-2 border-line/60 ml-2.5 my-1">
+                          {sessions.map((s) => (
+                            <li key={s.slug}>
+                              <Link
+                                href={`/portfolio/${s.slug}`}
+                                className="block rounded-lg px-2.5 py-2 text-sm text-ink/80 hover:bg-sand/60 hover:text-ink active:bg-sand transition-colors"
+                                onClick={() => setMobileOpen(false)}
+                              >
+                                {s.title}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.li>
                 {navLinks.map((link) => (
                   <motion.li key={link.href} variants={mobileItemVariant}>
                     <Link
