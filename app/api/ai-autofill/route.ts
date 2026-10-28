@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-pro-preview'];
+const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'];
 
 export async function POST(req: Request) {
   try {
-    const { transcript, currentData, conversationHistory } = await req.json();
+    const { transcript, audio, currentData, conversationHistory } = await req.json();
 
     if (!GEMINI_API_KEY) {
       return NextResponse.json(
@@ -14,8 +14,11 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!transcript || typeof transcript !== 'string' || !transcript.trim()) {
-      return NextResponse.json({ error: 'Please provide event details or speak your request.' }, { status: 400 });
+    const hasTranscript = typeof transcript === 'string' && transcript.trim().length > 0;
+    const hasAudio = audio && typeof audio.base64 === 'string' && audio.base64.length > 0;
+
+    if (!hasTranscript && !hasAudio) {
+      return NextResponse.json({ error: 'Please describe your event or record your voice.' }, { status: 400 });
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -89,20 +92,45 @@ CRITICAL RULES:
 
 Respond ONLY with a valid JSON object with the following schema:
 {
+  "userTranscript": "Exact transcription of spoken audio if audio was provided, or echo user input",
   "fields": { ... },
   "filledFieldsSummary": [ ... ],
   "missingFields": [ ... ],
   "assistantMessage": "..."
 }`;
 
-    const userPromptContent = `User's latest input / transcript:
+    const parts: any[] = [{ text: systemPrompt }];
+
+    if (hasAudio) {
+      parts.push({
+        inlineData: {
+          mimeType: audio.mimeType || 'audio/webm',
+          data: audio.base64,
+        },
+      });
+      parts.push({
+        text: `The user spoke the above audio recording describing their event.
+First, accurately transcribe their spoken words into the "userTranscript" field.
+Then extract all relevant booking fields into "fields".
+
+Existing already-filled form data (if any):
+${JSON.stringify(currentData || {}, null, 2)}
+
+Previous conversation context (if any):
+${JSON.stringify(conversationHistory || [], null, 2)}`,
+      });
+    } else {
+      parts.push({
+        text: `User's latest input / transcript:
 "${transcript}"
 
 Existing already-filled form data (if any):
 ${JSON.stringify(currentData || {}, null, 2)}
 
 Previous conversation context (if any):
-${JSON.stringify(conversationHistory || [], null, 2)}`;
+${JSON.stringify(conversationHistory || [], null, 2)}`,
+      });
+    }
 
     let lastError = null;
     let resultJson: any = null;
@@ -117,10 +145,7 @@ ${JSON.stringify(conversationHistory || [], null, 2)}`;
             contents: [
               {
                 role: 'user',
-                parts: [
-                  { text: systemPrompt },
-                  { text: userPromptContent }
-                ]
+                parts,
               }
             ],
             generationConfig: {

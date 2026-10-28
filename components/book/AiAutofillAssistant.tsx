@@ -28,6 +28,12 @@ const EXAMPLE_PROMPTS = [
   "Evening 30th birthday event in Salford for 50 people with candid photos and fast turnaround. Budget under £1,000.",
 ];
 
+function formatSeconds(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
 export function AiAutofillAssistant({
   controller,
   layout = 'default',
@@ -41,6 +47,8 @@ export function AiAutofillAssistant({
     setInput,
     isLoading,
     isListening,
+    isRecordingAudio,
+    recordingSeconds,
     speechSupported,
     errorMsg,
     chatHistory,
@@ -48,6 +56,7 @@ export function AiAutofillAssistant({
     toggleListening,
     handleSubmit,
     handleClearHistory,
+    cancelRecording,
   } = controller;
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -109,7 +118,7 @@ export function AiAutofillAssistant({
               {isListening ? (
                 <>
                   <MicOff className="h-3 w-3" />
-                  <span className="hidden xs:inline">Listening...</span>
+                  <span>{isRecordingAudio ? formatSeconds(recordingSeconds) : 'Listening...'}</span>
                 </>
               ) : (
                 <>
@@ -188,7 +197,28 @@ export function AiAutofillAssistant({
             )}
 
             {/* Main Textarea & Audio Input Container */}
-            <div className="relative rounded-xl border border-ink/20 bg-white/90 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15 transition-all shadow-inner">
+            <div className="relative rounded-xl border border-ink/20 bg-white/90 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15 transition-all shadow-inner overflow-hidden">
+              {/* Active Voice Recording Status Bar */}
+              {isRecordingAudio && (
+                <div className="flex items-center justify-between gap-2 px-3 py-2 bg-red-50 border-b border-red-200/80 text-xs text-red-900">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+                    </span>
+                    <span className="font-semibold text-red-700">Recording Voice ({formatSeconds(recordingSeconds)})</span>
+                    <span className="text-[11px] text-red-600/80 hidden xs:inline">— pauses are fine, take your time!</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={cancelRecording}
+                    className="text-[11px] font-medium text-red-600 hover:text-red-800 underline"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -202,8 +232,10 @@ export function AiAutofillAssistant({
                 disabled={isLoading}
                 rows={isSidebar ? 2 : 3}
                 placeholder={
-                  isListening
-                    ? 'Listening continuously across pauses... Speak freely. Tap the red mic or Auto-Fill when done.'
+                  isRecordingAudio
+                    ? 'Recording your voice... Speak freely, take all the pauses you need! When done, click Finish & Auto-Fill.'
+                    : isListening
+                    ? 'Listening... Speak freely, your words appear here in real time.'
                     : 'Describe your event (date, venue, style, guest count, budget) or click the mic to speak...'
                 }
                 className="w-full resize-none bg-transparent p-3 text-xs sm:text-sm text-ink placeholder:text-ink/40 focus:outline-none disabled:opacity-50"
@@ -221,7 +253,7 @@ export function AiAutofillAssistant({
                       !speechSupported
                         ? 'Speech recognition not supported in this browser'
                         : isListening
-                        ? 'Stop listening'
+                        ? 'Finish & Submit'
                         : 'Click to speak'
                     }
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-all ${
@@ -233,7 +265,11 @@ export function AiAutofillAssistant({
                     {isListening ? (
                       <>
                         <MicOff className="h-3 w-3" />
-                        <span>Listening... (Tap to stop)</span>
+                        <span>
+                          {isRecordingAudio
+                            ? `${formatSeconds(recordingSeconds)} (Tap to finish)`
+                            : 'Listening... (Tap to stop)'}
+                        </span>
                       </>
                     ) : (
                       <>
@@ -246,7 +282,7 @@ export function AiAutofillAssistant({
 
                 {/* Submit & Reset Actions */}
                 <div className="flex items-center gap-1.5">
-                  {chatHistory.length > 0 && (
+                  {chatHistory.length > 0 && !isListening && (
                     <button
                       type="button"
                       onClick={handleClearHistory}
@@ -261,12 +297,17 @@ export function AiAutofillAssistant({
                     type="button"
                     onClick={() => handleSubmit()}
                     disabled={isLoading || (!input.trim() && !isListening)}
-                    className="inline-flex items-center justify-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-3 w-3 animate-spin" />
-                        <span>Filling...</span>
+                        <span>Analyzing...</span>
+                      </>
+                    ) : isListening ? (
+                      <>
+                        <Sparkles className="h-3 w-3" />
+                        <span>Finish &amp; Auto-Fill</span>
                       </>
                     ) : (
                       <>
