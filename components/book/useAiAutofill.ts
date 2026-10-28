@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { BookingFormData } from './schema';
 
 export interface ChatMessage {
@@ -13,6 +13,29 @@ export interface ChatMessage {
 interface UseAiAutofillOptions {
   currentFormData: Partial<BookingFormData>;
   onApplyFields: (fields: Partial<BookingFormData>) => void;
+}
+
+/**
+ * Dynamically counts how many fields are currently filled in the booking form
+ */
+export function countFilledFields(data?: Partial<BookingFormData> | null): number {
+  if (!data || typeof data !== 'object') return 0;
+  let count = 0;
+
+  for (const [, value] of Object.entries(data)) {
+    if (value === undefined || value === null) continue;
+    if (typeof value === 'string' && value.trim().length > 0) {
+      count++;
+    } else if (typeof value === 'boolean' && value === true) {
+      count++;
+    } else if (Array.isArray(value) && value.length > 0) {
+      count++;
+    } else if (typeof value === 'number' && !isNaN(value)) {
+      count++;
+    }
+  }
+
+  return count;
 }
 
 /**
@@ -90,6 +113,11 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [latestFilledCount, setLatestFilledCount] = useState<number | null>(null);
+
+  // Dynamically calculate the real-time filled field count from the live form data
+  const filledCount = useMemo(() => {
+    return countFilledFields(currentFormData);
+  }, [currentFormData]);
 
   const recognitionRef = useRef<any>(null);
   const isUserWantsListeningRef = useRef<boolean>(false);
@@ -563,7 +591,8 @@ export function useAiAutofill({ currentFormData, onApplyFields }: UseAiAutofillO
     speechSupported,
     errorMsg,
     chatHistory,
-    latestFilledCount,
+    filledCount,
+    latestFilledCount: filledCount > 0 ? filledCount : latestFilledCount,
     toggleListening,
     stopVoiceCapture,
     handleSubmit,

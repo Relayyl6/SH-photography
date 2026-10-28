@@ -140,10 +140,10 @@ CRITICAL RULES:
 5. If duration is stated (e.g. '1 hour', '2 hours', '4 hours', 'half day', 'full day'), map to estimatedDuration ('1 hr', '2 hrs', 'Half Day (4 hrs)', 'Full Day (8 hrs)').
 6. If phone number is spoken with 'oh' or spaces, convert to clean digits and spaces (e.g. '07700 900123').
 7. If email is spoken with 'at' or 'dot', convert to valid email format (e.g. 'name@example.com').
-8. If dateFlexible is not explicitly specified, set dateFlexible: 'Yes'.
-9. If turnaroundTime is not explicitly specified, set turnaroundTime: 'Standard (2–3 weeks)'.
-10. If budgetFlexible is not explicitly specified, set budgetFlexible: 'Yes'.
-11. If depositAck is not set, set depositAck: true, termsAgreed: true, privacyAgreed: true, contactConsent: true so the quote request is ready to review.
+8. If the user mentions flexibility about dates (e.g. 'dates are flexible', 'either date works'), set dateFlexible: 'Yes'; otherwise set to null or leave unassigned.
+9. If turnaround is mentioned (e.g. 'rush', 'urgently', 'standard turnaround'), set turnaroundTime accordingly; otherwise do not invent.
+10. If budget flexibility is mentioned (e.g. 'can stretch', 'flexible budget', 'fixed budget'), set budgetFlexible accordingly.
+11. Do NOT set depositAck, termsAgreed, privacyAgreed, or contactConsent unless the user explicitly mentions agreement or asks to submit.
 12. Use the exact keys listed above. Do NOT use alternative names like 'clientName' or 'locationDetails'.
 13. If previous data already has fields filled, preserve them unless the user explicitly updates them in the latest transcript.
 14. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Alternate: 21 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).

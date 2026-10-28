@@ -53,6 +53,7 @@ export function AiAutofillAssistant({
     speechSupported,
     errorMsg,
     chatHistory,
+    filledCount,
     latestFilledCount,
     toggleListening,
     stopVoiceCapture,
@@ -60,6 +61,8 @@ export function AiAutofillAssistant({
     handleClearHistory,
     cancelRecording,
   } = controller;
+
+  const displayFilledCount = filledCount > 0 ? filledCount : (latestFilledCount ?? 0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isSidebar = layout === 'sidebar';
@@ -111,10 +114,13 @@ export function AiAutofillAssistant({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-          {latestFilledCount !== null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+          {displayFilledCount > 0 && (
+            <span
+              key={displayFilledCount}
+              className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 transition-all duration-300"
+            >
               <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-              <span>{latestFilledCount} filled</span>
+              <span>{displayFilledCount} filled</span>
             </span>
           )}
 
@@ -390,10 +396,10 @@ export function AiAutofillAssistant({
             )}
 
             {/* Quick jump to review when fields are filled */}
-            {latestFilledCount !== null && latestFilledCount > 0 && onJumpToReview && (
+            {displayFilledCount > 0 && onJumpToReview && (
               <div className="mt-2.5 flex items-center justify-between gap-2 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs">
                 <span className="text-emerald-950 font-medium text-[11px]">
-                  🎉 Fields populated!
+                  🎉 {displayFilledCount} field{displayFilledCount === 1 ? '' : 's'} completed!
                 </span>
                 <button
                   type="button"
