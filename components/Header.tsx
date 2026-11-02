@@ -32,6 +32,7 @@ export function Header() {
   const [mobilePortfolioOpen, setMobilePortfolioOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const isAdminOrAccount = pathname?.startsWith("/admin") || pathname?.startsWith("/account");
   
   const headerRef = useRef<HTMLElement>(null);
 
@@ -89,6 +90,10 @@ export function Header() {
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  if (isAdminOrAccount) {
+    return null;
+  }
 
   return (
     <header 

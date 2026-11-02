@@ -176,6 +176,39 @@ export default function BookingForm() {
 
   const onSubmit = (data: BookingFormData) => {
     console.log('Form submitted:', data);
+
+    // Dispatch to Firebase-backed bookings pipeline and store guest claim token
+    try {
+      fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: data.serviceCategory || 'general',
+          sessionName: data.serviceCategory || 'Photography Session',
+          date: data.preferredDate || new Date().toISOString().split('T')[0],
+          timeSlot: { start: data.preferredStartTime || '10:00', end: '11:30' },
+          customer: {
+            name: data.fullName,
+            email: data.email,
+            phone: data.phone,
+          },
+          answers: data,
+          customerUid: null,
+        }),
+      })
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData.success && resData.claimToken) {
+            const existing = JSON.parse(localStorage.getItem('sh_guest_bookings') || '[]');
+            existing.push({ bookingId: resData.bookingId, claimToken: resData.claimToken });
+            localStorage.setItem('sh_guest_bookings', JSON.stringify(existing));
+          }
+        })
+        .catch((err) => console.warn('Booking API dispatch notice:', err));
+    } catch (e) {
+      console.warn('Booking storage error:', e);
+    }
+
     setSubmittedData(data);
     setIsSubmitted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });

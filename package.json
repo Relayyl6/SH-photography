@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed": "ts-node scripts/seed.ts",
+    "grant-owner": "ts-node scripts/grant-owner.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
