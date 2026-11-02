@@ -1,0 +1,38 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isOwner() {
+      return request.auth != null && request.auth.token.role == 'owner';
+    }
+
+    function isValidImage() {
+      return request.resource.size < 10 * 1024 * 1024
+        && (request.resource.contentType.matches('image/jpeg')
+            || request.resource.contentType.matches('image/png')
+            || request.resource.contentType.matches('image/webp')
+            || request.resource.contentType.matches('image/avif'));
+    }
+
+    // Public readable images
+    match /site/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner() && isValidImage();
+    }
+
+    match /about/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner() && isValidImage();
+    }
+
+    match /portfolio/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner() && isValidImage();
+    }
+
+    match /sessions/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner() && isValidImage();
+    }
+  }
+}
