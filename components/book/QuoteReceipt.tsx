@@ -49,6 +49,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
       `• *Service:* ${data.serviceCategory}${data.sessionSubType ? ` (${data.sessionSubType})` : ''}`,
       `• *Preferred Date:* ${data.preferredDate} at ${formatTimeLabel(data.preferredStartTime)}`,
       `• *Date Flexible:* ${data.dateFlexible}`,
+      data.isDoubleDate ? `• *Multi-Day Coverage:* ${data.multiDayCount || '2 Days'} (Secondary: ${data.secondaryDate || 'Dates held'})` : null,
       data.alternateDate ? `• *Alternate Date:* ${data.alternateDate}` : null,
       data.estimatedDuration ? `• *Duration:* ${data.estimatedDuration}` : null,
       data.numSubjects ? `• *Subjects:* ${data.numSubjects}` : null,
@@ -68,6 +69,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
       data.inspirationLinks ? `• *Inspiration:* ${data.inspirationLinks}` : null,
       data.mustHaveShots ? `• *Must-Have Shots:* ${data.mustHaveShots}` : null,
       data.specialRequests ? `• *Special Requests:* ${data.specialRequests}` : null,
+      data.extraInfo ? `• *Extra Details & Requests:* ${data.extraInfo}` : null,
       ``,
       `*DELIVERABLES & BUDGET*`,
       `• *Deliverables:* ${data.deliverables.join(', ')}`,
@@ -148,18 +150,39 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
 
       {/* Screen Success Notice (Hidden in Print) */}
       <div className="no-print max-w-3xl mx-auto text-center px-4 mb-10">
-        <div className="w-16 h-16 bg-[#faf7f2] border border-ink text-accent rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+        <div className="w-16 h-16 bg-[#faf7f2] border-2 border-amber-600/60 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm animate-pulse">
           <Check size={32} />
         </div>
+        <div className="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold tracking-wider uppercase mb-3 border border-amber-300">
+          Application Pending Review &amp; Approval
+        </div>
         <h2 className="font-display text-4xl md:text-5xl text-ink mb-3 tracking-tight">
-          Request Received
+          Booking Request Submitted
         </h2>
-        <p className="text-ink/70 text-base md:text-lg max-w-xl mx-auto mb-6 leading-relaxed">
-          Thank you, <span className="font-semibold text-ink">{data.fullName}</span>. Your bespoke quote request has been generated. You can print/save the official quote below or send it directly via WhatsApp.
+        <p className="text-ink/80 text-base md:text-lg max-w-xl mx-auto mb-4 leading-relaxed">
+          Thank you, <span className="font-semibold text-ink">{data.fullName}</span>. Your session request has been safely received and is currently <span className="font-bold text-amber-800">Pending Approval</span> by Benedict Henry. Your chosen date(s) are held while Benedict reviews your vision and custom requirements.
         </p>
 
+        {/* LocalStorage & Account Access Banner */}
+        <div className="max-w-xl mx-auto mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 text-left space-y-1.5 shadow-sm">
+          <div className="flex items-center gap-2 font-bold text-amber-900">
+            <span>💾 Securely Saved to Your Browser (localStorage)</span>
+          </div>
+          <p className="text-amber-900/90 leading-relaxed">
+            Even while pending, this booking reference is stored locally. Whenever you log in or create an account, it will automatically sync to your private client portal where you can track approval progress, request changes, and print an official summary at any point or stage.
+          </p>
+          <div className="pt-1.5 flex items-center gap-3">
+            <Link
+              href="/account"
+              className="font-bold text-[#C25E00] hover:underline inline-flex items-center gap-1"
+            >
+              Go to Client Account Portal &rarr;
+            </Link>
+          </div>
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 pt-2">
+        <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 pt-1">
           {/* Print Button */}
           <button
             type="button"
@@ -167,7 +190,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
             className="inline-flex items-center gap-2 px-6 py-3.5 bg-ink text-paper rounded-full font-semibold text-sm hover:bg-accent transition-all duration-300 shadow-sm"
           >
             <Printer size={18} />
-            <span>Print Quote / Save PDF</span>
+            <span>Print / Save PDF</span>
           </button>
 
           {/* Send to WhatsApp (Studio / Client) */}
@@ -200,7 +223,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
             className="inline-flex items-center gap-2 px-5 py-3.5 border border-line bg-white text-ink rounded-full font-medium text-sm hover:bg-sand transition-colors"
           >
             {copied ? <CheckCheck size={16} className="text-emerald-600" /> : <Copy size={16} />}
-            <span>{copied ? 'Copied to Clipboard!' : 'Copy Quote Text'}</span>
+            <span>{copied ? 'Copied to Clipboard!' : 'Copy Summary'}</span>
           </button>
 
           {/* Return Home */}
@@ -318,6 +341,14 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
                 <span className="text-ink/60">Date Flexible:</span>
                 <span className="col-span-2 font-medium">{data.dateFlexible}</span>
               </div>
+              {data.isDoubleDate && (
+                <div className="grid grid-cols-3 gap-1 text-purple-900">
+                  <span className="text-ink/60">Multi-Day:</span>
+                  <span className="col-span-2 font-medium">
+                    {data.multiDayCount || "2 Days"} {data.secondaryDate ? `(2nd Date: ${data.secondaryDate})` : ""}
+                  </span>
+                </div>
+              )}
               {data.alternateDate && (
                 <div className="grid grid-cols-3 gap-1">
                   <span className="text-ink/60">Alternate Date:</span>
@@ -436,6 +467,13 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
               <div className="text-xs text-ink/80">
                 <span className="font-semibold text-ink/60 block mb-1">Must-Have Shots:</span>
                 <p className="bg-paper p-3 rounded-lg border border-line/50">{data.mustHaveShots}</p>
+              </div>
+            )}
+
+            {data.extraInfo && (
+              <div className="text-xs text-ink/80 pt-2 border-t border-line/40">
+                <span className="font-semibold text-ink/70 block mb-1">Additional Details &amp; Custom Requests:</span>
+                <p className="bg-sand/30 p-3 rounded-lg border border-line/50 whitespace-pre-wrap">{data.extraInfo}</p>
               </div>
             )}
           </div>

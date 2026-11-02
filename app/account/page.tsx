@@ -22,6 +22,7 @@ import {
   MessageCircle,
   User as UserIcon,
   AlertTriangle,
+  Printer,
 } from "lucide-react";
 import { siteConfig } from "@/lib/site-config";
 
@@ -242,6 +243,92 @@ export default function CustomerAccountPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handlePrintBooking = (b: BookingRecord) => {
+    const sessionName = b.sessionSnapshot?.name || "Custom Photography Session";
+    const date = b.slot?.date || "Date Pending";
+    const time = `${b.slot?.start || "Flexible"} – ${b.slot?.end || "Flexible"}`;
+    const location = b.answers?.location || b.answers?.venue || "Manchester, UK (Studio / Location)";
+    const multiDay = (b as any).isDoubleDate || b.answers?.isDoubleDate
+      ? `Multi-Day Coverage: ${(b as any).multiDayCount || "2 Days"} (Secondary: ${(b as any).secondaryDate || b.answers?.secondaryDate || "Held"})`
+      : "";
+    const extraInfo = (b as any).extraInfo || b.answers?.extraInfo || "";
+    const notes = b.answers?.notes || b.answers?.vision || "";
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>SH Photography - Booking #${b.id.substring(0, 8)}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1c1917; max-width: 650px; margin: 0 auto; }
+            .header { border-bottom: 2px solid #ea580c; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+            .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-transform: uppercase; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+            .badge-confirmed { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+            h1 { margin: 0 0 6px 0; font-size: 26px; }
+            .ref { color: #ea580c; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+            .section { background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+            .section h3 { margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: #78716c; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+            .label { color: #78716c; font-weight: 500; }
+            .val { font-weight: 600; text-align: right; }
+            .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e7e5e4; text-align: center; font-size: 12px; color: #a8a29e; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="ref">SH Photography • Booking Summary</div>
+              <h1>${sessionName}</h1>
+              <p style="margin: 0; color: #78716c; font-size: 13px;">Ref: #${b.id.substring(0, 8)} • Placed: ${new Date(Number(b.createdAt) || Date.now()).toLocaleDateString()}</p>
+            </div>
+            <span class="badge ${b.status === "confirmed" ? "badge-confirmed" : ""}">
+              Status: ${b.status === "reschedule_requested" ? "Reschedule Pending" : b.status.toUpperCase()}
+            </span>
+          </div>
+
+          <div class="section">
+            <h3>Schedule & Location</h3>
+            <div class="row"><span class="label">Primary Shoot Date:</span><span class="val">${date}</span></div>
+            <div class="row"><span class="label">Time Window:</span><span class="val">${time}</span></div>
+            ${multiDay ? `<div class="row"><span class="label">Multi-Day Details:</span><span class="val" style="color: #6b21a8;">${multiDay}</span></div>` : ""}
+            <div class="row"><span class="label">Venue / Location:</span><span class="val">${location}</span></div>
+          </div>
+
+          <div class="section">
+            <h3>Customer Contact</h3>
+            <div class="row"><span class="label">Full Name:</span><span class="val">${b.customer?.name || "Client"}</span></div>
+            <div class="row"><span class="label">Email:</span><span class="val">${b.customer?.email || ""}</span></div>
+            <div class="row"><span class="label">Day-of Phone:</span><span class="val">${b.customer?.phone || "Not provided"}</span></div>
+          </div>
+
+          ${
+            extraInfo || notes
+              ? `<div class="section">
+                  <h3>Notes & Special Requests</h3>
+                  ${notes ? `<p style="margin: 0 0 8px 0; font-size: 13px; font-style: italic;">“${notes}”</p>` : ""}
+                  ${extraInfo ? `<p style="margin: 0; font-size: 13px; color: #44403c;"><strong>Additional details:</strong> ${extraInfo}</p>` : ""}
+                </div>`
+              : ""
+          }
+
+          <div class="footer">
+            Benedict Henry • SH Photography • Manchester, United Kingdom • ${siteConfig.phoneDisplay}
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    const printWin = window.open("", "_blank");
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(printHtml);
+      printWin.document.close();
+    }
   };
 
   const getWhatsAppLink = (b: BookingRecord, customDate?: string, customTime?: string) => {
@@ -500,13 +587,22 @@ export default function CustomerAccountPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-2">
-                    <button
-                      onClick={() => downloadIcs(b)}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
-                    >
-                      <Download className="w-3.5 h-3.5" /> Calendar (.ics)
-                    </button>
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-100">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => downloadIcs(b)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
+                      >
+                        <Download className="w-3.5 h-3.5" /> Calendar (.ics)
+                      </button>
+
+                      <button
+                        onClick={() => handlePrintBooking(b)}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-stone-500" /> Print Summary
+                      </button>
+                    </div>
 
                     <button
                       onClick={() => openRequestChangeModal(b)}

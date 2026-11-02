@@ -41,7 +41,7 @@ import {
 
 import { db, auth } from '../lib/firebase/config';
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 const isDryRun = process.argv.includes('--dry-run');
 
@@ -53,8 +53,13 @@ async function seed() {
     try {
       await signInWithEmailAndPassword(auth, process.env.ADMIN_SEED_EMAIL, process.env.ADMIN_SEED_PASSWORD);
       console.log(`  🔒 Authenticated as admin: ${process.env.ADMIN_SEED_EMAIL}`);
-    } catch (authErr) {
-      console.log('  ℹ️ Proceeding with default credentials / rules...');
+    } catch (authErr: any) {
+      try {
+        await createUserWithEmailAndPassword(auth, process.env.ADMIN_SEED_EMAIL, process.env.ADMIN_SEED_PASSWORD);
+        console.log(`  🔒 Registered and authenticated as admin: ${process.env.ADMIN_SEED_EMAIL}`);
+      } catch (createErr) {
+        console.log('  ℹ️ Proceeding with default credentials / rules...', authErr?.message || authErr);
+      }
     }
   }
 

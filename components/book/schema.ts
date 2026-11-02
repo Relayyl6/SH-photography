@@ -9,6 +9,9 @@ export const bookingSchema = z.object({
   alternateDate: z.string().optional(),
   isDoubleDate: z.boolean().optional(),
   secondaryDate: z.string().optional(),
+  multiDayCount: z.string().optional(),
+  additionalDates: z.array(z.string()).optional(),
+  additionalDatesText: z.string().optional(),
   // Selected from the time-slot calendar alongside preferredDate — see the
   // cross-field check below, which requires it whenever a date is set.
   preferredStartTime: z.string().optional(),

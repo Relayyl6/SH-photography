@@ -194,6 +194,11 @@ export default function BookingForm() {
           },
           isDoubleDate: Boolean(data.isDoubleDate),
           secondaryDate: data.secondaryDate || null,
+          multiDayCount: data.multiDayCount || (data.isDoubleDate ? '2 Days' : null),
+          additionalDates: [
+            ...(data.secondaryDate ? [data.secondaryDate] : []),
+            ...(data.additionalDates || []),
+          ],
           extraInfo: data.extraInfo || null,
           answers: data,
           customerUid: null,
@@ -207,8 +212,22 @@ export default function BookingForm() {
           }
           if (resData.success && resData.claimToken) {
             const existing = JSON.parse(localStorage.getItem('sh_guest_bookings') || '[]');
-            existing.push({ bookingId: resData.bookingId, claimToken: resData.claimToken });
+            existing.push({
+              bookingId: resData.bookingId,
+              claimToken: resData.claimToken,
+              sessionName: data.serviceCategory || 'Photography Session',
+              date: data.preferredDate,
+              status: 'pending',
+              createdAt: Date.now(),
+              answers: data,
+            });
             localStorage.setItem('sh_guest_bookings', JSON.stringify(existing));
+            localStorage.setItem('sh_latest_booking', JSON.stringify({
+              bookingId: resData.bookingId,
+              claimToken: resData.claimToken,
+              date: data.preferredDate,
+              status: 'pending',
+            }));
           }
           setSubmittedData(data);
           setIsSubmitted(true);
@@ -469,21 +488,57 @@ export default function BookingForm() {
                           {...register('isDoubleDate')}
                           className="accent-ink w-4 h-4"
                         />
-                        <span>Need coverage across multiple or double dates? (e.g. 2-day wedding, workshop, or multi-venue event)</span>
+                        <span>Need coverage across multiple or double dates? (e.g. 2-day wedding, 3-day workshop, 4-day festival)</span>
                       </label>
 
                       {formData.isDoubleDate && (
-                        <div className="pl-4 border-l-2 border-ink/30 animate-in fade-in duration-200">
-                          <label className="block text-xs font-semibold uppercase tracking-wider text-ink/70 mb-1">
-                            Secondary / Additional Shoot Date
-                          </label>
-                          <input
-                            type="date"
-                            value={formData.secondaryDate ?? ''}
-                            {...register('secondaryDate')}
-                            className="w-full max-w-sm p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
-                          />
-                          <p className="text-xs text-ink/50 mt-1">Both dates will be checked and reserved for Benedict&apos;s review.</p>
+                        <div className="pl-4 border-l-2 border-ink/30 animate-in fade-in duration-200 space-y-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
+                            <div>
+                              <label className="block text-xs font-semibold uppercase tracking-wider text-ink/70 mb-1">
+                                Shoot Duration (Days)
+                              </label>
+                              <select
+                                value={formData.multiDayCount ?? '2 Days'}
+                                {...register('multiDayCount')}
+                                className="w-full p-2.5 border border-ink/20 bg-transparent text-sm focus:outline-none focus:border-ink"
+                              >
+                                <option value="2 Days">2 Days Coverage</option>
+                                <option value="3 Days">3 Days Coverage</option>
+                                <option value="4 Days">4 Days Coverage</option>
+                                <option value="5+ Days">5+ Days Bespoke Coverage</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-semibold uppercase tracking-wider text-ink/70 mb-1">
+                                Day 2 / Secondary Shoot Date
+                              </label>
+                              <input
+                                type="date"
+                                value={formData.secondaryDate ?? ''}
+                                {...register('secondaryDate')}
+                                className="w-full p-2.5 border border-ink/20 bg-transparent text-sm focus:outline-none focus:border-ink"
+                              >
+                              </input>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-ink/70 mb-1">
+                              Day 3, Day 4 or Additional Schedule Details (Optional)
+                            </label>
+                            <input
+                              type="text"
+                              value={formData.additionalDatesText ?? ''}
+                              {...register('additionalDatesText')}
+                              placeholder="e.g. Day 3: 2026-11-20, Day 4: 2026-11-21 (or date range)"
+                              className="w-full max-w-lg p-2.5 border border-ink/20 bg-transparent text-sm focus:outline-none focus:border-ink"
+                            />
+                            <p className="text-xs text-ink/50 mt-1">
+                              All specified shoot days will be held and locked once confirmed by Benedict in the owner dashboard.
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>

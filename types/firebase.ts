@@ -232,6 +232,8 @@ export interface BookingDoc {
   };
   isDoubleDate?: boolean;
   secondaryDate?: string | null;
+  additionalDates?: string[];
+  multiDayCount?: number | string;
   extraInfo?: string | null;
   answers: Record<string, unknown>;
   customer: {

@@ -146,22 +146,31 @@ async function handleUpdate(req: NextRequest) {
         return NextResponse.json({ error: "Missing new status." }, { status: 400 });
       }
 
-      // If Benedict tries to confirm a booking, verify that this date/slot hasn't already been booked by another client!
-      if (targetStatus === "confirmed" && currentBooking.slot?.date) {
-        const conflict = await findSlotConflict(
-          currentBooking.slot.date,
-          currentBooking.slot.start || "10:00",
-          currentBooking.slot.end || "11:30",
-          actualBookingId
-        );
-        if (conflict) {
-          return NextResponse.json(
-            {
-              error: `Cannot confirm: ${currentBooking.slot.date} (${currentBooking.slot.start} – ${currentBooking.slot.end}) is already booked by another confirmed reservation.`,
-              conflictDetail: conflict.reason,
-            },
-            { status: 409 }
+      // If Benedict tries to confirm a booking, verify that none of its dates are already booked!
+      if (targetStatus === "confirmed") {
+        const allDatesToCheck: string[] = [];
+        if (currentBooking.slot?.date) allDatesToCheck.push(currentBooking.slot.date);
+        if (currentBooking.secondaryDate) allDatesToCheck.push(currentBooking.secondaryDate);
+        if (Array.isArray(currentBooking.additionalDates)) {
+          allDatesToCheck.push(...currentBooking.additionalDates.filter(Boolean));
+        }
+
+        for (const dateToCheck of allDatesToCheck) {
+          const conflict = await findSlotConflict(
+            dateToCheck,
+            currentBooking.slot?.start || "10:00",
+            currentBooking.slot?.end || "11:30",
+            actualBookingId
           );
+          if (conflict) {
+            return NextResponse.json(
+              {
+                error: `Cannot confirm: ${dateToCheck} is already booked or held by another reservation.`,
+                conflictDetail: conflict.reason,
+              },
+              { status: 409 }
+            );
+          }
         }
       }
 

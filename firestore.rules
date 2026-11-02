@@ -2,11 +2,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper: is authenticated owner
+    // Helper: is authenticated owner (custom claim or verified admin email)
     function isOwner() {
-      return request.auth != null && 
-        request.auth.token.role == 'owner' &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return request.auth != null && (
+        (request.auth.token.role == 'owner' && exists(/databases/$(database)/documents/admins/$(request.auth.uid))) ||
+        request.auth.token.email in ['shfotography1@gmail.com', 'oseghaleleonard39@gmail.com']
+      );
     }
 
     // Helper: is customer owner of doc

@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed": "tsx scripts/seed.ts",
-    "grant-owner": "tsx scripts/grant-owner.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "grant-owner": "tsx --env-file=.env.local scripts/grant-owner.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -36,6 +36,7 @@
     "playwright": "^1.64.1",
     "postcss": "8.4.39",
     "tailwindcss": "3.4.4",
+    "tsx": "^4.23.15",
     "typescript": "5.5.3"
   }
 }

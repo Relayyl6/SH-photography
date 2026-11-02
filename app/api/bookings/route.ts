@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. If double date requested, check conflict for secondary date
+    // 2. If double date or multi-day requested, check conflicts for all additional dates
     const hasDoubleDate = Boolean(isDoubleDate || answers.isDoubleDate);
     const secDate = secondaryDate || answers.secondaryDate || null;
     if (hasDoubleDate && secDate) {
@@ -61,6 +61,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const additionalDates: string[] = Array.isArray(body.additionalDates)
+      ? body.additionalDates.filter(Boolean)
+      : [];
+
+    for (const addDate of additionalDates) {
+      if (addDate === date || addDate === secDate) continue;
+      const addConflict = await findSlotConflict(addDate, start, end);
+      if (addConflict) {
+        return NextResponse.json(
+          {
+            error: `The multi-day date (${addDate}) is already booked. Please choose another date.`,
+            conflictDetail: addConflict.reason,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     // Generate unique booking ID
     const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -68,9 +86,15 @@ export async function POST(req: NextRequest) {
     const claimToken = crypto.randomBytes(24).toString("hex");
     const claimTokenHash = crypto.createHash("sha256").update(claimToken).digest("hex");
 
+    const allMultiDates = Array.from(
+      new Set([...(secDate ? [secDate] : []), ...additionalDates])
+    );
+
     const enrichedAnswers = {
       ...answers,
       ...(hasDoubleDate ? { isDoubleDate: true, secondaryDate: secDate } : {}),
+      ...(allMultiDates.length > 0 ? { additionalDates: allMultiDates } : {}),
+      ...(body.multiDayCount ? { multiDayCount: body.multiDayCount } : {}),
       ...(extraInfo || answers.extraInfo ? { extraInfo: extraInfo || answers.extraInfo } : {}),
     };
 
@@ -89,6 +113,8 @@ export async function POST(req: NextRequest) {
       },
       isDoubleDate: hasDoubleDate,
       secondaryDate: secDate,
+      multiDayCount: body.multiDayCount || (hasDoubleDate ? "2 Days" : null),
+      additionalDates: allMultiDates,
       extraInfo: extraInfo || answers.extraInfo || null,
       answers: enrichedAnswers,
       customer: {
