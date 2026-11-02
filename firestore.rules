@@ -81,8 +81,8 @@ service cloud.firestore {
 
     // Admins list
     match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false; // only via Admin SDK / bootstrap
+      allow read: if request.auth != null && (request.auth.uid == uid || isOwner());
+      allow write: if isOwner();
     }
 
     // Audit Log & Mail queue

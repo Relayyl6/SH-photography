@@ -203,21 +203,26 @@ export const DEFAULT_SESSIONS: SessionDoc[] = baselineSessions.map((s, idx) => (
   updatedAt: Date.now(),
 }));
 
-export const DEFAULT_PACKAGES: PackageDoc[] = baselinePackages.map((p, idx) => ({
-  id: p.slug,
-  name: p.name,
-  category: p.category,
-  sessionSlug: p.slug,
-  description: p.summary,
-  features: p.includes,
-  deliverables: ['Online private gallery', 'Full resolution downloads'],
-  turnaround: '2-3 weeks',
-  show_price: p.showPrice,
-  price_label: p.priceLabel || undefined,
-  order: idx + 1,
-  published: true,
-  updatedAt: Date.now(),
-}));
+export const DEFAULT_PACKAGES: PackageDoc[] = baselinePackages.map((p, idx) => {
+  const pkg: PackageDoc = {
+    id: p.slug,
+    name: p.name,
+    category: p.category,
+    sessionSlug: p.slug,
+    description: p.summary,
+    features: p.includes,
+    deliverables: ['Online private gallery', 'Full resolution downloads'],
+    turnaround: '2-3 weeks',
+    show_price: p.showPrice,
+    order: idx + 1,
+    published: true,
+    updatedAt: Date.now(),
+  };
+  if (p.priceLabel) {
+    pkg.price_label = p.priceLabel;
+  }
+  return pkg;
+});
 
 // Typed Data Layer Getters (Universal Server/Client, reading directly from Firestore DB)
 export async function getSiteSettings(): Promise<SiteSettingsDoc> {

@@ -201,17 +201,21 @@ async function seed() {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
 
-    for (const email of adminEmails) {
-      const adminDocId = email.replace(/[^a-zA-Z0-9]/g, '_');
-      await setDoc(
-        doc(db, 'admins', adminDocId),
-        {
-          email,
-          role: 'owner',
-          addedAt: Date.now(),
-        },
-        { merge: true }
-      );
+    try {
+      for (const email of adminEmails) {
+        const adminDocId = email.replace(/[^a-zA-Z0-9]/g, '_');
+        await setDoc(
+          doc(db, 'admins', adminDocId),
+          {
+            email,
+            role: 'owner',
+            addedAt: Date.now(),
+          },
+          { merge: true }
+        );
+      }
+    } catch (adminErr: any) {
+      console.log('  ℹ️ Admins collection note (owner access already granted by email rules):', adminErr.message || adminErr);
     }
   }
 
