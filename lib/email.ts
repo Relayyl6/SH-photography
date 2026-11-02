@@ -7,7 +7,10 @@ interface BookingEmailPayload {
   date: string;
   timeSlot: { start: string; end: string };
   customer: { name: string; email: string; phone?: string };
-  answers?: Record<string, string>;
+  answers?: Record<string, any>;
+  isDoubleDate?: boolean;
+  secondaryDate?: string;
+  extraInfo?: string;
 }
 
 interface EnquiryEmailPayload {
@@ -17,15 +20,38 @@ interface EnquiryEmailPayload {
   enquiryType: string;
   service?: string;
   preferredDate?: string;
+  isDoubleDate?: boolean;
+  secondaryDate?: string;
   location?: string;
   message: string;
+  extraInfo?: string;
+}
+
+interface RescheduleRequestPayload {
+  bookingId: string;
+  sessionName: string;
+  currentSlot: { date: string; start: string; end: string };
+  requestedSlot: { date: string; start: string; end: string };
+  requestedLocation?: string;
+  requestedPhone?: string;
+  requestedNotes?: string;
+  customer: { name: string; email: string; phone?: string };
+}
+
+interface RescheduleDecisionPayload {
+  bookingId: string;
+  sessionName: string;
+  status: "approved" | "declined";
+  slot: { date: string; start: string; end: string };
+  customer: { name: string; email: string };
+  ownerMessage?: string;
 }
 
 function getTransporter() {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
   const port = parseInt(process.env.SMTP_PORT || "465", 10);
   const secure = process.env.SMTP_SECURE === "true" || port === 465;
-  const user = process.env.SMTP_USER || "yemuelinc@gmail.com";
+  const user = process.env.SMTP_USER || "";
   const pass = process.env.SMTP_PASS || "";
 
   return nodemailer.createTransport({
@@ -41,12 +67,12 @@ function getTransporter() {
 
 export async function sendBookingNotifications(payload: BookingEmailPayload) {
   const transporter = getTransporter();
-  const ownerEmails = (process.env.OWNER_EMAILS || "shfotography1@gmail.com,oseghaleleonard39@gmail.com")
+  const ownerEmails = (process.env.OWNER_EMAILS || "")
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
 
-  const from = process.env.EMAIL_FROM || "SH Photography <yemuelinc@gmail.com>";
+  const from = process.env.EMAIL_FROM || `SH Photography <${process.env.SMTP_USER}>`;
 
   // 1. Send detailed notification to Owners
   const ownerHtml = `
@@ -75,6 +101,22 @@ export async function sendBookingNotifications(payload: BookingEmailPayload) {
             <td style="padding: 6px 0; color: #78716c;"><strong>Phone:</strong></td>
             <td style="padding: 6px 0; color: #1c1917;">${payload.customer.phone || "Not provided"}</td>
           </tr>
+          ${
+            payload.isDoubleDate || payload.answers?.isDoubleDate
+              ? `<tr>
+                  <td style="padding: 6px 0; color: #78716c;"><strong>Multiple Dates:</strong></td>
+                  <td style="padding: 6px 0; color: #ea580c; font-weight: 600;">Double / Multi-Day Coverage requested (Secondary Date: ${payload.secondaryDate || payload.answers?.secondaryDate || "TBD"})</td>
+                </tr>`
+              : ""
+          }
+          ${
+            payload.extraInfo || payload.answers?.extraInfo
+              ? `<tr>
+                  <td style="padding: 6px 0; color: #78716c;"><strong>Custom Notes:</strong></td>
+                  <td style="padding: 6px 0; color: #1c1917;">${payload.extraInfo || payload.answers?.extraInfo}</td>
+                </tr>`
+              : ""
+          }
         </table>
       </div>
 
@@ -101,13 +143,15 @@ export async function sendBookingNotifications(payload: BookingEmailPayload) {
     </div>
   `;
 
-  await transporter.sendMail({
-    from,
-    to: ownerEmails,
-    replyTo: payload.customer.email,
-    subject: `📸 New Booking: ${payload.sessionName} – ${payload.customer.name} (${payload.date})`,
-    html: ownerHtml,
-  });
+  if (ownerEmails.length > 0) {
+    await transporter.sendMail({
+      from,
+      to: ownerEmails,
+      replyTo: payload.customer.email,
+      subject: `📸 New Booking: ${payload.sessionName} – ${payload.customer.name} (${payload.date})`,
+      html: ownerHtml,
+    });
+  }
 
   // 2. Send confirmation to Customer
   const customerHtml = `
@@ -123,7 +167,7 @@ export async function sendBookingNotifications(payload: BookingEmailPayload) {
       </p>
 
       <p style="font-size: 14px; line-height: 1.6; color: #44403c;">
-        Benedict will review your details, location, and creative notes, then contact you to finalize arrangements. You can also view and edit your booking anytime in your client account portal.
+        Benedict will review your details, location, and creative notes, then contact you to finalize arrangements. You can also view and request changes to your booking anytime in your client account portal.
       </p>
 
       <div style="text-align: center; font-size: 12px; color: #a8a29e; margin-top: 24px; border-top: 1px solid #e7e5e4; padding-top: 16px;">
@@ -135,7 +179,7 @@ export async function sendBookingNotifications(payload: BookingEmailPayload) {
   await transporter.sendMail({
     from,
     to: payload.customer.email,
-    replyTo: ownerEmails[0] || "shfotography1@gmail.com",
+    replyTo: ownerEmails[0] || process.env.SMTP_USER,
     subject: `Your SH Photography Session Request: ${payload.sessionName}`,
     html: customerHtml,
   });
@@ -143,12 +187,12 @@ export async function sendBookingNotifications(payload: BookingEmailPayload) {
 
 export async function sendEnquiryNotification(payload: EnquiryEmailPayload) {
   const transporter = getTransporter();
-  const ownerEmails = (process.env.OWNER_EMAILS || "shfotography1@gmail.com,oseghaleleonard39@gmail.com")
+  const ownerEmails = (process.env.OWNER_EMAILS || "")
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);
 
-  const from = process.env.EMAIL_FROM || "SH Photography <yemuelinc@gmail.com>";
+  const from = process.env.EMAIL_FROM || `SH Photography <${process.env.SMTP_USER}>`;
 
   const isBooking = payload.enquiryType === "booking";
   const subject = `📩 New ${isBooking ? "Booking Enquiry" : "General Message"}: ${payload.name}`;
@@ -181,10 +225,26 @@ export async function sendEnquiryNotification(payload: EnquiryEmailPayload) {
           <td style="padding: 6px 0; color: #78716c;"><strong>Preferred Date:</strong></td>
           <td style="padding: 6px 0; color: #1c1917;">${payload.preferredDate || "Flexible"}</td>
         </tr>
+        ${
+          payload.isDoubleDate
+            ? `<tr>
+                <td style="padding: 6px 0; color: #78716c;"><strong>Double / Multi-Day:</strong></td>
+                <td style="padding: 6px 0; color: #ea580c; font-weight: 600;">Yes (Secondary Date: ${payload.secondaryDate || "TBD"})</td>
+              </tr>`
+            : ""
+        }
         <tr>
           <td style="padding: 6px 0; color: #78716c;"><strong>Location:</strong></td>
           <td style="padding: 6px 0; color: #1c1917;">${payload.location || "Manchester / TBD"}</td>
         </tr>
+        ${
+          payload.extraInfo
+            ? `<tr>
+                <td style="padding: 6px 0; color: #78716c;"><strong>Additional Info:</strong></td>
+                <td style="padding: 6px 0; color: #1c1917;">${payload.extraInfo}</td>
+              </tr>`
+            : ""
+        }
       </table>
 
       <div style="background-color: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #e7e5e4;">
@@ -197,11 +257,128 @@ export async function sendEnquiryNotification(payload: EnquiryEmailPayload) {
     </div>
   `;
 
+  if (ownerEmails.length > 0) {
+    await transporter.sendMail({
+      from,
+      to: ownerEmails,
+      replyTo: payload.email,
+      subject,
+      html,
+    });
+  }
+}
+
+// 3. Reschedule / Change Request Notification to Owner
+export async function sendRescheduleRequestNotification(payload: RescheduleRequestPayload) {
+  const transporter = getTransporter();
+  const ownerEmails = (process.env.OWNER_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  const from = process.env.EMAIL_FROM || `SH Photography <${process.env.SMTP_USER}>`;
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1c1917; background-color: #fdfbf7; border-radius: 16px; border: 1px solid #e7e5e4;">
+      <div style="border-bottom: 2px solid #e11d48; padding-bottom: 16px; margin-bottom: 20px;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #e11d48; font-weight: 700;">Action Required • Reschedule Request</span>
+        <h1 style="font-size: 22px; margin: 4px 0 0 0; color: #0c0a09;">${payload.customer.name} requested changes</h1>
+        <p style="font-size: 12px; color: #78716c; margin: 2px 0 0 0;">Booking #${payload.bookingId.substring(0, 8)} • ${payload.sessionName}</p>
+      </div>
+
+      <div style="background-color: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e7e5e4; margin-bottom: 16px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #a8a29e; margin: 0 0 8px 0;">Current Confirmed Slot</h3>
+        <p style="margin: 0; font-size: 14px; color: #78716c; text-decoration: line-through;">
+          📅 ${payload.currentSlot.date} &nbsp;⏰ ${payload.currentSlot.start} – ${payload.currentSlot.end}
+        </p>
+      </div>
+
+      <div style="background-color: #fff1f2; padding: 18px; border-radius: 12px; border: 1px solid #fecdd3; margin-bottom: 20px;">
+        <h3 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #e11d48; margin: 0 0 8px 0;">New Requested Slot</h3>
+        <p style="margin: 0; font-size: 16px; font-weight: 700; color: #9f1239;">
+          📅 ${payload.requestedSlot.date} &nbsp;⏰ ${payload.requestedSlot.start} – ${payload.requestedSlot.end}
+        </p>
+        ${payload.requestedLocation ? `<p style="margin: 6px 0 0 0; font-size: 13px; color: #881337;">📍 Location: ${payload.requestedLocation}</p>` : ""}
+        ${payload.requestedPhone ? `<p style="margin: 4px 0 0 0; font-size: 13px; color: #881337;">📞 Phone: ${payload.requestedPhone}</p>` : ""}
+        ${payload.requestedNotes ? `<p style="margin: 8px 0 0 0; font-size: 13px; font-style: italic; color: #4c0519;">“${payload.requestedNotes}”</p>` : ""}
+      </div>
+
+      <p style="font-size: 13px; color: #57534e; line-height: 1.5;">
+        This rescheduling is currently marked as <strong>Pending Approval</strong>. To approve or decline this change, open your studio admin dashboard:
+      </p>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://sh-photography.vercel.app"}/admin/bookings" style="display: inline-block; background-color: #0c0a09; color: #ffffff; padding: 12px 24px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px;">
+          Review in Owner Dashboard &rarr;
+        </a>
+      </div>
+
+      <div style="text-align: center; font-size: 12px; color: #a8a29e; border-top: 1px solid #e7e5e4; padding-top: 14px;">
+        SH Photography Studio • Manchester, United Kingdom
+      </div>
+    </div>
+  `;
+
+  if (ownerEmails.length > 0) {
+    await transporter.sendMail({
+      from,
+      to: ownerEmails,
+      replyTo: payload.customer.email,
+      subject: `⚠️ Reschedule Request: ${payload.sessionName} – ${payload.customer.name} (Requested: ${payload.requestedSlot.date})`,
+      html,
+    });
+  }
+}
+
+// 4. Decision Notification to Customer (Approved / Declined)
+export async function sendRescheduleDecisionNotification(payload: RescheduleDecisionPayload) {
+  const transporter = getTransporter();
+  const from = process.env.EMAIL_FROM || `SH Photography <${process.env.SMTP_USER}>`;
+  const isApproved = payload.status === "approved";
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1c1917; background-color: #fdfbf7; border-radius: 16px; border: 1px solid #e7e5e4;">
+      <div style="border-bottom: 2px solid ${isApproved ? "#16a34a" : "#dc2626"}; padding-bottom: 16px; margin-bottom: 20px;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: ${isApproved ? "#16a34a" : "#dc2626"}; font-weight: 700;">
+          ${isApproved ? "Reschedule Confirmed" : "Reschedule Update"}
+        </span>
+        <h1 style="font-size: 22px; margin: 4px 0 0 0; color: #0c0a09;">
+          ${isApproved ? "Your new session time is approved!" : "Update regarding your reschedule request"}
+        </h1>
+        <p style="font-size: 12px; color: #78716c; margin: 2px 0 0 0;">Booking #${payload.bookingId.substring(0, 8)} • ${payload.sessionName}</p>
+      </div>
+
+      <p style="font-size: 14px; line-height: 1.6; color: #44403c;">
+        Hi ${payload.customer.name},<br/><br/>
+        ${
+          isApproved
+            ? `Benedict has confirmed your requested date and time changes. Your session for <strong>${payload.sessionName}</strong> is now locked in for:`
+            : `Benedict reviewed your reschedule request for <strong>${payload.sessionName}</strong>, but unfortunately the requested slot is not available.`
+        }
+      </p>
+
+      <div style="background-color: ${isApproved ? "#f0fdf4" : "#fef2f2"}; padding: 18px; border-radius: 12px; border: 1px solid ${isApproved ? "#bbf7d0" : "#fecaca"}; margin: 18px 0;">
+        <p style="margin: 0; font-size: 15px; font-weight: 700; color: ${isApproved ? "#166534" : "#991b1b"};">
+          Confirmed Shoot Time: ${payload.slot.date} (${payload.slot.start} – ${payload.slot.end})
+        </p>
+        ${payload.ownerMessage ? `<p style="margin: 8px 0 0 0; font-size: 13px; color: #44403c;">Note from Benedict: “${payload.ownerMessage}”</p>` : ""}
+      </div>
+
+      <p style="font-size: 13px; color: #78716c; line-height: 1.5;">
+        You can always view your latest session schedule or download an updated calendar file directly in your client portal.
+      </p>
+
+      <div style="text-align: center; font-size: 12px; color: #a8a29e; border-top: 1px solid #e7e5e4; padding-top: 14px; margin-top: 24px;">
+        SH Photography • Manchester, United Kingdom • <a href="https://wa.me/447404192667" style="color: #ea580c;">Chat on WhatsApp</a>
+      </div>
+    </div>
+  `;
+
   await transporter.sendMail({
     from,
-    to: ownerEmails,
-    replyTo: payload.email,
-    subject,
+    to: payload.customer.email,
+    replyTo: (process.env.OWNER_EMAILS || "").split(",")[0] || process.env.SMTP_USER,
+    subject: `${isApproved ? "✅ Confirmed: New Shoot Date" : "ℹ️ Update"} on ${payload.sessionName} (Booking #${payload.bookingId.substring(0, 8)})`,
     html,
   });
 }

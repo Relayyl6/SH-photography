@@ -28,6 +28,7 @@ export function ContactForm() {
 
   const [errors, setErrors] = useState<FieldErrors>({});
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [hasDoubleDate, setHasDoubleDate] = useState(false);
   const [lastSentData, setLastSentData] = useState<{
     values: EnquiryInput;
     serviceLabel: string;
@@ -44,8 +45,11 @@ export function ContactForm() {
       enquiryType: (data.get("enquiryType") as "message" | "booking") || "message",
       service: String(data.get("service") || ""),
       preferredDate: String(data.get("preferredDate") || ""),
+      isDoubleDate: form.querySelector<HTMLInputElement>('input[name="isDoubleDate"]')?.checked || false,
+      secondaryDate: String(data.get("secondaryDate") || ""),
       location: String(data.get("location") || ""),
       message: String(data.get("message") || ""),
+      extraInfo: String(data.get("extraInfo") || ""),
       consent: data.get("consent") === "on",
       company: String(data.get("company") || ""),
     };
@@ -196,7 +200,13 @@ export function ContactForm() {
             {values.phone && <p><span className="font-semibold text-ink">Phone:</span> {values.phone}</p>}
             {serviceLabel && <p><span className="font-semibold text-ink">Service:</span> {serviceLabel}</p>}
             {values.preferredDate && <p><span className="font-semibold text-ink">Date:</span> {values.preferredDate}</p>}
+            {values.isDoubleDate && (
+              <p><span className="font-semibold text-ink">Multi-Day:</span> Yes {values.secondaryDate ? `(2nd Date: ${values.secondaryDate})` : ""}</p>
+            )}
             {values.location && <p><span className="font-semibold text-ink">Location:</span> {values.location}</p>}
+            {values.extraInfo && (
+              <p className="sm:col-span-2"><span className="font-semibold text-ink">Extra Details:</span> {values.extraInfo}</p>
+            )}
           </div>
 
           <div className="mt-2.5 pt-2 border-t border-line/50">
@@ -285,6 +295,34 @@ export function ContactForm() {
           </label>
           <input id="preferredDate" name="preferredDate" type="date" className={inputClass} />
         </div>
+
+        {/* Double / Multi-Day Dates option */}
+        <div className="sm:col-span-2 pt-1 pb-1">
+          <label className="flex items-center gap-2.5 text-xs font-semibold text-ink/80 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              name="isDoubleDate"
+              checked={hasDoubleDate}
+              onChange={(e) => setHasDoubleDate(e.target.checked)}
+              className="rounded border-line text-accent focus:ring-accent"
+            />
+            <span>Need coverage across multiple or double dates? (e.g. 2-day wedding, workshop, or multi-venue event)</span>
+          </label>
+
+          {hasDoubleDate && (
+            <div className="mt-2.5 pl-4 border-l-2 border-accent/40 animate-in fade-in slide-in-from-top-1 duration-200">
+              <label htmlFor="secondaryDate" className="block text-xs font-medium text-ink/80 mb-1">
+                Secondary / Additional Date
+              </label>
+              <input
+                id="secondaryDate"
+                name="secondaryDate"
+                type="date"
+                className={inputClass}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <fieldset>
@@ -333,6 +371,19 @@ export function ContactForm() {
             {errors.message}
           </p>
         )}
+      </div>
+
+      <div>
+        <label htmlFor="extraInfo" className="block text-sm font-medium">
+          Additional Details &amp; Custom Requests <span className="text-xs text-ink/50 font-normal">(optional — anything else we didn't account for)</span>
+        </label>
+        <textarea
+          id="extraInfo"
+          name="extraInfo"
+          rows={3}
+          placeholder="Tell us anything else we didn't account for (e.g. accessibility, special timeline, outfit changes, props, multi-venue logistics)..."
+          className={inputClass}
+        />
       </div>
 
       <div>

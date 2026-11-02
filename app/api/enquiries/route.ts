@@ -22,7 +22,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const { name, email, phone, enquiryType, service, preferredDate, location, message } = parsed.data;
+  const {
+    name,
+    email,
+    phone,
+    enquiryType,
+    service,
+    preferredDate,
+    isDoubleDate,
+    secondaryDate,
+    location,
+    message,
+    extraInfo,
+  } = parsed.data;
 
   const enquiryId = `enq_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -34,8 +46,11 @@ export async function POST(request: Request) {
     enquiryType,
     service: service || null,
     preferredDate: preferredDate || null,
+    isDoubleDate: Boolean(isDoubleDate),
+    secondaryDate: secondaryDate || null,
     location: location || null,
     message,
+    extraInfo: extraInfo || null,
     status: "new",
     createdAt: Date.now(),
   };
@@ -56,8 +71,11 @@ export async function POST(request: Request) {
       enquiryType,
       service: service || undefined,
       preferredDate: preferredDate || undefined,
+      isDoubleDate: Boolean(isDoubleDate),
+      secondaryDate: secondaryDate || undefined,
       location: location || undefined,
       message,
+      extraInfo: extraInfo || undefined,
     });
   } catch (emailErr) {
     console.error("Failed to dispatch enquiry email:", emailErr);

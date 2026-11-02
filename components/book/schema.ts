@@ -7,6 +7,8 @@ export const bookingSchema = z.object({
   estimatedDuration: z.string().optional(),
   preferredDate: z.string().min(1, 'Preferred date is required'),
   alternateDate: z.string().optional(),
+  isDoubleDate: z.boolean().optional(),
+  secondaryDate: z.string().optional(),
   // Selected from the time-slot calendar alongside preferredDate — see the
   // cross-field check below, which requires it whenever a date is set.
   preferredStartTime: z.string().optional(),
@@ -26,6 +28,7 @@ export const bookingSchema = z.object({
   inspirationLinks: z.string().optional(),
   mustHaveShots: z.string().optional(),
   specialRequests: z.string().optional(),
+  extraInfo: z.string().optional(),
 
   deliverables: z.array(z.string()).min(1, 'Select at least one deliverable'),
   editedImagesExpected: z.string().optional(),

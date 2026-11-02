@@ -192,26 +192,35 @@ export default function BookingForm() {
             email: data.email,
             phone: data.phone,
           },
+          isDoubleDate: Boolean(data.isDoubleDate),
+          secondaryDate: data.secondaryDate || null,
+          extraInfo: data.extraInfo || null,
           answers: data,
           customerUid: null,
         }),
       })
-        .then((res) => res.json())
-        .then((resData) => {
+        .then(async (res) => {
+          const resData = await res.json();
+          if (!res.ok) {
+            alert(resData.error || 'Failed to submit booking. Please try another date or contact Benedict.');
+            return;
+          }
           if (resData.success && resData.claimToken) {
             const existing = JSON.parse(localStorage.getItem('sh_guest_bookings') || '[]');
             existing.push({ bookingId: resData.bookingId, claimToken: resData.claimToken });
             localStorage.setItem('sh_guest_bookings', JSON.stringify(existing));
           }
+          setSubmittedData(data);
+          setIsSubmitted(true);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         })
-        .catch((err) => console.warn('Booking API dispatch notice:', err));
+        .catch((err) => {
+          console.warn('Booking API dispatch error:', err);
+          alert('Could not connect to booking service. Please check your connection.');
+        });
     } catch (e) {
       console.warn('Booking storage error:', e);
     }
-
-    setSubmittedData(data);
-    setIsSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = async () => {
@@ -450,6 +459,34 @@ export default function BookingForm() {
                         {errors.dateFlexible && <p className="text-red-500 text-sm">{errors.dateFlexible.message}</p>}
                       </div>
                     </div>
+
+                    {/* Double Date / Multi-Day Option */}
+                    <div className="pt-2 border-t border-ink/10 space-y-3">
+                      <label className="flex items-center gap-2.5 text-sm font-medium cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={formData.isDoubleDate ?? false}
+                          {...register('isDoubleDate')}
+                          className="accent-ink w-4 h-4"
+                        />
+                        <span>Need coverage across multiple or double dates? (e.g. 2-day wedding, workshop, or multi-venue event)</span>
+                      </label>
+
+                      {formData.isDoubleDate && (
+                        <div className="pl-4 border-l-2 border-ink/30 animate-in fade-in duration-200">
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-ink/70 mb-1">
+                            Secondary / Additional Shoot Date
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.secondaryDate ?? ''}
+                            {...register('secondaryDate')}
+                            className="w-full max-w-sm p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                          />
+                          <p className="text-xs text-ink/50 mt-1">Both dates will be checked and reserved for Benedict&apos;s review.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -570,6 +607,20 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Any special requests?</label>
                       <textarea value={formData.specialRequests ?? ''} {...register('specialRequests')} rows={2} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Additional Details &amp; Custom Requests <span className="text-xs text-ink/50 font-normal">(anything else we didn&apos;t account for)</span>
+                      </label>
+                      <p className="text-xs text-ink/60 mb-2">Tell us about accessibility, multi-location logistics, custom timelines, props, equipment, or any specific requirements.</p>
+                      <textarea
+                        value={formData.extraInfo ?? ''}
+                        {...register('extraInfo')}
+                        placeholder="Tell us anything else we didn't account for..."
+                        rows={3}
+                        className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"
+                      />
                     </div>
                   </div>
                 )}

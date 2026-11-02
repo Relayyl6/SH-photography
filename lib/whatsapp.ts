@@ -7,8 +7,11 @@ export type EnquiryFormValues = {
   enquiryType: "message" | "booking";
   service?: string;
   preferredDate?: string;
+  isDoubleDate?: boolean;
+  secondaryDate?: string;
   location?: string;
   message: string;
+  extraInfo?: string;
 };
 
 // Builds a wa.me deep link with a URL-encoded, readable pre-filled message
@@ -26,7 +29,11 @@ export function buildWhatsappUrl(values: EnquiryFormValues, serviceLabel?: strin
   lines.push(`• *Enquiry Type:* ${isBooking ? "Booking Request" : "General Message"}`);
   if (sLabel) lines.push(`• *Service:* ${sLabel}`);
   if (values.preferredDate) lines.push(`• *Preferred Date:* ${values.preferredDate}`);
+  if (values.isDoubleDate) {
+    lines.push(`• *Double / Multi-Day Coverage:* Yes (Secondary: ${values.secondaryDate || "TBD"})`);
+  }
   if (values.location) lines.push(`• *Location:* ${values.location}`);
+  if (values.extraInfo) lines.push(`• *Extra Details:* ${values.extraInfo}`);
   lines.push(``, `*Message:*`, values.message);
 
   const text = encodeURIComponent(lines.join("\n"));
@@ -51,7 +58,11 @@ export function buildEnquiryMailtoUrl(values: EnquiryFormValues, serviceLabel?: 
   bodyLines.push(`• Type: ${isBooking ? "Booking Request" : "General Message"}`);
   if (sLabel) bodyLines.push(`• Service / Package: ${sLabel}`);
   if (values.preferredDate) bodyLines.push(`• Preferred Date: ${values.preferredDate}`);
+  if (values.isDoubleDate) {
+    bodyLines.push(`• Double / Multi-Day Coverage: Yes (Secondary Date: ${values.secondaryDate || "TBD"})`);
+  }
   if (values.location) bodyLines.push(`• Location: ${values.location}`);
+  if (values.extraInfo) bodyLines.push(`• Extra Info & Requests: ${values.extraInfo}`);
 
   bodyLines.push(
     ``,
@@ -83,7 +94,11 @@ export function buildGmailComposeUrl(values: EnquiryFormValues, serviceLabel?: s
   bodyLines.push(`• Type: ${isBooking ? "Booking Request" : "General Message"}`);
   if (sLabel) bodyLines.push(`• Service / Package: ${sLabel}`);
   if (values.preferredDate) bodyLines.push(`• Preferred Date: ${values.preferredDate}`);
+  if (values.isDoubleDate) {
+    bodyLines.push(`• Double / Multi-Day Coverage: Yes (Secondary Date: ${values.secondaryDate || "TBD"})`);
+  }
   if (values.location) bodyLines.push(`• Location: ${values.location}`);
+  if (values.extraInfo) bodyLines.push(`• Extra Info & Requests: ${values.extraInfo}`);
 
   bodyLines.push(
     ``,
@@ -123,7 +138,11 @@ export function buildOutlookComposeUrl(values: EnquiryFormValues, serviceLabel?:
   bodyLines.push(`• Type: ${isBooking ? "Booking Request" : "General Message"}`);
   if (sLabel) bodyLines.push(`• Service / Package: ${sLabel}`);
   if (values.preferredDate) bodyLines.push(`• Preferred Date: ${values.preferredDate}`);
+  if (values.isDoubleDate) {
+    bodyLines.push(`• Double / Multi-Day Coverage: Yes (Secondary Date: ${values.secondaryDate || "TBD"})`);
+  }
   if (values.location) bodyLines.push(`• Location: ${values.location}`);
+  if (values.extraInfo) bodyLines.push(`• Extra Info & Requests: ${values.extraInfo}`);
 
   bodyLines.push(
     ``,

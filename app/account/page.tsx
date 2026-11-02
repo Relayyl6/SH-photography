@@ -19,16 +19,30 @@ import {
   RefreshCw,
   X,
   Phone,
-  Mail,
+  MessageCircle,
   User as UserIcon,
+  AlertTriangle,
 } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
+
+interface PendingChangeRequest {
+  requestedSlot?: {
+    date: string;
+    start: string;
+    end: string;
+  };
+  requestedLocation?: string;
+  requestedPhone?: string;
+  requestedNotes?: string;
+  requestedAt?: number;
+}
 
 interface BookingRecord {
   id: string;
   sessionId: string;
   sessionSnapshot?: {
     name: string;
-    price?: number;
+    price?: number | string;
     durationMinutes?: number;
   };
   slot?: {
@@ -42,8 +56,9 @@ interface BookingRecord {
     phone: string;
   };
   answers?: Record<string, string>;
-  status: "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled";
-  createdAt?: string;
+  status: "pending" | "confirmed" | "completed" | "cancelled" | "rescheduled" | "reschedule_requested";
+  pendingChangeRequest?: PendingChangeRequest | null;
+  createdAt?: string | number;
   source?: string;
 }
 
@@ -55,7 +70,7 @@ export default function CustomerAccountPage() {
   const [loading, setLoading] = useState(true);
   const [claimStatus, setClaimStatus] = useState<string | null>(null);
 
-  // Edit modal state
+  // Request Change modal state
   const [editingBooking, setEditingBooking] = useState<BookingRecord | null>(null);
   const [editDate, setEditDate] = useState("");
   const [editStartTime, setEditStartTime] = useState("");
@@ -64,6 +79,7 @@ export default function CustomerAccountPage() {
   const [editLocation, setEditLocation] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editSubmitted, setEditSubmitted] = useState(false);
   const [editFeedback, setEditFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
@@ -110,7 +126,7 @@ export default function CustomerAccountPage() {
       }
     }
 
-    // Fetch user bookings from Firestore via API route or client query
+    // Fetch user bookings from Firestore via API route
     try {
       const res = await fetch(`/api/bookings/user?uid=${user.uid}&email=${encodeURIComponent(user.email || "")}`);
       if (res.ok) {
@@ -130,18 +146,19 @@ export default function CustomerAccountPage() {
     }
   }, [user]);
 
-  const openEditModal = (b: BookingRecord) => {
+  const openRequestChangeModal = (b: BookingRecord) => {
     setEditingBooking(b);
-    setEditDate(b.slot?.date || "");
-    setEditStartTime(b.slot?.start || "");
-    setEditEndTime(b.slot?.end || "");
-    setEditPhone(b.customer?.phone || "");
-    setEditLocation(b.answers?.location || b.answers?.venue || "");
-    setEditNotes(b.answers?.notes || b.answers?.vision || "");
+    setEditDate(b.pendingChangeRequest?.requestedSlot?.date || b.slot?.date || "");
+    setEditStartTime(b.pendingChangeRequest?.requestedSlot?.start || b.slot?.start || "");
+    setEditEndTime(b.pendingChangeRequest?.requestedSlot?.end || b.slot?.end || "");
+    setEditPhone(b.pendingChangeRequest?.requestedPhone || b.customer?.phone || "");
+    setEditLocation(b.pendingChangeRequest?.requestedLocation || b.answers?.location || b.answers?.venue || "");
+    setEditNotes(b.pendingChangeRequest?.requestedNotes || b.answers?.notes || b.answers?.vision || "");
+    setEditSubmitted(false);
     setEditFeedback(null);
   };
 
-  const saveBookingEdit = async (e: React.FormEvent) => {
+  const handleRequestChangeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingBooking || !user) return;
     setIsSavingEdit(true);
@@ -149,9 +166,10 @@ export default function CustomerAccountPage() {
 
     try {
       const res = await fetch("/api/bookings/update", {
-        method: "PATCH",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "request_change",
           bookingId: editingBooking.id,
           userUid: user.uid,
           userEmail: user.email,
@@ -175,16 +193,19 @@ export default function CustomerAccountPage() {
 
       const result = await res.json();
       if (!res.ok) {
-        throw new Error(result.error || "Failed to update booking");
+        throw new Error(result.error || "Failed to submit change request");
       }
 
-      setEditFeedback({ type: "success", text: "Booking updated successfully!" });
-      setTimeout(() => {
-        setEditingBooking(null);
-        loadBookings();
-      }, 1200);
+      setEditSubmitted(true);
+      setEditFeedback({
+        type: "success",
+        text: "Your change request has been sent to Benedict! Your session is marked as Reschedule Pending Approval until confirmed.",
+      });
+
+      // Reload bookings in background
+      loadBookings();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to update booking";
+      const msg = err instanceof Error ? err.message : "Failed to submit change request";
       setEditFeedback({ type: "error", text: msg });
     } finally {
       setIsSavingEdit(false);
@@ -221,6 +242,14 @@ export default function CustomerAccountPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const getWhatsAppLink = (b: BookingRecord, customDate?: string, customTime?: string) => {
+    const date = customDate || b.pendingChangeRequest?.requestedSlot?.date || b.slot?.date || "upcoming shoot";
+    const time = customTime || b.pendingChangeRequest?.requestedSlot?.start || b.slot?.start || "";
+    const session = b.sessionSnapshot?.name || "photography session";
+    const msg = `Hi Benedict, I requested a reschedule for my booking #${b.id.substring(0, 8)} (${session}) to ${date}${time ? ` at ${time}` : ""}. Could you please check your dashboard to confirm?`;
+    return `https://wa.me/${siteConfig.whatsappE164}?text=${encodeURIComponent(msg)}`;
   };
 
   if (authLoading || (!user && loading)) {
@@ -300,7 +329,7 @@ export default function CustomerAccountPage() {
             </div>
             <h1 className="text-3xl sm:text-4xl font-serif text-stone-900">Your Bookings & Sessions</h1>
             <p className="text-stone-500 text-sm mt-1">
-              View upcoming photography sessions, reschedule or update your shoot notes, and export to calendar.
+              View confirmed shoots, request rescheduling with Benedict, export to calendar, and manage notes.
             </p>
           </div>
 
@@ -346,18 +375,37 @@ export default function CustomerAccountPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {bookings.map((b) => {
-              const statusColors = {
-                pending: "bg-amber-100 text-amber-800 border-amber-200",
-                confirmed: "bg-emerald-100 text-emerald-800 border-emerald-200",
-                completed: "bg-stone-100 text-stone-800 border-stone-200",
-                cancelled: "bg-rose-100 text-rose-800 border-rose-200",
-                rescheduled: "bg-blue-100 text-blue-800 border-blue-200",
-              }[b.status] || "bg-stone-100 text-stone-800 border-stone-200";
+              const isReschedulePending = b.status === "reschedule_requested";
+
+              const statusBadge = isReschedulePending ? (
+                <span className="text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider border bg-amber-50 text-amber-900 border-amber-300 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3 h-3 text-amber-600" /> Reschedule Pending Approval
+                </span>
+              ) : (
+                <span
+                  className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider border ${
+                    (
+                      {
+                        pending: "bg-amber-100 text-amber-800 border-amber-200",
+                        confirmed: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                        completed: "bg-stone-100 text-stone-800 border-stone-200",
+                        cancelled: "bg-rose-100 text-rose-800 border-rose-200",
+                        rescheduled: "bg-blue-100 text-blue-800 border-blue-200",
+                        reschedule_requested: "bg-amber-100 text-amber-800 border-amber-300",
+                      } as Record<string, string>
+                    )[b.status] || "bg-stone-100 text-stone-800 border-stone-200"
+                  }`}
+                >
+                  {b.status}
+                </span>
+              );
 
               return (
                 <div
                   key={b.id}
-                  className="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                  className={`bg-white rounded-2xl border p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between ${
+                    isReschedulePending ? "border-amber-300 ring-1 ring-amber-200" : "border-stone-200"
+                  }`}
                 >
                   <div>
                     <div className="flex items-start justify-between gap-4 mb-4">
@@ -369,12 +417,33 @@ export default function CustomerAccountPage() {
                           {b.sessionSnapshot?.name || "Custom Session"}
                         </h3>
                       </div>
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider border ${statusColors}`}
-                      >
-                        {b.status}
-                      </span>
+                      {statusBadge}
                     </div>
+
+                    {/* Pending Reschedule Alert Box if applicable */}
+                    {isReschedulePending && b.pendingChangeRequest && (
+                      <div className="mb-4 p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1.5">
+                        <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                          <Clock className="w-3.5 h-3.5" /> Requested Reschedule Slot:
+                        </div>
+                        <p className="font-medium text-stone-900">
+                          📅 {b.pendingChangeRequest.requestedSlot?.date} &nbsp;•&nbsp; ⏰ {b.pendingChangeRequest.requestedSlot?.start} – {b.pendingChangeRequest.requestedSlot?.end}
+                        </p>
+                        <p className="text-[11px] text-amber-700">
+                          Awaiting confirmation from Benedict. Your previous slot remains reserved until approved.
+                        </p>
+                        <div className="pt-1">
+                          <a
+                            href={getWhatsAppLink(b)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-semibold text-[11px]"
+                          >
+                            <MessageCircle className="w-3 h-3" /> Ping Benedict on WhatsApp regarding this change &rarr;
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="space-y-2.5 text-sm text-stone-600 mb-6 border-y border-stone-100 py-4">
                       <div className="flex items-center gap-2.5">
@@ -407,6 +476,20 @@ export default function CustomerAccountPage() {
                         </span>
                       </div>
 
+                      {((b as any).isDoubleDate || b.answers?.isDoubleDate) && (
+                        <div className="flex items-center gap-2.5 text-purple-900 font-medium">
+                          <Calendar className="w-4 h-4 text-purple-600 shrink-0" />
+                          <span>Double Date / Multi-Day: {(b as any).secondaryDate || b.answers?.secondaryDate || "Pending confirmation"}</span>
+                        </div>
+                      )}
+
+                      {((b as any).extraInfo || b.answers?.extraInfo) && (
+                        <div className="flex items-start gap-2.5">
+                          <FileText className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                          <span className="text-stone-600 italic line-clamp-2">Extra: “{(b as any).extraInfo || b.answers?.extraInfo}”</span>
+                        </div>
+                      )}
+
                       {b.answers?.notes && (
                         <div className="flex items-start gap-2.5">
                           <FileText className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
@@ -422,14 +505,14 @@ export default function CustomerAccountPage() {
                       onClick={() => downloadIcs(b)}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
                     >
-                      <Download className="w-3.5 h-3.5" /> Add to Calendar (.ics)
+                      <Download className="w-3.5 h-3.5" /> Calendar (.ics)
                     </button>
 
                     <button
-                      onClick={() => openEditModal(b)}
+                      onClick={() => openRequestChangeModal(b)}
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-stone-900 text-white text-xs font-semibold hover:bg-stone-800 transition shadow-sm"
                     >
-                      <Edit3 className="w-3.5 h-3.5" /> Edit Details
+                      <Edit3 className="w-3.5 h-3.5" /> Request Change
                     </button>
                   </div>
                 </div>
@@ -441,20 +524,20 @@ export default function CustomerAccountPage() {
         {/* Customer Support Info */}
         <div className="mt-16 bg-[#F5EFE6] border border-stone-200/80 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div>
-            <h4 className="font-serif text-lg text-stone-900">Need immediate assistance or direct changes?</h4>
+            <h4 className="font-serif text-lg text-stone-900">Need immediate assistance or direct consultation?</h4>
             <p className="text-stone-600 text-xs sm:text-sm mt-1 max-w-xl">
               You can also chat directly with Benedict via WhatsApp or phone for last-minute location changes, weather
-              contingencies, or custom requests.
+              contingencies, or custom shoot requirements.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <a
-              href="https://wa.me/447404192667"
+              href="https://wa.me/447350156054"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition"
             >
-              WhatsApp Benedict
+              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp Benedict
             </a>
             <Link
               href="/contact"
@@ -466,16 +549,21 @@ export default function CustomerAccountPage() {
         </div>
       </main>
 
-      {/* Edit Booking Details Modal */}
+      {/* Request Change Modal */}
       {editingBooking && (
         <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-stone-200 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
               <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#C25E00]">
+                  Approval Workflow
+                </span>
                 <h3 className="font-serif text-lg text-stone-900">
-                  Edit Booking: {editingBooking.sessionSnapshot?.name || "Session"}
+                  Request Reschedule & Changes
                 </h3>
-                <p className="text-xs text-stone-500">Update your preferred date, timing, location, or notes.</p>
+                <p className="text-xs text-stone-500">
+                  Submit requested changes for Benedict&apos;s review. Your booking remains active until approved.
+                </p>
               </div>
               <button
                 onClick={() => setEditingBooking(null)}
@@ -485,114 +573,167 @@ export default function CustomerAccountPage() {
               </button>
             </div>
 
-            <form onSubmit={saveBookingEdit} className="p-6 space-y-4">
-              {editFeedback && (
-                <div
-                  className={`p-3 rounded-lg text-xs font-medium flex items-center gap-2 ${
-                    editFeedback.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                      : "bg-rose-50 text-rose-800 border border-rose-200"
-                  }`}
-                >
-                  {editFeedback.type === "success" ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                  )}
-                  <span>{editFeedback.text}</span>
+            {editSubmitted ? (
+              <div className="p-6 text-center space-y-4">
+                <div className="w-14 h-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                  <CheckCircle className="w-8 h-8" />
                 </div>
-              )}
+                <h4 className="font-serif text-xl text-stone-900">Change Request Submitted!</h4>
+                <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
+                  Benedict has received an email notification with your requested new shoot date and notes. The booking
+                  is now marked as <strong>Reschedule Pending Approval</strong>.
+                </p>
 
-              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-left text-xs space-y-2">
+                  <p className="font-semibold text-emerald-950">Recommended: Notify Benedict on WhatsApp</p>
+                  <p className="text-emerald-800 text-[11px]">
+                    To expedite your confirmation, send a quick pre-filled message to Benedict directly:
+                  </p>
+                  <a
+                    href={getWhatsAppLink(editingBooking, editDate, editStartTime)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition shadow-sm"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Send Pre-Filled WhatsApp Note
+                  </a>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setEditingBooking(null);
+                      loadBookings();
+                    }}
+                    className="px-6 py-2 rounded-lg bg-stone-900 text-white text-xs font-semibold hover:bg-stone-800 transition"
+                  >
+                    Done & Return to Portal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleRequestChangeSubmit} className="p-6 space-y-4">
+                {editFeedback && (
+                  <div
+                    className={`p-3 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                      editFeedback.type === "success"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        : "bg-rose-50 text-rose-800 border border-rose-200"
+                    }`}
+                  >
+                    {editFeedback.type === "success" ? (
+                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>{editFeedback.text}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1">
+                      Requested Date *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={editDate}
+                      onChange={(e) => setEditDate(e.target.value)}
+                      className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-700 mb-1">
+                      Requested Start Time *
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={editStartTime}
+                      onChange={(e) => setEditStartTime(e.target.value)}
+                      className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Shoot Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
-                  />
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Contact Phone (for day-of communication)
+                  </label>
+                  <div className="relative">
+                    <Phone className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400" />
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      placeholder="+44 7..."
+                      className="w-full text-xs pl-8 pr-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Start Time</label>
-                  <input
-                    type="time"
-                    required
-                    value={editStartTime}
-                    onChange={(e) => setEditStartTime(e.target.value)}
-                    className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Venue / Shoot Location
+                  </label>
+                  <div className="relative">
+                    <MapPin className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400" />
+                    <input
+                      type="text"
+                      value={editLocation}
+                      onChange={(e) => setEditLocation(e.target.value)}
+                      placeholder="e.g. Castlefield, Manchester or Studio address"
+                      className="w-full text-xs pl-8 pr-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                    Reason for Reschedule / Notes for Benedict
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    placeholder="Let Benedict know why you'd like to reschedule or any new outfits/requests..."
+                    className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00] resize-none"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Contact Phone (for day-of communication)
-                </label>
-                <div className="relative">
-                  <Phone className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400" />
-                  <input
-                    type="tel"
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    placeholder="+44 7..."
-                    className="w-full text-xs pl-8 pr-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
-                  />
+                <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200 text-[11px] text-amber-900">
+                  <p>
+                    <strong>Note:</strong> Once submitted, Benedict will review your requested time and confirm
+                    availability. You can also message him on WhatsApp immediately after submitting.
+                  </p>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Venue / Shoot Location</label>
-                <div className="relative">
-                  <MapPin className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400" />
-                  <input
-                    type="text"
-                    value={editLocation}
-                    onChange={(e) => setEditLocation(e.target.value)}
-                    placeholder="e.g. Castlefield, Manchester or Studio address"
-                    className="w-full text-xs pl-8 pr-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00]"
-                  />
+                <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingBooking(null)}
+                    className="px-4 py-2 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSavingEdit}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#C25E00] text-white text-xs font-semibold hover:bg-[#a34f00] disabled:opacity-50 transition shadow-sm"
+                  >
+                    {isSavingEdit ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Submitting Request...
+                      </>
+                    ) : (
+                      "Request Change"
+                    )}
+                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Vision, Wardrobe & Special Notes
-                </label>
-                <textarea
-                  rows={3}
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  placeholder="Tell Benedict any specific shots, outfits, or details you want to cover..."
-                  className="w-full text-xs px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:border-[#C25E00] resize-none"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditingBooking(null)}
-                  className="px-4 py-2 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingEdit}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#C25E00] text-white text-xs font-semibold hover:bg-[#a34f00] disabled:opacity-50 transition shadow-sm"
-                >
-                  {isSavingEdit ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </div>
-            </form>
+              </form>
+            )}
           </div>
         </div>
       )}

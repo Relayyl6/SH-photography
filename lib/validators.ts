@@ -11,8 +11,13 @@ export const enquirySchema = z.object({
   enquiryType: z.enum(["message", "booking"]),
   service: z.string().trim().optional().or(z.literal("")),
   preferredDate: z.string().trim().optional().or(z.literal("")),
+  // Support for multi-day / double dates
+  isDoubleDate: z.boolean().optional(),
+  secondaryDate: z.string().trim().optional().or(z.literal("")),
   location: z.string().trim().optional().or(z.literal("")),
   message: z.string().trim().min(10, "Tell me a little more (10 characters minimum)."),
+  // Note for extra details not accounted for
+  extraInfo: z.string().trim().optional().or(z.literal("")),
   consent: z.literal(true, {
     errorMap: () => ({ message: "Please agree before sending your enquiry." }),
   }),

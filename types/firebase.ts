@@ -230,13 +230,23 @@ export interface BookingDoc {
     start: string;
     end: string;
   };
+  isDoubleDate?: boolean;
+  secondaryDate?: string | null;
+  extraInfo?: string | null;
   answers: Record<string, unknown>;
   customer: {
     name: string;
     email: string;
     phone: string;
   };
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show' | 'rescheduled' | 'reschedule_requested';
+  pendingChangeRequest?: {
+    requestedSlot: { date: string; start: string; end: string };
+    requestedLocation?: string;
+    requestedPhone?: string;
+    requestedNotes?: string;
+    requestedAt?: number;
+  } | null;
   ownerNotes: Array<{ text: string; by: string; at: string | number }>;
   customerUid: string | null;
   claimTokenHash?: string;

@@ -9,8 +9,8 @@ function getAdminApp(): App {
     return existingApps[0]!;
   }
 
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-8a473';
-  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'sh-photography-8a473.firebasestorage.app';
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {

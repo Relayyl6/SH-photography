@@ -48,11 +48,11 @@ const isDryRun = process.argv.includes('--dry-run');
 async function seed() {
   console.log(`\n🌱 Starting Firestore seeding to ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-8a473'}${isDryRun ? ' (DRY RUN)' : ''}...`);
 
-  // Attempt signing in as admin if client SDK requires auth
-  if (!isDryRun) {
+  // Attempt signing in as admin if credentials are provided in env
+  if (!isDryRun && process.env.ADMIN_SEED_EMAIL && process.env.ADMIN_SEED_PASSWORD) {
     try {
-      await signInWithEmailAndPassword(auth, 'oseghaleleonard39@gmail.com', 'TempPassword123!');
-      console.log('  🔒 Authenticated as admin: oseghaleleonard39@gmail.com');
+      await signInWithEmailAndPassword(auth, process.env.ADMIN_SEED_EMAIL, process.env.ADMIN_SEED_PASSWORD);
+      console.log(`  🔒 Authenticated as admin: ${process.env.ADMIN_SEED_EMAIL}`);
     } catch (authErr) {
       console.log('  ℹ️ Proceeding with default credentials / rules...');
     }
