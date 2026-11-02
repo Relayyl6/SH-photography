@@ -32,7 +32,7 @@ const auth: Auth = getAuth(app);
 const db: Firestore = getFirestore(app);
 
 async function grantOwner(targetEmailInput?: string) {
-  const adminEmailsEnv = process.env.ADMIN_EMAILS || 'shfotography1@gmail.com';
+  const adminEmailsEnv = process.env.ADMIN_EMAILS || 'shfotography1@gmail.com,oseghaleleonard39@gmail.com';
   const allowedEmails = adminEmailsEnv
     .split(',')
     .map((e) => e.trim().toLowerCase())

@@ -8,11 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "seed": "ts-node scripts/seed.ts",
-    "grant-owner": "ts-node scripts/grant-owner.ts"
+    "seed": "tsx scripts/seed.ts",
+    "grant-owner": "tsx scripts/grant-owner.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@vercel/blob": "^2.8.2",
     "clsx": "^2.1.1",
     "firebase": "^13.1.0",
     "firebase-admin": "^14.5.0",

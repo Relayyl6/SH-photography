@@ -11,7 +11,7 @@ import {
   DEFAULT_PORTFOLIO_IMAGES,
   DEFAULT_SESSIONS,
   DEFAULT_PACKAGES,
-} from '../lib/content';
+} from '../lib/content/index';
 
 // Parse arguments
 const isDryRun = process.argv.includes('--dry-run');

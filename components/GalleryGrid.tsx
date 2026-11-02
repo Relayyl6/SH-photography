@@ -9,10 +9,12 @@ export function GalleryGrid({
   sessionSlug,
   sessionTitle,
   count,
+  initialPhotos,
 }: {
   sessionSlug?: string;
   sessionTitle: string;
   count?: number;
+  initialPhotos?: GalleryPhoto[];
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const triggerRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -20,7 +22,12 @@ export function GalleryGrid({
     null
   ) as React.MutableRefObject<HTMLButtonElement | null>;
 
-  const photos: GalleryPhoto[] = sessionSlug ? getGalleryImages(sessionSlug) : [];
+  const photos: GalleryPhoto[] =
+    initialPhotos && initialPhotos.length > 0
+      ? initialPhotos
+      : sessionSlug
+      ? getGalleryImages(sessionSlug)
+      : [];
   const effectiveCount = photos.length > 0 ? photos.length : (count ?? 12);
 
   function openAt(i: number) {

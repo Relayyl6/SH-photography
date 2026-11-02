@@ -73,8 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Also allow fallback if current user email matches standard admin email in demo/dev mode
-      const isEmailAllowed = (currentUser.email?.toLowerCase() === "shfotography1@gmail.com" ||
-        currentUser.email?.toLowerCase() === "admin@shphotography.com");
+      const ADMIN_LIST = ["shfotography1@gmail.com", "oseghaleleonard39@gmail.com", "admin@shphotography.com"];
+      const isEmailAllowed = ADMIN_LIST.includes(currentUser.email?.toLowerCase() || "");
 
       setIsOwner(Boolean(hasOwnerClaim || hasAdminDoc || isEmailAllowed));
     } catch (err) {
