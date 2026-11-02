@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
+import { db } from "@/lib/firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { sendBookingNotifications } from "@/lib/email";
 import crypto from "crypto";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate deterministic/unique booking ID
+    // Generate unique booking ID
     const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     // Generate cryptographic claim token for guest claiming
@@ -60,15 +64,30 @@ export async function POST(req: NextRequest) {
       ],
     };
 
-    // Save to Firestore before sending email (Save before you send rule)
-    try {
-      await adminDb.collection("bookings").doc(bookingId).set(bookingDoc);
-    } catch (dbErr) {
-      console.warn("Firestore write skipped/demo:", dbErr);
-    }
+    // 1. Save to Firestore DB first (Save before you send rule)
+    await setDoc(doc(db, "bookings", bookingId), bookingDoc);
 
-    // Email dispatch simulation / log
-    console.log(`[BOOKING] New booking created: ${bookingId} for ${customer.name} (${customer.email}) on ${date}`);
+    // 2. Send emails to owner and customer via Gmail SMTP
+    try {
+      await sendBookingNotifications({
+        bookingId,
+        sessionId,
+        sessionName: sessionName || sessionId,
+        date,
+        timeSlot: {
+          start: timeSlot?.start || "10:00",
+          end: timeSlot?.end || "11:30",
+        },
+        customer: {
+          name: customer.name,
+          email: customer.email,
+          phone: customer.phone,
+        },
+        answers,
+      });
+    } catch (emailErr) {
+      console.error("Email notification dispatch error:", emailErr);
+    }
 
     return NextResponse.json({
       success: true,

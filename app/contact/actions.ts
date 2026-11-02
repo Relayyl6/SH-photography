@@ -1,22 +1,14 @@
 "use server";
 
 import { enquirySchema, type EnquiryInput } from "@/lib/validators";
+import { db } from "@/lib/firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { sendEnquiryNotification } from "@/lib/email";
 
 export type SubmitEnquiryResult =
   | { ok: true }
   | { ok: false; error: string; fieldErrors?: Partial<Record<keyof EnquiryInput, string>> };
 
-// Phase 4 server action. DB (Supabase/Neon + Drizzle) and Resend are not
-// wired up yet in this build — AGENTS.md §5 rule 5 ("save before you send")
-// still governs the eventual implementation:
-//
-//   1. insert into `enquiries` (status: 'new', channel: 'email')
-//   2. send notification via Resend to ENQUIRY_TO_EMAIL, reply-to the visitor
-//   3. only then return ok
-//
-// Until DATABASE_URL / RESEND_API_KEY are configured (.env.example), this
-// validates server-side and returns a clear "not yet connected" error rather
-// than silently pretending to deliver the enquiry.
 export async function submitEnquiry(raw: EnquiryInput): Promise<SubmitEnquiryResult> {
   const parsed = enquirySchema.safeParse(raw);
 
@@ -34,17 +26,40 @@ export async function submitEnquiry(raw: EnquiryInput): Promise<SubmitEnquiryRes
     return { ok: true };
   }
 
-  const hasDatabase = Boolean(process.env.DATABASE_URL);
-  const hasResend = Boolean(process.env.RESEND_API_KEY);
+  const { name, email, phone, enquiryType, service, preferredDate, location, message } = parsed.data;
+  const enquiryId = `enq_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-  if (!hasDatabase || !hasResend) {
-    return {
-      ok: false,
-      error:
-        "The email enquiry system isn't connected yet (DATABASE_URL / RESEND_API_KEY missing). Please use the WhatsApp button below, or email directly, in the meantime.",
-    };
+  try {
+    // 1. Save to Firestore enquiries
+    await setDoc(doc(db, "enquiries", enquiryId), {
+      id: enquiryId,
+      name,
+      email,
+      phone: phone || null,
+      enquiryType,
+      service: service || null,
+      preferredDate: preferredDate || null,
+      location: location || null,
+      message,
+      status: "new",
+      createdAt: Date.now(),
+    });
+
+    // 2. Send email via Gmail SMTP
+    await sendEnquiryNotification({
+      name,
+      email,
+      phone: phone || undefined,
+      enquiryType,
+      service: service || undefined,
+      preferredDate: preferredDate || undefined,
+      location: location || undefined,
+      message,
+    });
+
+    return { ok: true };
+  } catch (err: any) {
+    console.error("Error submitting enquiry:", err);
+    return { ok: false, error: err.message || "Failed to submit enquiry. Please try again." };
   }
-
-  // TODO (Phase 0 / Phase 4): insert into `enquiries`, then send via Resend.
-  return { ok: true };
 }

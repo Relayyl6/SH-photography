@@ -1,5 +1,31 @@
-import { initializeApp, getApps, cert, applicationDefault, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import fs from 'fs';
+import path from 'path';
+
+// 1. Manually populate process.env from .env.local if not already set
+try {
+  const envPath = path.resolve(process.cwd(), '.env.local');
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx !== -1) {
+        const key = trimmed.slice(0, eqIdx).trim();
+        let val = trimmed.slice(eqIdx + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        if (!process.env[key]) {
+          process.env[key] = val;
+        }
+      }
+    }
+  }
+} catch (e) {
+  // ignore
+}
+
 import {
   DEFAULT_SITE_SETTINGS,
   DEFAULT_CONTACT_SETTINGS,
@@ -13,81 +39,58 @@ import {
   DEFAULT_PACKAGES,
 } from '../lib/content/index';
 
-// Parse arguments
+import { db, auth } from '../lib/firebase/config';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+
 const isDryRun = process.argv.includes('--dry-run');
-const isEmulator = process.argv.includes('--emulator');
 
-if (isEmulator) {
-  process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || 'localhost:8080';
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || 'localhost:9099';
-  process.env.FIREBASE_STORAGE_EMULATOR_HOST = process.env.FIREBASE_STORAGE_EMULATOR_HOST || 'localhost:9199';
-  console.log('⚡ Running in Firebase Emulator mode');
-}
+async function seed() {
+  console.log(`\n🌱 Starting Firestore seeding to ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-8a473'}${isDryRun ? ' (DRY RUN)' : ''}...`);
 
-function getAdminApp(): App {
-  const existing = getApps();
-  if (existing.length > 0) return existing[0]!;
-
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  // Attempt signing in as admin if client SDK requires auth
+  if (!isDryRun) {
     try {
-      const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-      return initializeApp({
-        credential: cert(sa),
-        projectId: sa.project_id || 'sh-photography-demo',
-      });
-    } catch {
-      return initializeApp({
-        credential: applicationDefault(),
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-demo',
-      });
+      await signInWithEmailAndPassword(auth, 'oseghaleleonard39@gmail.com', 'TempPassword123!');
+      console.log('  🔒 Authenticated as admin: oseghaleleonard39@gmail.com');
+    } catch (authErr) {
+      console.log('  ℹ️ Proceeding with default credentials / rules...');
     }
   }
 
-  return initializeApp({
-    credential: applicationDefault(),
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-demo',
-  });
-}
-
-const app: App = getAdminApp();
-const db: Firestore = getFirestore(app);
-
-async function seed() {
-  console.log(`\n🌱 Starting Firestore seeding${isDryRun ? ' (DRY RUN)' : ''}...`);
-
   // 1. Settings
   console.log('  → Seeding settings/site...');
-  if (!isDryRun) await db.doc('settings/site').set(DEFAULT_SITE_SETTINGS, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'settings', 'site'), DEFAULT_SITE_SETTINGS, { merge: true });
 
   console.log('  → Seeding settings/contact...');
-  if (!isDryRun) await db.doc('settings/contact').set(DEFAULT_CONTACT_SETTINGS, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'settings', 'contact'), DEFAULT_CONTACT_SETTINGS, { merge: true });
 
   console.log('  → Seeding settings/social...');
-  if (!isDryRun) await db.doc('settings/social').set(DEFAULT_SOCIAL_SETTINGS, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'settings', 'social'), DEFAULT_SOCIAL_SETTINGS, { merge: true });
 
   console.log('  → Seeding settings/booking...');
-  if (!isDryRun) await db.doc('settings/booking').set(DEFAULT_BOOKING_SETTINGS, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'settings', 'booking'), DEFAULT_BOOKING_SETTINGS, { merge: true });
 
   // 2. Pages
   console.log('  → Seeding pages/home...');
-  if (!isDryRun) await db.doc('pages/home').set(DEFAULT_HOME_PAGE, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'pages', 'home'), DEFAULT_HOME_PAGE, { merge: true });
 
   console.log('  → Seeding pages/about...');
-  if (!isDryRun) await db.doc('pages/about').set(DEFAULT_ABOUT_PAGE, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'pages', 'about'), DEFAULT_ABOUT_PAGE, { merge: true });
 
   // 3. Bento Home
   console.log('  → Seeding bento/home...');
-  if (!isDryRun) await db.doc('bento/home').set(DEFAULT_BENTO_HOME, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'bento', 'home'), DEFAULT_BENTO_HOME, { merge: true });
 
   // 4. Portfolio images
   console.log(`  → Seeding ${DEFAULT_PORTFOLIO_IMAGES.length} portfolio images...`);
   if (!isDryRun) {
     const batchSize = 400;
     for (let i = 0; i < DEFAULT_PORTFOLIO_IMAGES.length; i += batchSize) {
-      const batch = db.batch();
+      const batch = writeBatch(db);
       const chunk = DEFAULT_PORTFOLIO_IMAGES.slice(i, i + batchSize);
       for (const img of chunk) {
-        batch.set(db.collection('portfolio').doc(img.id), img, { merge: true });
+        batch.set(doc(db, 'portfolio', img.id), img, { merge: true });
       }
       await batch.commit();
     }
@@ -96,9 +99,9 @@ async function seed() {
   // 5. Sessions
   console.log(`  → Seeding ${DEFAULT_SESSIONS.length} sessions...`);
   if (!isDryRun) {
-    const batch = db.batch();
+    const batch = writeBatch(db);
     for (const session of DEFAULT_SESSIONS) {
-      batch.set(db.collection('sessions').doc(session.id), session, { merge: true });
+      batch.set(doc(db, 'sessions', session.id), session, { merge: true });
     }
     await batch.commit();
   }
@@ -106,9 +109,9 @@ async function seed() {
   // 6. Packages
   console.log(`  → Seeding ${DEFAULT_PACKAGES.length} packages...`);
   if (!isDryRun) {
-    const batch = db.batch();
+    const batch = writeBatch(db);
     for (const pkg of DEFAULT_PACKAGES) {
-      batch.set(db.collection('packages').doc(pkg.id), pkg, { merge: true });
+      batch.set(doc(db, 'packages', pkg.id), pkg, { merge: true });
     }
     await batch.commit();
   }
@@ -178,14 +181,36 @@ async function seed() {
   ];
 
   if (!isDryRun) {
-    const batch = db.batch();
+    const batch = writeBatch(db);
     for (const field of defaultFields) {
-      batch.set(db.collection('bookingFields').doc(field.id), field, { merge: true });
+      batch.set(doc(db, 'bookingFields', field.id), field, { merge: true });
     }
     await batch.commit();
   }
 
-  console.log('\n✅ Seeding completed successfully!');
+  // 8. Register Admin records in Firestore admins collection
+  if (!isDryRun) {
+    console.log('  → Registering admins in admins collection...');
+    const adminEmails = (process.env.ADMIN_EMAILS || 'shfotography1@gmail.com,oseghaleleonard39@gmail.com')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+
+    for (const email of adminEmails) {
+      const adminDocId = email.replace(/[^a-zA-Z0-9]/g, '_');
+      await setDoc(
+        doc(db, 'admins', adminDocId),
+        {
+          email,
+          role: 'owner',
+          addedAt: Date.now(),
+        },
+        { merge: true }
+      );
+    }
+  }
+
+  console.log('\n✅ Firestore seeding completed successfully!');
 }
 
 seed().catch((err) => {

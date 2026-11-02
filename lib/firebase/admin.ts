@@ -9,13 +9,16 @@ function getAdminApp(): App {
     return existingApps[0]!;
   }
 
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-8a473';
+  const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'sh-photography-8a473.firebasestorage.app';
+
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
       const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
       return initializeApp({
         credential: cert(serviceAccount),
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        storageBucket,
+        projectId,
       });
     } catch (e) {
       console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', e);
@@ -24,8 +27,8 @@ function getAdminApp(): App {
 
   return initializeApp({
     credential: applicationDefault(),
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-demo',
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'sh-photography-demo.appspot.com',
+    projectId,
+    storageBucket,
   });
 }
 

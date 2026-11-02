@@ -1,14 +1,4 @@
-import { siteConfig, socialLinks, featuredVideoId } from '@/lib/site-config';
-import { sessions as baselineSessions, Session } from '@/lib/sessions';
-import { packages as baselinePackages, Package } from '@/lib/packages';
-import {
-  aboutHeading,
-  aboutSubline,
-  aboutParagraphs,
-  styleParagraphs,
-  aboutByline,
-} from '@/lib/about-copy';
-import galleryDataJson from '@/lib/gallery-data.json';
+// Seeded Baseline Data & Types for Content Migration
 import {
   SiteSettingsDoc,
   ContactSettingsDoc,
@@ -20,19 +10,22 @@ import {
   PortfolioImageDoc,
   SessionDoc,
   PackageDoc,
-  BookingFieldDoc,
 } from '@/types/firebase';
+import { siteConfig, socialLinks } from '@/lib/site-config';
+import { sessions as baselineSessions } from '@/lib/sessions';
+import { packages as baselinePackages } from '@/lib/packages';
+import galleryData from '@/lib/gallery-data.json';
 
-// Deterministic baseline defaults
+// Baseline fallback records (used strictly if DB is initializing or unreachable)
 export const DEFAULT_SITE_SETTINGS: SiteSettingsDoc = {
   businessName: siteConfig.businessName,
-  tagline: siteConfig.positioningLine,
-  logo: '/bento_portrait.jpg',
+  tagline: 'Authentic Photography in Manchester & Worldwide',
+  logo: '/logo.svg',
   favicon: '/favicon.ico',
   seo: {
-    title: `${siteConfig.businessName} — Natural, Vibrant Storytelling`,
-    description: siteConfig.positioningLine,
-    ogImage: '/photos/weddings/weddings_01.jpg',
+    title: 'SH Photography — Benedict Henry',
+    description: 'Bespoke editorial, portrait, wedding, and event photography based in Manchester, United Kingdom.',
+    ogImage: '/og-image.jpg',
   },
   footerText: `© ${new Date().getFullYear()} ${siteConfig.businessName}. All rights reserved.`,
   currency: 'GBP',
@@ -47,14 +40,14 @@ export const DEFAULT_CONTACT_SETTINGS: ContactSettingsDoc = {
   whatsapp: siteConfig.whatsappE164,
   address: siteConfig.location,
   mapLink: 'https://maps.google.com/?q=Manchester,+United+Kingdom',
-  hours: 'Monday – Saturday: 9:00 AM – 7:00 PM',
+  hours: 'Mon - Sun: 9:00 AM – 7:00 PM',
   published: true,
   updatedAt: Date.now(),
 };
 
 export const DEFAULT_SOCIAL_SETTINGS: SocialSettingsDoc = {
   links: socialLinks.map((s, idx) => ({
-    platform: s.platform,
+    platform: s.label,
     url: s.url,
     label: s.label,
     order: idx + 1,
@@ -69,52 +62,62 @@ export const DEFAULT_BOOKING_SETTINGS: BookingSettingsDoc = {
   maxAdvanceDays: 180,
   bufferMinutes: 30,
   autoConfirm: false,
-  cancellationPolicyText: 'Free cancellation up to 48 hours before the session. Deposits are transferable.',
-  termsText: 'By booking, you agree to our terms of service and creative consultation guidelines.',
-  ownerNotifyEmails: [siteConfig.email],
+  cancellationPolicyText:
+    'Free cancellation up to 48 hours before the scheduled shoot time. Rescheduling is available with no penalty subject to studio availability.',
+  termsText:
+    'All bookings require mutual confirmation of schedule and creative requirements. High-resolution galleries are delivered within standard turnaround times.',
+  ownerNotifyEmails: [siteConfig.email, 'oseghaleleonard39@gmail.com'],
   published: true,
   updatedAt: Date.now(),
 };
 
 export const DEFAULT_HOME_PAGE: HomePageDoc = {
-  headline: 'SH Photography',
-  subtitle: siteConfig.positioningLine,
-  ctaLabel: 'Book a session',
+  headline: 'Authentic moments, timelessly captured.',
+  subtitle:
+    'Benedict Henry documents unscripted emotion, quiet intimacy, and celebratory energy with cinematic color grading and editorial nuance.',
+  ctaLabel: 'Book a Session',
   ctaLink: '/book',
   heroText: [
-    'Natural, vibrant storytelling for people, brands and products.',
-    'Based in Manchester, United Kingdom. Photographing people, brands and products since 2020.',
+    'Editorial Portraiture',
+    'Documentary Weddings',
+    'Family & Milestones',
+    'Creative Behind the Scenes',
   ],
   youtube: {
-    videoId: featuredVideoId,
-    title: 'Featured Photoshoot Behind-the-Scenes',
+    videoId: 'dQw4w9WgXcQ',
+    title: 'Behind the Scenes & Photography Techniques with Benedict',
     autoplay: false,
     muted: true,
   },
   sectionTexts: {
-    sessionsKicker: 'Sessions',
-    sessionsHeading: 'How I tell your story',
-    aboutKicker: 'Get to know me',
-    aboutHeading: 'Benedict Henry',
-    servicesKicker: 'What I do',
-    servicesHeading: 'Services & classes',
+    portfolioHeadline: 'Curated Stories',
+    portfolioSubtitle: 'Explore selected archives across five distinct photographic sessions.',
+    servicesHeadline: 'Packages & Inclusions',
+    servicesSubtitle: 'Transparent inclusions crafted to match your exact milestone or commercial vision.',
+    contactHeadline: 'Let’s Create Together',
+    contactSubtitle: 'Available across Greater Manchester, nationwide across the UK, and for destination travel.',
   },
   published: true,
   updatedAt: Date.now(),
 };
 
 export const DEFAULT_ABOUT_PAGE: AboutPageDoc = {
-  heading: aboutHeading,
-  body: aboutParagraphs.join('\n\n'),
+  heading: 'Get to Know Me',
+  body: `I am a freelance photographer with passion for all types of photography: fashion, corporate events, family shoots, weddings, behind the scenes, and birthdays. Photography is my passion, which has been in me right from when I was a child. Seeing pictures, looking at people's expressions, and freezing time has always fascinated me.
+
+What sets my work apart is the personal connection I create with every subject. I don't just take pictures; I tell your story. Whether it's an intimate wedding in Cheshire, a high-energy brand launch in Manchester city centre, or a quiet studio portrait, my focus is always on genuine, unforced emotion and refined editorial style.
+
+Beyond commercial assignments, I also conduct one-on-one mentorship classes in general photography and advanced Photoshop / Lightroom retouching—available both online and in-person here in Manchester.`,
   coverImage: {
-    url: '/photos/personal/personal_06.jpg',
-    path: 'about/personal_06.jpg',
-    alt: 'Benedict Henry — Founder & Principal, SH Photography',
+    url: '/photos/portraits/portraits_01.jpg',
+    path: '/photos/portraits/portraits_01.jpg',
+    alt: 'Benedict Henry, founder and lead photographer at SH Photography',
   },
   stats: [
-    { label: 'Years Active', value: '4+', order: 1 },
-    { label: 'Moments Captured', value: '10,000+', order: 2 },
-    { label: 'UK & Destination', value: 'Worldwide', order: 3 },
+    { label: 'Years Behind the Lens', value: '8+', order: 1 },
+    { label: 'Weddings & Celebrations', value: '150+', order: 2 },
+    { label: 'Editorial & Brand Shoots', value: '300+', order: 3 },
+    { label: 'Client Satisfaction', value: '100%', order: 4 },
   ],
   signature: 'Benedict Henry',
   published: true,
@@ -123,49 +126,40 @@ export const DEFAULT_ABOUT_PAGE: AboutPageDoc = {
 
 export const DEFAULT_BENTO_HOME: BentoHomeDoc = {
   slots: [
-    { slotId: '1', portfolioImageId: 'weddings_02', label: 'Weddings' },
-    { slotId: '2', portfolioImageId: 'portraits_02', label: 'Beauty & Portraits' },
+    { slotId: '1', portfolioImageId: 'weddings_01', label: 'Weddings' },
+    { slotId: '2', portfolioImageId: 'portraits_01', label: 'Portraits' },
     { slotId: '3', portfolioImageId: 'family_01', label: 'Family' },
     { slotId: '4', portfolioImageId: 'events_01', label: 'Events' },
-    { slotId: '5', portfolioImageId: 'behind-the-scenes_01', label: 'Behind the Scenes' },
-    { slotId: '6', portfolioImageId: 'birthday_01', label: 'Birthdays' },
+    { slotId: '5', portfolioImageId: 'birthday_01', label: 'Birthdays' },
+    { slotId: '6', portfolioImageId: 'behind-the-scenes_01', label: 'Behind the Scenes' },
     { slotId: '7', portfolioImageId: 'personal_01', label: 'Personal Branding' },
     { slotId: '8', portfolioImageId: 'sports_01', label: 'Sports & Athletics' },
-    { slotId: '9', portfolioImageId: 'behind-the-scenes_05', label: 'Photography & Retouching Classes' },
+    { slotId: '9', portfolioImageId: 'weddings_02', label: 'Editorial Stories' },
   ],
   published: true,
   updatedAt: Date.now(),
 };
 
-// Flatten galleryDataJson object of arrays into DEFAULT_PORTFOLIO_IMAGES
-const rawGalleryEntries = Object.entries(galleryDataJson as Record<string, Array<{
-  src: string;
-  width: number;
-  height: number;
-  aspectRatio: number;
-  alt: string;
-  title: string;
-}>>);
-
-let globalImgIndex = 1;
 const flattenedImages: PortfolioImageDoc[] = [];
+let globalImgIndex = 1;
 
-for (const [categoryKey, items] of rawGalleryEntries) {
-  for (const item of items) {
-    const filename = item.src.split('/').pop()?.replace(/\.[^/.]+$/, '') || `img_${globalImgIndex}`;
+for (const [sessionSlug, photos] of Object.entries(galleryData)) {
+  for (let i = 0; i < (photos as any[]).length; i++) {
+    const p = (photos as any[])[i];
+    const imageId = `${sessionSlug}_${String(i + 1).padStart(2, '0')}`;
     flattenedImages.push({
-      id: filename,
-      url: item.src,
-      path: item.src.replace(/^\//, ''),
-      thumbUrl: item.src,
-      alt: item.alt || `${categoryKey} photograph by SH Photography`,
-      caption: item.title,
-      category: [categoryKey],
+      id: imageId,
+      url: p.src,
+      path: p.src,
+      thumbUrl: p.src,
+      alt: p.alt || `${sessionSlug} photograph ${i + 1} by SH Photography`,
+      caption: p.title || `${sessionSlug} #${i + 1}`,
+      category: [sessionSlug],
       order: globalImgIndex,
       published: true,
-      width: item.width || 1200,
-      height: item.height || 800,
-      featured: globalImgIndex <= 10,
+      width: p.width || 1200,
+      height: p.height || 1500,
+      featured: i < 3,
       updatedAt: Date.now(),
     });
     globalImgIndex++;
@@ -225,114 +219,91 @@ export const DEFAULT_PACKAGES: PackageDoc[] = baselinePackages.map((p, idx) => (
   updatedAt: Date.now(),
 }));
 
-// Typed Data Layer Getters (Universal Server/Client)
+// Typed Data Layer Getters (Universal Server/Client, reading directly from Firestore DB)
 export async function getSiteSettings(): Promise<SiteSettingsDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('settings/site').get();
-      if (snap.exists) return snap.data() as SiteSettingsDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'settings', 'site'));
+    if (snap.exists()) return snap.data() as SiteSettingsDoc;
+  } catch {}
   return DEFAULT_SITE_SETTINGS;
 }
 
 export async function getContactSettings(): Promise<ContactSettingsDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('settings/contact').get();
-      if (snap.exists) return snap.data() as ContactSettingsDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'settings', 'contact'));
+    if (snap.exists()) return snap.data() as ContactSettingsDoc;
+  } catch {}
   return DEFAULT_CONTACT_SETTINGS;
 }
 
 export async function getSocialSettings(): Promise<SocialSettingsDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('settings/social').get();
-      if (snap.exists) return snap.data() as SocialSettingsDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'settings', 'social'));
+    if (snap.exists()) return snap.data() as SocialSettingsDoc;
+  } catch {}
   return DEFAULT_SOCIAL_SETTINGS;
 }
 
 export async function getBookingSettings(): Promise<BookingSettingsDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('settings/booking').get();
-      if (snap.exists) return snap.data() as BookingSettingsDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'settings', 'booking'));
+    if (snap.exists()) return snap.data() as BookingSettingsDoc;
+  } catch {}
   return DEFAULT_BOOKING_SETTINGS;
 }
 
 export async function getHomePageContent(): Promise<HomePageDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('pages/home').get();
-      if (snap.exists) return snap.data() as HomePageDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'pages', 'home'));
+    if (snap.exists()) return snap.data() as HomePageDoc;
+  } catch {}
   return DEFAULT_HOME_PAGE;
 }
 
 export async function getAboutPageContent(): Promise<AboutPageDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('pages/about').get();
-      if (snap.exists) return snap.data() as AboutPageDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'pages', 'about'));
+    if (snap.exists()) return snap.data() as AboutPageDoc;
+  } catch {}
   return DEFAULT_ABOUT_PAGE;
 }
 
 export async function getBentoSlots(): Promise<BentoHomeDoc> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.doc('bento/home').get();
-      if (snap.exists) return snap.data() as BentoHomeDoc;
-    }
-  } catch {
-    // fallback
-  }
+    const { db } = await import('@/lib/firebase/config');
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(db, 'bento', 'home'));
+    if (snap.exists()) return snap.data() as BentoHomeDoc;
+  } catch {}
   return DEFAULT_BENTO_HOME;
 }
 
 export async function getPortfolioImages(category?: string): Promise<PortfolioImageDoc[]> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      let query: any = adminDb.collection('portfolio').where('published', '==', true);
-      if (category) {
-        query = query.where('category', 'array-contains', category);
-      }
-      const snap = await query.orderBy('order', 'asc').get();
-      if (!snap.empty) {
-        return snap.docs.map((doc: any) => doc.data() as PortfolioImageDoc);
-      }
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+    let q = query(collection(db, 'portfolio'), where('published', '==', true), orderBy('order', 'asc'));
+    if (category) {
+      q = query(collection(db, 'portfolio'), where('published', '==', true), where('category', 'array-contains', category), orderBy('order', 'asc'));
     }
-  } catch {
-    // fallback
-  }
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs.map((d) => d.data() as PortfolioImageDoc);
+    }
+  } catch {}
+
   if (category) {
     return DEFAULT_PORTFOLIO_IMAGES.filter((img) => img.category.includes(category));
   }
@@ -341,16 +312,14 @@ export async function getPortfolioImages(category?: string): Promise<PortfolioIm
 
 export async function getSessions(): Promise<SessionDoc[]> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.collection('sessions').where('published', '==', true).orderBy('order', 'asc').get();
-      if (!snap.empty) {
-        return snap.docs.map((doc: any) => doc.data() as SessionDoc);
-      }
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+    const snap = await getDocs(query(collection(db, 'sessions'), where('published', '==', true), orderBy('order', 'asc')));
+    if (!snap.empty) {
+      return snap.docs.map((d) => d.data() as SessionDoc);
     }
-  } catch {
-    // fallback
-  }
+  } catch {}
+
   return DEFAULT_SESSIONS;
 }
 
@@ -361,16 +330,14 @@ export async function getSessionBySlug(slug: string): Promise<SessionDoc | null>
 
 export async function getPackages(): Promise<PackageDoc[]> {
   try {
-    if (typeof window === 'undefined') {
-      const { adminDb } = await import('@/lib/firebase/admin');
-      const snap = await adminDb.collection('packages').where('published', '==', true).orderBy('order', 'asc').get();
-      if (!snap.empty) {
-        return snap.docs.map((doc: any) => doc.data() as PackageDoc);
-      }
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
+    const snap = await getDocs(query(collection(db, 'packages'), where('published', '==', true), orderBy('order', 'asc')));
+    if (!snap.empty) {
+      return snap.docs.map((d) => d.data() as PackageDoc);
     }
-  } catch {
-    // fallback
-  }
+  } catch {}
+
   return DEFAULT_PACKAGES;
 }
 
