@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { siteConfig, featuredVideoId } from "@/lib/site-config";
-import { sessions } from "@/lib/sessions";
+import { getSessions, getHomePageContent } from "@/lib/content";
 import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 import { VideoFacade } from "@/components/VideoFacade";
 import { SocialLinks } from "@/components/SocialLinks";
@@ -11,7 +11,17 @@ import { StaggerReveal, StaggerItem } from "@/components/StaggerReveal";
 import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
 import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [dbSessions, homeContent] = await Promise.all([
+    getSessions(),
+    getHomePageContent(),
+  ]);
+  const sessions = dbSessions.map((s) => ({
+    slug: s.slug,
+    title: s.name,
+    intro: s.shortDescription || s.description,
+    previewCount: 6,
+  }));
   return (
     <>
       {/* ---------- Hero ---------- */}

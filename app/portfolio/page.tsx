@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { sessions } from "@/lib/sessions";
+import { getSessions } from "@/lib/content";
 import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 
 export const metadata: Metadata = {
@@ -8,7 +8,14 @@ export const metadata: Metadata = {
   description: "Curated portfolio sessions by Benedict Henry — Weddings, Portraits, Family, Events, Sports, Birthdays, Personal Branding, Behind the Scenes.",
 };
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const dbSessions = await getSessions();
+  const sessions = dbSessions.map((s) => ({
+    slug: s.slug,
+    title: s.name,
+    intro: s.shortDescription || s.description,
+    previewCount: 6,
+  }));
   return (
     <div className="container-site py-20">
       <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Portfolio</p>

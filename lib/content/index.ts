@@ -168,40 +168,88 @@ for (const [sessionSlug, photos] of Object.entries(galleryData)) {
 
 export const DEFAULT_PORTFOLIO_IMAGES: PortfolioImageDoc[] = flattenedImages;
 
-export const DEFAULT_SESSIONS: SessionDoc[] = baselineSessions.map((s, idx) => ({
-  id: s.slug,
-  name: s.title,
-  slug: s.slug,
-  shortDescription: s.intro,
-  description: s.intro,
-  price: 0,
-  showPrice: false,
-  priceLabel: 'Quote on request',
-  currency: 'GBP',
-  depositAmount: 50,
-  durationMinutes: 90,
-  bufferMinutes: 30,
-  included: [
-    'Pre-shoot creative consultation',
-    'High-resolution edited digital gallery',
-    'Personal print and digital usage rights',
-  ],
-  notIncluded: ['Studio rental fees (if required)', 'Travel outside Greater Manchester'],
-  coverImage: s.featuredImage || `/photos/${s.slug}/${s.slug}_01.jpg`,
-  gallery: [`/photos/${s.slug}/${s.slug}_01.jpg`],
-  location: siteConfig.location,
-  maxPeople: 6,
-  addOns: [
-    { name: 'Extra 30 Minutes', price: 50 },
-    { name: 'Rush Delivery (48h)', price: 75 },
-  ],
-  bookingFieldIds: ['full_name', 'email_address', 'phone_number', 'session_date', 'session_notes'],
-  published: true,
-  order: idx + 1,
-  minNoticeHours: 48,
-  active: true,
-  updatedAt: Date.now(),
-}));
+export const ALL_BOOKING_FIELD_IDS = [
+  'full_name',
+  'email_address',
+  'phone_number',
+  'preferred_contact',
+  'company_name',
+  'instagram_handle',
+  'service_category',
+  'session_sub_type',
+  'num_subjects',
+  'estimated_duration',
+  'session_date',
+  'preferred_start_time',
+  'alternate_date',
+  'is_double_date',
+  'secondary_date',
+  'multi_day_count',
+  'additional_dates',
+  'date_flexible',
+  'location_type',
+  'address',
+  'city_postcode',
+  'indoors_outdoors',
+  'travel_required',
+  'travel_details',
+  'parking_notes',
+  'vision',
+  'style_preferences',
+  'color_preference',
+  'inspiration_links',
+  'must_have_shots',
+  'special_requests',
+  'extra_info',
+  'deliverables',
+  'edited_images_expected',
+  'turnaround_time',
+  'second_shooter',
+  'budget_range',
+  'how_soon',
+];
+
+export const DEFAULT_SESSIONS: SessionDoc[] = baselineSessions.map((s, idx) => {
+  const photos = (galleryData as Record<string, Array<{ src: string }>>)[s.slug] || [];
+  const galleryUrls = photos.length > 0
+    ? photos.map((p) => p.src)
+    : [`/photos/${s.slug}/${s.slug}_01.jpg`];
+
+  return {
+    id: s.slug,
+    name: s.title,
+    slug: s.slug,
+    shortDescription: s.intro,
+    description: s.intro,
+    price: 0,
+    showPrice: false,
+    priceLabel: 'Quote on request',
+    currency: 'GBP',
+    depositAmount: 50,
+    durationMinutes: 90,
+    bufferMinutes: 30,
+    included: [
+      'Pre-shoot creative consultation',
+      'High-resolution edited digital gallery',
+      'Personal print and digital usage rights',
+    ],
+    notIncluded: ['Studio rental fees (if required)', 'Travel outside Greater Manchester'],
+    coverImage: s.featuredImage || galleryUrls[0] || `/photos/${s.slug}/${s.slug}_01.jpg`,
+    gallery: galleryUrls,
+    location: siteConfig.location,
+    maxPeople: 6,
+    addOns: [
+      { name: 'Extra 30 Minutes', price: 50 },
+      { name: 'Rush Delivery (48h)', price: 75 },
+    ],
+    bookingFieldIds: ALL_BOOKING_FIELD_IDS,
+    published: true,
+    order: idx + 1,
+    minNoticeHours: 48,
+    active: true,
+    updatedAt: Date.now(),
+  };
+});
 
 export const DEFAULT_PACKAGES: PackageDoc[] = baselinePackages.map((p, idx) => {
   const pkg: PackageDoc = {

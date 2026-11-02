@@ -24,32 +24,30 @@ export async function generateMetadata({ params }: { params: { session: string }
 }
 
 export default async function SessionPage({ params }: { params: { session: string } }) {
+  const dynamicSession = await getSessionBySlug(params.session);
   const staticSession = getSession(params.session);
-  const dynamicSession = !staticSession ? await getSessionBySlug(params.session) : null;
 
   if (!staticSession && !dynamicSession) {
     notFound();
   }
 
-  const title = staticSession?.title || dynamicSession?.name || "Session";
-  const intro = staticSession?.intro || dynamicSession?.shortDescription || dynamicSession?.description || "";
-  const slug = staticSession?.slug || dynamicSession?.slug || params.session;
+  const title = dynamicSession?.name || staticSession?.title || "Session";
+  const intro = dynamicSession?.shortDescription || dynamicSession?.description || staticSession?.intro || "";
+  const slug = dynamicSession?.slug || staticSession?.slug || params.session;
   const count = staticSession?.galleryCount;
 
-  // If dynamic session, get any uploaded photos from Firestore
+  // Check if photos exist in Firestore portfolio collection
+  const portfolioDocs = await getPortfolioImages(slug);
   let customPhotos = undefined;
-  if (dynamicSession) {
-    const portfolioDocs = await getPortfolioImages(slug);
-    if (portfolioDocs.length > 0) {
-      customPhotos = portfolioDocs.map((p) => ({
-        src: p.url,
-        width: p.width || 1200,
-        height: p.height || 1500,
-        aspectRatio: (p.width && p.height) ? p.width / p.height : 0.8,
-        alt: p.alt || `${title} photo`,
-        title: p.caption || title,
-      }));
-    }
+  if (portfolioDocs.length > 0) {
+    customPhotos = portfolioDocs.map((p) => ({
+      src: p.url,
+      width: p.width || 1200,
+      height: p.height || 1500,
+      aspectRatio: (p.width && p.height) ? p.width / p.height : 0.8,
+      alt: p.alt || `${title} photo`,
+      title: p.caption || title,
+    }));
   }
 
   return (

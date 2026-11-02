@@ -596,7 +596,36 @@ async function seed() {
     await batch.commit();
   }
 
-  // 8. Register Admin records in Firestore admins collection
+  // 8. Availability & Studio Calendar Blocks
+  console.log('  → Seeding default availability and studio calendar...');
+  const defaultAvailability = [
+    {
+      date: '2026-11-25',
+      isOpen: false,
+      blockedReason: 'Private Studio Maintenance & Sensor Calibration',
+      windows: [],
+      slots: [],
+      updatedAt: Date.now(),
+    },
+    {
+      date: '2026-11-26',
+      isOpen: false,
+      blockedReason: 'Destination Editorial Shoot',
+      windows: [],
+      slots: [],
+      updatedAt: Date.now(),
+    },
+  ];
+
+  if (!isDryRun) {
+    const batch = writeBatch(db);
+    for (const item of defaultAvailability) {
+      batch.set(doc(db, 'availability', item.date), item, { merge: true });
+    }
+    await batch.commit();
+  }
+
+  // 9. Register Admin records in Firestore admins collection
   if (!isDryRun) {
     console.log('  → Registering admins in admins collection...');
     const adminEmails = (process.env.ADMIN_EMAILS || 'shfotography1@gmail.com,oseghaleleonard39@gmail.com')
