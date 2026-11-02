@@ -163,20 +163,28 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
           Thank you, <span className="font-semibold text-ink">{data.fullName}</span>. Your session request has been safely received and is currently <span className="font-bold text-amber-800">Pending Approval</span> by Benedict Henry. Your chosen date(s) are held while Benedict reviews your vision and custom requirements.
         </p>
 
-        {/* LocalStorage & Account Access Banner */}
-        <div className="max-w-xl mx-auto mb-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 text-left space-y-1.5 shadow-sm">
-          <div className="flex items-center gap-2 font-bold text-amber-900">
-            <span>💾 Securely Saved to Your Browser (localStorage)</span>
+        {/* LocalStorage & Account Access Card */}
+        <div className="max-w-xl mx-auto mb-8 p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/90 border-2 border-amber-300 text-left shadow-md">
+          <div className="flex items-center gap-2 font-bold text-amber-950 text-sm mb-1.5">
+            <span className="text-base">💾</span>
+            <span>Stored in Browser &amp; Ready to Link to Your Account</span>
           </div>
-          <p className="text-amber-900/90 leading-relaxed">
-            Even while pending, this booking reference is stored locally. Whenever you log in or create an account, it will automatically sync to your private client portal where you can track approval progress, request changes, and print an official summary at any point or stage.
+          <p className="text-xs md:text-sm text-amber-900/90 leading-relaxed mb-4">
+            Even while pending, this booking reference is stored in your browser (localStorage). Whenever you log in or create an account, it will automatically link to your private client portal where you can track approval progress, request changes, or print an official summary at any point or stage.
           </p>
-          <div className="pt-1.5 flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-3 border-t border-amber-200">
+            <Link
+              href="/login?redirect=/account"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-paper text-xs md:text-sm font-semibold hover:bg-accent transition-all duration-200 shadow-sm"
+            >
+              <span>👉 Log In / Create Account to Track &amp; Manage</span>
+            </Link>
             <Link
               href="/account"
-              className="font-bold text-[#C25E00] hover:underline inline-flex items-center gap-1"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-900 hover:text-black hover:bg-amber-100/80 transition-colors"
             >
-              Go to Client Account Portal &rarr;
+              <span>View Portal</span>
+              <span>&rarr;</span>
             </Link>
           </div>
         </div>

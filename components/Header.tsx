@@ -7,7 +7,8 @@ import { usePathname } from "next/navigation";
 import { sessions } from "@/lib/sessions";
 import { AnimatePresence, motion } from "framer-motion";
 import { easing } from "@/lib/animations";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, User as UserIcon } from "lucide-react";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const mobileMenuVariant = {
   hidden: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.2 } },
@@ -35,6 +36,19 @@ export function Header() {
   const isAdminOrAccount = pathname?.startsWith("/admin") || pathname?.startsWith("/account");
   
   const headerRef = useRef<HTMLElement>(null);
+  const { user, isOwner, isAdmin } = useAuth();
+
+  const accountHref = !user
+    ? "/login?redirect=/account"
+    : isOwner || isAdmin
+    ? "/admin"
+    : "/account";
+
+  const accountLabel = !user
+    ? "Sign In / Register"
+    : isOwner || isAdmin
+    ? "Admin Studio Dashboard"
+    : "My Account & Bookings";
 
   // Close menus on route change
   useEffect(() => {
@@ -168,7 +182,7 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden lg:flex items-center gap-2">
               <Link
                 href="/book"
@@ -183,6 +197,25 @@ export function Header() {
                 Get in touch
               </Link>
             </div>
+
+            {/* Profile / Account Icon */}
+            <Link
+              href={accountHref}
+              title={accountLabel}
+              aria-label={accountLabel}
+              className="relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-line/80 bg-paper/90 text-ink/80 hover:text-ink hover:border-ink hover:bg-sand transition-all duration-300 shadow-xs"
+            >
+              <UserIcon className="w-4 h-4" />
+              {user && (
+                <span
+                  className={`absolute top-1 right-1 w-2.5 h-2.5 rounded-full border-2 border-paper ${
+                    isOwner || isAdmin ? "bg-amber-500 ring-1 ring-amber-400" : "bg-emerald-500 ring-1 ring-emerald-400"
+                  }`}
+                  aria-hidden="true"
+                />
+              )}
+            </Link>
+
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-full border border-line lg:hidden h-10 w-10"
@@ -293,6 +326,33 @@ export function Header() {
                     </Link>
                   </motion.li>
                 ))}
+
+                {/* Mobile Account / Login item */}
+                <motion.li variants={mobileItemVariant} className="pt-2 border-t border-line/60">
+                  <Link
+                    href={accountHref}
+                    className="flex items-center gap-3 rounded-2xl p-2.5 bg-sand/40 hover:bg-sand transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <div className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-paper border border-line text-ink">
+                      <UserIcon className="w-4 h-4" />
+                      {user && (
+                        <span
+                          className={`absolute top-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-paper ${
+                            isOwner || isAdmin ? "bg-amber-500" : "bg-emerald-500"
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-sm font-semibold text-ink">{accountLabel}</span>
+                      <span className="text-xs text-ink/60 truncate max-w-[200px]">
+                        {!user ? "Sign in to track & manage bookings" : user.email}
+                      </span>
+                    </div>
+                  </Link>
+                </motion.li>
+
                 <motion.li variants={mobileItemVariant} className="pt-4 pb-2 flex gap-2">
                   <Link
                     href="/book"
