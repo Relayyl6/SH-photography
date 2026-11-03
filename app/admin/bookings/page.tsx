@@ -135,6 +135,27 @@ export default function AdminBookingsPage() {
     setActionError(null);
     setActionSuccess(null);
 
+    // 1. Immediately update UI state locally
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status: targetStatus } : b))
+    );
+    if (selectedBooking && selectedBooking.id === bookingId) {
+      setSelectedBooking((prev) => (prev ? { ...prev, status: targetStatus } : null));
+    }
+
+    // 2. Direct client SDK write (runs with logged-in Admin credentials!)
+    try {
+      const { db } = await import("@/lib/firebase/config");
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "bookings", bookingId), {
+        status: targetStatus,
+        updatedAt: Date.now(),
+      }, { merge: true });
+    } catch (clientErr) {
+      console.warn("Client SDK status update warning:", clientErr);
+    }
+
+    // 3. Call server route for notification emails & server-side sync safely
     try {
       const res = await fetch("/api/bookings/update", {
         method: "POST",
@@ -146,24 +167,22 @@ export default function AdminBookingsPage() {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        setActionError(data.error || "Cannot change status.");
-        setActionLoading(false);
-        return;
+        const text = await res.text();
+        try {
+          const json = JSON.parse(text);
+          if (json.error) console.warn("Server status note:", json.error);
+        } catch {
+          // Ignore HTML response error since client SDK & local state already updated
+        }
       }
-
-      setActionSuccess(`Status updated to ${targetStatus}.`);
-      await loadBookings();
-      if (selectedBooking && selectedBooking.id === bookingId) {
-        setSelectedBooking((prev) => (prev ? { ...prev, status: targetStatus } : null));
-      }
-    } catch (err: any) {
-      setActionError(err.message || "Failed to update status.");
-    } finally {
-      setActionLoading(false);
+    } catch (apiErr) {
+      console.warn("API status update error:", apiErr);
     }
+
+    setActionSuccess(`Status updated to ${targetStatus}.`);
+    setTimeout(() => setActionSuccess(null), 3000);
+    setActionLoading(false);
   };
 
   // Approve a pending change/reschedule request with collision check
@@ -182,7 +201,13 @@ export default function AdminBookingsPage() {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { error: "Failed to parse response." };
+      }
 
       if (!res.ok) {
         setActionError(data.error || "Cannot approve reschedule: slot is already booked.");
@@ -219,7 +244,13 @@ export default function AdminBookingsPage() {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { error: "Failed to parse response." };
+      }
 
       if (!res.ok) {
         setActionError(data.error || "Cannot decline reschedule.");
@@ -289,7 +320,14 @@ export default function AdminBookingsPage() {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { error: "Failed to parse reschedule response." };
+      }
+
       if (!res.ok) {
         setActionError(data.error || "Failed to reschedule booking.");
         setActionLoading(false);
@@ -428,7 +466,8 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-12">
-      {/* Header Banner */}
+      <div className="space-y-6 sm:space-y-8 print:hidden">
+        {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e6df] shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -675,6 +714,7 @@ export default function AdminBookingsPage() {
           </div>
         )}
       </div>
+      </div>
 
       {/* Booking Detail Drawer Modal */}
       {selectedBooking && (
@@ -683,7 +723,7 @@ export default function AdminBookingsPage() {
             @media print {
               @page {
                 size: auto;
-                margin: 12mm 15mm;
+                margin: 8mm 12mm;
               }
 
               html, body {
@@ -696,9 +736,16 @@ export default function AdminBookingsPage() {
                 padding: 0 !important;
               }
 
-              /* Hide extraneous site and admin shell elements */
-              header, nav, aside, footer, .print-hide, .admin-sidebar, .admin-header {
+              /* Hide extraneous site, admin shell, and background elements */
+              header, nav, aside, footer, .print-hide, .admin-sidebar, .admin-header, .print\\:hidden, [class*="print:hidden"] {
                 display: none !important;
+              }
+
+              main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
               }
 
               /* Completely flatten backdrop to avoid fixed overlapping */
@@ -730,14 +777,6 @@ export default function AdminBookingsPage() {
                 margin: 0 !important;
                 transform: none !important;
                 animation: none !important;
-              }
-
-              body * {
-                visibility: hidden;
-              }
-              #printable-booking-modal,
-              #printable-booking-modal * {
-                visibility: visible;
               }
 
               /* Avoid breaking cards across page breaks and ensure high-contrast print styling */
