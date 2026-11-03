@@ -98,6 +98,11 @@ The allowed values and exact field names are:
 - estimatedDuration: exactly one of: '30 min' | '1 hr' | '2 hrs' | 'Half Day (4 hrs)' | 'Full Day (8 hrs)' | 'Multi-Day' | 'Not sure'
 - preferredDate: string in 'YYYY-MM-DD' format (e.g. '2026-09-12'). Leave null if not mentioned.
 - alternateDate: string in 'YYYY-MM-DD' format (backup date if user mentions 'or backup date...', 'alternatively...', 'or next week...', 'either X or Y', 'backup is...'). Leave null if not mentioned.
+- isDoubleDate: boolean (true if user mentions a 2-day shoot, multi-day coverage, double dates, or separate ceremony/reception dates)
+- secondaryDate: string in 'YYYY-MM-DD' format (the secondary/second shoot date for multi-day shoots)
+- multiDayCount: string (e.g. '2 Days', '3 Days', '4 Days', '5+ Days')
+- additionalDates: array of strings in 'YYYY-MM-DD' format (if multiple dates are given)
+- extraInfo: string (any special instructions, logistics notes, custom requests, or nuances not accounted for in other fields)
 - preferredStartTime: string in 'HH:mm' format (e.g. '10:00', '11:00', '14:00', '15:00'). Leave null if not mentioned.
 - dateFlexible: 'Yes' | 'No'
 - locationType: exactly one of: 'Studio' | "Client's Location" | 'Outdoor' | 'Venue' | 'Multiple Locations' | 'Other'
@@ -151,6 +156,8 @@ CRITICAL RULES:
 14. In 'filledFieldsSummary', provide a concise array of human-readable summaries of what was populated (e.g. ["Wedding session in Manchester", "Date: 14 Nov 2026", "Alternate: 21 Nov 2026", "Documentary & Warm style", "Budget: £1,000–£2,500"]).
 15. In 'missingFields', list the key missing items that Benedict needs to finalize the quote (e.g. ["Phone number", "Approximate budget"]).
 16. In 'assistantMessage', write a warm, personal 1-2 sentence response acknowledging what was captured, and asking a direct, friendly follow-up question for 1 or 2 of the most critical missing fields to help complete their booking.
+17. If user mentions multi-day shoots, double dates, or 2+ days (e.g. 'two days', 'Friday and Saturday', 'traditional and white wedding'), set isDoubleDate: true, preferredDate to the 1st date, secondaryDate to the 2nd date, and multiDayCount (e.g. '2 Days').
+18. If the user mentions any custom requirements, logistics, notes, or extra requests not covered elsewhere, summarize them into extraInfo.
 
 Respond ONLY with a valid JSON object with the following schema:
 {

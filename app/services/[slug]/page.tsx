@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { packages } from "@/lib/packages";
+import { getPackages } from "@/lib/content";
 import { siteConfig } from "@/lib/site-config";
 
 type Props = { params: { slug: string } };
@@ -26,8 +27,24 @@ import { serviceMedia, defaultMedia } from "@/lib/service-media";
 
 export default async function ServiceDetailPage({ params }: Props) {
   const { slug } = params;
-  const pkg = packages.find((p) => p.slug === slug);
-  if (!pkg) notFound();
+  const dbPackages = await getPackages();
+  const dbPkg = dbPackages.find((p) => p.sessionSlug === slug || p.id === slug);
+  const baseline = packages.find((p) => p.slug === slug);
+
+  if (!dbPkg && !baseline) notFound();
+
+  const pkg = {
+    slug,
+    name: dbPkg?.name || baseline?.name || slug,
+    category: (dbPkg?.category || baseline?.category || "photography") as "photography" | "class",
+    summary: dbPkg?.description || baseline?.summary || "",
+    includes: dbPkg?.features || baseline?.includes || [],
+    notes: baseline?.notes,
+    format: baseline?.format,
+    showPrice: dbPkg ? dbPkg.show_price : baseline?.showPrice,
+    priceLabel: dbPkg?.price_label || baseline?.priceLabel || null,
+    ctaLabel: baseline?.ctaLabel || "Request a quote",
+  };
 
   const isClass = pkg.category === "class";
   const media = serviceMedia[slug] ?? defaultMedia;
@@ -157,6 +174,18 @@ export default async function ServiceDetailPage({ params }: Props) {
                   Request a custom quote in under 2 minutes.
                 </p>
               </div>
+
+              {/* Starting Price Banner when unhidden by admin */}
+              {pkg.showPrice && (
+                <div className="p-3.5 rounded-2xl bg-white/80 border border-line flex items-center justify-between">
+                  <span className="text-xs uppercase tracking-wider font-semibold text-ink/70">
+                    Pricing
+                  </span>
+                  <span className="font-display text-lg font-bold text-accent">
+                    {pkg.priceLabel || "Price upon request"}
+                  </span>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-col gap-3">

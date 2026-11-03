@@ -68,10 +68,10 @@ export default function AdminSettingsPage() {
     try {
       setSaving(true);
       await Promise.all([
-        setDoc(doc(db, "settings", "site"), { ...site, updatedAt: Date.now() }, { merge: true }),
-        setDoc(doc(db, "settings", "contact"), { ...contact, updatedAt: Date.now() }, { merge: true }),
-        setDoc(doc(db, "settings", "social"), { ...social, updatedAt: Date.now() }, { merge: true }),
-        setDoc(doc(db, "settings", "booking"), { ...booking, updatedAt: Date.now() }, { merge: true }),
+        setDoc(doc(db, "settings", "site"), { ...site, published: true, updatedAt: Date.now() }, { merge: true }),
+        setDoc(doc(db, "settings", "contact"), { ...contact, published: true, updatedAt: Date.now() }, { merge: true }),
+        setDoc(doc(db, "settings", "social"), { ...social, published: true, updatedAt: Date.now() }, { merge: true }),
+        setDoc(doc(db, "settings", "booking"), { ...booking, published: true, updatedAt: Date.now() }, { merge: true }),
       ]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

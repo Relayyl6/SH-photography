@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { db } from "@/lib/firebase/config";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "firebase/firestore";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -41,8 +43,24 @@ export async function POST(req: NextRequest) {
               claimedIds.push(bookingId);
             }
           }
-        } catch (e) {
-          console.warn("Claim verification error:", e);
+        } catch (adminErr) {
+          // Fallback to client SDK
+          try {
+            const snap = await getDoc(doc(db, "bookings", bookingId));
+            if (snap.exists()) {
+              const data = snap.data();
+              if (data?.claimTokenHash === hash || !data?.customerUid) {
+                await updateDoc(doc(db, "bookings", bookingId), {
+                  customerUid,
+                  source: "claimed",
+                  updatedAt: Date.now(),
+                });
+                claimedIds.push(bookingId);
+              }
+            }
+          } catch (clientErr) {
+            console.warn("Client fallback claim error:", clientErr);
+          }
         }
       }
     }
@@ -58,16 +76,29 @@ export async function POST(req: NextRequest) {
             .where("claimTokenHash", "==", hash)
             .get();
 
-          for (const doc of snap.docs) {
-            await doc.ref.update({
+          for (const d of snap.docs) {
+            await d.ref.update({
               customerUid,
               source: "claimed",
               updatedAt: Date.now(),
             });
-            claimedIds.push(doc.id);
+            claimedIds.push(d.id);
           }
-        } catch (e) {
-          console.warn("Token claim error:", e);
+        } catch (adminErr) {
+          try {
+            const q = query(collection(db, "bookings"), where("claimTokenHash", "==", hash));
+            const snap = await getDocs(q);
+            for (const d of snap.docs) {
+              await updateDoc(doc(db, "bookings", d.id), {
+                customerUid,
+                source: "claimed",
+                updatedAt: Date.now(),
+              });
+              claimedIds.push(d.id);
+            }
+          } catch (clientErr) {
+            console.warn("Client fallback token claim error:", clientErr);
+          }
         }
       }
     }
@@ -80,20 +111,40 @@ export async function POST(req: NextRequest) {
           .where("customer.email", "==", customerEmail.toLowerCase().trim())
           .get();
 
-        for (const doc of emailSnap.docs) {
-          const data = doc.data();
+        for (const d of emailSnap.docs) {
+          const data = d.data();
           if (!data.customerUid) {
-            await doc.ref.update({
+            await d.ref.update({
               customerUid,
               updatedAt: Date.now(),
             });
-            if (!claimedIds.includes(doc.id)) {
-              claimedIds.push(doc.id);
+            if (!claimedIds.includes(d.id)) {
+              claimedIds.push(d.id);
             }
           }
         }
-      } catch (e) {
-        console.warn("Email-based auto claim error:", e);
+      } catch (adminErr) {
+        try {
+          const q = query(
+            collection(db, "bookings"),
+            where("customer.email", "==", customerEmail.toLowerCase().trim())
+          );
+          const snap = await getDocs(q);
+          for (const d of snap.docs) {
+            const data = d.data();
+            if (!data.customerUid) {
+              await updateDoc(doc(db, "bookings", d.id), {
+                customerUid,
+                updatedAt: Date.now(),
+              });
+              if (!claimedIds.includes(d.id)) {
+                claimedIds.push(d.id);
+              }
+            }
+          }
+        } catch (clientErr) {
+          console.warn("Client fallback email claim error:", clientErr);
+        }
       }
     }
 

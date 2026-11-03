@@ -25,7 +25,8 @@ import {
 import { getPackages, DEFAULT_PACKAGES } from "@/lib/content";
 import { PackageDoc, SessionDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
-import { doc, setDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, collection, getDocs, getDoc } from "firebase/firestore";
+import { uploadImageFile } from "@/lib/upload";
 
 export default function AdminSessionsPage() {
   const [packages, setPackages] = useState<PackageDoc[]>(DEFAULT_PACKAGES);
@@ -86,28 +87,43 @@ export default function AdminSessionsPage() {
     );
   };
 
-  const handleFileUpload = async (file: File, isCover: boolean) => {
+  const [editCoverUrl, setEditCoverUrl] = useState<string>("");
+  const [editGalleryUrls, setEditGalleryUrls] = useState<string[]>([]);
+  const editCoverInputRef = useRef<HTMLInputElement>(null);
+  const editGalleryInputRef = useRef<HTMLInputElement>(null);
+
+  const openEditModal = async (pkg: PackageDoc) => {
+    setEditingPkg({ ...pkg });
+    setEditCoverUrl("");
+    setEditGalleryUrls([]);
+    try {
+      const sessionSnap = await getDoc(doc(db, "sessions", pkg.sessionSlug || pkg.id));
+      if (sessionSnap.exists()) {
+        const sData = sessionSnap.data() as SessionDoc;
+        setEditCoverUrl(sData.coverImage || "");
+        setEditGalleryUrls(sData.gallery || []);
+      }
+    } catch (e) {
+      console.warn("Could not load session doc:", e);
+    }
+  };
+
+  const handleFileUpload = async (file: File, isCover: boolean, forEditing: boolean = false) => {
     setIsUploading(true);
     setUploadError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to upload image to Vercel Blob.");
-      }
-
-      const data = await res.json();
-      if (data.url) {
+      const downloadUrl = await uploadImageFile(file, "sessions");
+      if (forEditing) {
         if (isCover) {
-          setNewCoverUrl(data.url);
+          setEditCoverUrl(downloadUrl);
         } else {
-          setNewGalleryUrls((prev) => [...prev, data.url]);
+          setEditGalleryUrls((prev) => [...prev, downloadUrl]);
+        }
+      } else {
+        if (isCover) {
+          setNewCoverUrl(downloadUrl);
+        } else {
+          setNewGalleryUrls((prev) => [...prev, downloadUrl]);
         }
       }
     } catch (err: any) {
@@ -249,6 +265,23 @@ export default function AdminSessionsPage() {
       const updated = { ...editingPkg, updatedAt: Date.now() };
       await setDoc(doc(db, "packages", editingPkg.id), updated, { merge: true });
 
+      // Also sync session document in sessions collection
+      await setDoc(
+        doc(db, "sessions", editingPkg.sessionSlug || editingPkg.id),
+        {
+          name: updated.name,
+          shortDescription: updated.description,
+          description: updated.description,
+          included: updated.features,
+          showPrice: updated.show_price,
+          priceLabel: updated.price_label || null,
+          ...(editCoverUrl ? { coverImage: editCoverUrl } : {}),
+          ...(editGalleryUrls.length > 0 ? { gallery: editGalleryUrls } : {}),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
       setPackages((prev) =>
         prev.map((p) => (p.id === editingPkg.id ? updated : p))
       );
@@ -257,6 +290,18 @@ export default function AdminSessionsPage() {
       console.error("Failed to update package:", err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeletePackage = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete session "${name}"? This removes it from public services.`)) return;
+    try {
+      await deleteDoc(doc(db, "packages", id));
+      await deleteDoc(doc(db, "sessions", id));
+      setPackages((prev) => prev.filter((p) => p.id !== id));
+      setEditingPkg(null);
+    } catch (err) {
+      console.error("Failed to delete session:", err);
     }
   };
 
@@ -387,7 +432,7 @@ export default function AdminSessionsPage() {
               </div>
 
               <button
-                onClick={() => setEditingPkg({ ...pkg })}
+                onClick={() => openEditModal(pkg)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#1c1b1a] text-white text-xs font-bold hover:bg-[#33312e] transition-colors"
               >
                 <Edit3 className="w-3.5 h-3.5" />
@@ -739,21 +784,116 @@ export default function AdminSessionsPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f0eee8]">
+              {/* Cover Image Upload & Preview */}
+              <div className="pt-2 border-t border-[#f0eee8]">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-[#48453f]">Session Cover Image</label>
+                  <button
+                    type="button"
+                    onClick={() => editCoverInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition-colors"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#e8491c]" />
+                    <span>{isUploading ? "Uploading..." : "Replace Cover Photo"}</span>
+                  </button>
+                  <input
+                    type="file"
+                    ref={editCoverInputRef}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFileUpload(f, true, true);
+                    }}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                </div>
+                {editCoverUrl && (
+                  <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                    <Image src={editCoverUrl} alt="Cover preview" fill className="object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Session Gallery Management */}
+              <div className="pt-2 border-t border-[#f0eee8]">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <label className="text-xs font-bold text-[#48453f]">Session Gallery Photos</label>
+                    <p className="text-[11px] text-[#8a867f]">{editGalleryUrls.length} photos in this session gallery</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => editGalleryInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#1c1b1a] hover:bg-[#33312e] text-white text-xs font-semibold transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-[#e8491c]" />
+                    <span>Upload Photos</span>
+                  </button>
+                  <input
+                    type="file"
+                    ref={editGalleryInputRef}
+                    onChange={(e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        for (let i = 0; i < files.length; i++) {
+                          handleFileUpload(files[i]!, false, true);
+                        }
+                      }
+                    }}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                </div>
+
+                {editGalleryUrls.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                    {editGalleryUrls.map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-stone-100 group border border-stone-200">
+                        <Image src={url} alt={`Gallery photo ${idx + 1}`} fill className="object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setEditGalleryUrls((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                          title="Remove photo"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-stone-400 italic">No gallery photos uploaded for this session yet.</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-2.5 pt-4 border-t border-[#f0eee8]">
                 <button
                   type="button"
-                  onClick={() => setEditingPkg(null)}
-                  className="px-4 py-2 rounded-xl border border-[#e6e4dc] text-xs font-semibold text-[#55524c]"
+                  onClick={() => handleDeletePackage(editingPkg.id, editingPkg.name)}
+                  className="px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  Cancel
+                  Delete Session
                 </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-[#e8491c] text-white text-xs font-bold hover:bg-[#d03d12] disabled:opacity-50"
-                >
-                  {saving ? "Saving..." : "Apply Updates"}
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPkg(null)}
+                    className="px-4 py-2 rounded-xl border border-[#e6e4dc] text-xs font-semibold text-[#55524c]"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || isUploading}
+                    className="px-5 py-2 rounded-xl bg-[#e8491c] text-white text-xs font-bold hover:bg-[#d03d12] disabled:opacity-50"
+                  >
+                    {saving ? "Saving..." : "Apply Updates"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -2,15 +2,21 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
 import { Reveal } from "@/components/Reveal";
+import { getAboutPageContent } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About",
   description: siteConfig.positioningLine,
 };
 
-// Body copy reproduced verbatim from CONTENT.md Appendix 1 / client_spec.md
-// Appendix 1 — do not edit, tighten or "improve" it (AGENTS.md §5 rule 8).
-export default function AboutPage() {
+export default async function AboutPage() {
+  const about = await getAboutPageContent();
+  const paragraphs = about.body
+    ? about.body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+    : [];
+
   return (
     <>
       <div className="container-site pb-20 relative z-10 pt-10 md:pt-16">
@@ -37,8 +43,8 @@ export default function AboutPage() {
 
               <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl bg-ink border border-line/40 group">
                 <Image
-                  src="/photos/personal/personal_01.jpg"
-                  alt="Benedict Henry — SH Photography"
+                  src={about.coverImage.url || "/photos/personal/personal_01.jpg"}
+                  alt={about.coverImage.alt || `${about.signature} — SH Photography`}
                   fill
                   sizes="(max-width: 768px) 100vw, 40vw"
                   className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
@@ -60,7 +66,7 @@ export default function AboutPage() {
                 </div>
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6">
                   <span className="inline-block px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white border border-white/30">
-                    Benedict Henry · Founder &amp; Lead Photographer
+                    {about.signature || "Benedict Henry"} · Founder &amp; Lead Photographer
                   </span>
                 </div>
               </div>
@@ -84,7 +90,7 @@ export default function AboutPage() {
             <div className="text-left border-b border-line/40 pb-12 mb-12">
               <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-5">Get to Know ME</p>
               <h1 className="font-display text-4xl md:text-5xl lg:text-[4.5rem] leading-[1.05] text-ink tracking-tight drop-shadow-sm">
-                Based in Manchester, United Kingdom.
+                {about.heading || "Based in Manchester, United Kingdom."}
               </h1>
             </div>
 
@@ -93,62 +99,39 @@ export default function AboutPage() {
               <Reveal>
                 <div>
                   <p className="font-display text-2xl md:text-3xl italic text-ink mb-1">A Bit About Me</p>
-                  <p className="font-semibold text-ink uppercase tracking-widest text-xs">Benedict Henry | SH Photography</p>
+                  <p className="font-semibold text-ink uppercase tracking-widest text-xs">{about.signature || "Benedict Henry"} | SH Photography</p>
                 </div>
               </Reveal>
 
-            <Reveal delay={0.1}>
-              <p>
-                Founded in 2020 in Benin City, Nigeria, SH Photography was born from a passion for
-                preserving life&apos;s most beautiful moments. Today, based in Manchester, United
-                Kingdom, I specialize in weddings, beauty portraits, events, retouching, and general
-                photography services, helping clients relive their memories through striking, natural
-                imagery.
-              </p>
-            </Reveal>
+              {paragraphs.map((para, idx) => (
+                <Reveal key={idx} delay={0.1 * (idx + 1)}>
+                  <p>{para}</p>
+                </Reveal>
+              ))}
 
-            <Reveal delay={0.2}>
-              <p>
-                My photography style is all about natural storytelling. I strive to capture moments
-                that feel authentic and timeless, aiming for perfection even before post-production.
-                Every shoot is an opportunity to tell a story from the smiles and laughter of a wedding
-                day to the elegance of a beauty portrait.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.3}>
-              <p>
-                Photography started as a passion: I wanted to help people preserve memories, capture
-                happiness, and create images that could last a lifetime. I approach every job with
-                dedication, giving my very best to ensure client satisfaction is at the heart of
-                everything I do. For me, it&apos;s never just about delivering a product it&apos;s
-                about making the experience enjoyable, meaningful, and memorable for everyone involved.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.4}>
-              <p>
-                Every shoot with SH Photography is lively and engaging. I communicate openly with
-                clients to understand their vision, ensuring they are comfortable and confident in
-                front of the camera. Over the years, I&apos;ve had the privilege of covering countless
-                events, winning retouching competitions, and developing a collection of professional
-                gear to bring each project to life.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.5}>
-              <p>
-                Above all, SH Photography is about relationships building trust with clients before,
-                during, and after every shoot, and delivering images that capture the joy, beauty, and
-                story of each unique moment
-              </p>
-            </Reveal>
-          </article>
+              {/* Studio Highlights (Figures) rendered on the public page */}
+              {about.stats && about.stats.length > 0 && (
+                <div className="pt-8 mt-12 border-t border-line/50">
+                  <p className="text-xs font-bold uppercase tracking-[0.25em] text-accent mb-6">Studio Highlights</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {about.stats.map((st, i) => (
+                      <div
+                        key={i}
+                        className="p-5 rounded-2xl bg-sand/40 border border-line/70 flex flex-col justify-between hover:border-ink/40 transition-colors"
+                      >
+                        <p className="text-2xl sm:text-3xl font-display font-bold text-ink">{st.value}</p>
+                        <p className="text-xs text-ink/70 font-medium mt-1">{st.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </article>
             </div>
             {/* Spacer to give the sticky element 250px of room to slide down */}
             <div className="hidden md:block h-[250px] w-full pointer-events-none"></div>
           </div>
-      </div>
+        </div>
       </div>
     </>
   );

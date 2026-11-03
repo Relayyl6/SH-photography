@@ -299,11 +299,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
 
             <div className="flex items-center gap-2 pl-2 border-l border-[#eceae3]">
-              <div className="w-8 h-8 rounded-full bg-[#1c1b1a] text-white flex items-center justify-center font-bold text-xs">
-                BH
+              <div className="w-8 h-8 rounded-full bg-[#1c1b1a] text-white flex items-center justify-center font-bold text-xs uppercase">
+                {(user.displayName || user.email || "A")
+                  .split(/[\s@._]+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((w) => (w && w.length > 0 ? w.charAt(0).toUpperCase() : ""))
+                  .join("") || "AD"}
               </div>
               <div className="hidden lg:flex flex-col">
-                <span className="text-xs font-semibold text-[#1c1b1a] leading-tight">Benedict Henry</span>
+                <span className="text-xs font-semibold text-[#1c1b1a] leading-tight">
+                  {user.displayName || user.email?.split("@")[0] || "Admin"}
+                </span>
                 <span className="text-[10px] text-[#8a867f] leading-tight">{user.email}</span>
               </div>
             </div>

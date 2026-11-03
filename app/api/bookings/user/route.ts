@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
+import { db } from "@/lib/firebase/config";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +21,10 @@ export async function GET(req: NextRequest) {
     const bookings: any[] = [];
     const seenIds = new Set<string>();
 
-    // 1. Query by customerUid if uid provided
-    if (uid) {
-      try {
+    // 1. Try querying via adminDb (Firebase Admin SDK)
+    let adminDbWorked = false;
+    try {
+      if (uid) {
         const snap = await adminDb
           .collection("bookings")
           .where("customerUid", "==", uid)
@@ -33,14 +36,10 @@ export async function GET(req: NextRequest) {
             bookings.push({ id: doc.id, ...doc.data() });
           }
         });
-      } catch (err) {
-        console.warn("Error querying bookings by uid:", err);
+        adminDbWorked = true;
       }
-    }
 
-    // 2. Query by customer.email if email provided
-    if (email) {
-      try {
+      if (email) {
         const snap = await adminDb
           .collection("bookings")
           .where("customer.email", "==", email.toLowerCase().trim())
@@ -52,8 +51,41 @@ export async function GET(req: NextRequest) {
             bookings.push({ id: doc.id, ...doc.data() });
           }
         });
-      } catch (err) {
-        console.warn("Error querying bookings by email:", err);
+        adminDbWorked = true;
+      }
+    } catch (adminErr) {
+      console.warn("adminDb query error (falling back to client db):", adminErr);
+    }
+
+    // 2. Fallback to client db if adminDb was not configured or had an issue
+    if (!adminDbWorked || bookings.length === 0) {
+      try {
+        if (uid) {
+          const q = query(collection(db, "bookings"), where("customerUid", "==", uid));
+          const snap = await getDocs(q);
+          snap.forEach((d) => {
+            if (!seenIds.has(d.id)) {
+              seenIds.add(d.id);
+              bookings.push({ id: d.id, ...d.data() });
+            }
+          });
+        }
+
+        if (email) {
+          const q = query(
+            collection(db, "bookings"),
+            where("customer.email", "==", email.toLowerCase().trim())
+          );
+          const snap = await getDocs(q);
+          snap.forEach((d) => {
+            if (!seenIds.has(d.id)) {
+              seenIds.add(d.id);
+              bookings.push({ id: d.id, ...d.data() });
+            }
+          });
+        }
+      } catch (clientErr) {
+        console.warn("Client db fallback query error:", clientErr);
       }
     }
 

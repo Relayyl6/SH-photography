@@ -15,63 +15,72 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == customerUid;
     }
 
-    // Settings (Site, Contact, Social, Booking)
+    // Settings (Site, Contact, Social, Booking, Availability)
     match /settings/{docId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     // Pages (Home, About, SiteText)
     match /pages/{pageId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     // Bento (Home)
     match /bento/{docId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     // Portfolio
     match /portfolio/{imageId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     // Sessions & Packages
     match /sessions/{sessionId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     match /packages/{packageId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     // Booking Fields
     match /bookingFields/{fieldId} {
-      allow read: if resource.data.published == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
-    // Availability
+    // Availability (must be readable by public visitors so date picker knows blocked dates)
     match /availability/{dateISO} {
-      allow read: if resource.data.isOpen == true || isOwner();
+      allow read: if true;
       allow write: if isOwner();
     }
 
     match /blockedPeriods/{periodId} {
-      allow read, write: if isOwner();
+      allow read: if true;
+      allow write: if isOwner();
     }
 
-    // Bookings (Private: only customer or owner)
+    // Bookings (Quote Requests)
+    // Public visitors can create a new quote request/booking.
+    // Reading allowed so findSlotConflict can query active slots to avoid double-bookings.
+    // Update/Delete restricted to owner or customer owner.
     match /bookings/{bookingId} {
-      allow read: if isOwner() || (resource != null && isCustomerOwner(resource.data.customerUid));
-      allow write: if isOwner();
-      // Creation allowed from client only if user is logged in and customerUid matches, or via Functions
-      allow create: if request.auth != null && request.resource.data.customerUid == request.auth.uid;
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if isOwner() || (resource != null && isCustomerOwner(resource.data.customerUid));
+    }
+
+    // Inquiries (Contact page messages)
+    match /enquiries/{enquiryId} {
+      allow create: if true;
+      allow read, update, delete: if isOwner();
     }
 
     // Customers
@@ -87,8 +96,7 @@ service cloud.firestore {
 
     // Audit Log & Mail queue
     match /auditLog/{logId} {
-      allow read: if isOwner();
-      allow write: if isOwner();
+      allow read, write: if isOwner();
     }
 
     match /mail/{mailId} {

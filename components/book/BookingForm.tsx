@@ -297,6 +297,13 @@ export default function BookingForm() {
     if (sanitized.alternateDate) {
       sanitized.alternateDate = normalizeDate(sanitized.alternateDate);
     }
+    if (sanitized.secondaryDate) {
+      sanitized.secondaryDate = normalizeDate(sanitized.secondaryDate);
+      sanitized.isDoubleDate = true;
+    }
+    if (sanitized.isDoubleDate) {
+      sanitized.isDoubleDate = Boolean(sanitized.isDoubleDate);
+    }
     if (sanitized.preferredStartTime) {
       sanitized.preferredStartTime = normalizeTime(sanitized.preferredStartTime);
     }

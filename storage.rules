@@ -3,15 +3,15 @@ service firebase.storage {
   match /b/{bucket}/o {
     
     function isOwner() {
-      return request.auth != null && request.auth.token.role == 'owner';
+      return request.auth != null && (
+        request.auth.token.role == 'owner' ||
+        request.auth.token.email in ['shfotography1@gmail.com', 'oseghaleleonard39@gmail.com']
+      );
     }
 
     function isValidImage() {
-      return request.resource.size < 10 * 1024 * 1024
-        && (request.resource.contentType.matches('image/jpeg')
-            || request.resource.contentType.matches('image/png')
-            || request.resource.contentType.matches('image/webp')
-            || request.resource.contentType.matches('image/avif'));
+      return request.resource.size < 15 * 1024 * 1024
+        && (request.resource.contentType.matches('image/.*'));
     }
 
     // Public readable images
@@ -31,6 +31,11 @@ service firebase.storage {
     }
 
     match /sessions/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner() && isValidImage();
+    }
+
+    match /uploads/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner() && isValidImage();
     }

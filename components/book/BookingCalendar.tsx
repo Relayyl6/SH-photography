@@ -7,7 +7,11 @@ import {
   getSlotsForDate,
   isDateBookable,
   toISODate,
+  DayHours,
+  DEFAULT_OPENING_HOURS,
 } from "./availability";
+import { db } from "@/lib/firebase/config";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTH_FORMATTER = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" });
@@ -53,6 +57,62 @@ export function BookingCalendar({
   timeError?: string;
 }) {
   const today = useMemo(() => new Date(), []);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [openingHours, setOpeningHours] = useState<Record<number, DayHours>>(DEFAULT_OPENING_HOURS);
+
+  useEffect(() => {
+    async function fetchLiveAvailability() {
+      try {
+        // 1. Fetch settings/availability
+        const setSnap = await getDoc(doc(db, "settings", "availability"));
+        if (setSnap.exists()) {
+          const sData = setSnap.data();
+          const sched = sData.weeklySchedule;
+          if (sched) {
+            const mapped: Record<number, DayHours> = {
+              0: sched.sunday?.open ? { start: sched.sunday.start, end: sched.sunday.end } : null,
+              1: sched.monday?.open ? { start: sched.monday.start, end: sched.monday.end } : null,
+              2: sched.tuesday?.open ? { start: sched.tuesday.start, end: sched.tuesday.end } : null,
+              3: sched.wednesday?.open ? { start: sched.wednesday.start, end: sched.wednesday.end } : null,
+              4: sched.thursday?.open ? { start: sched.thursday.start, end: sched.thursday.end } : null,
+              5: sched.friday?.open ? { start: sched.friday.start, end: sched.friday.end } : null,
+              6: sched.saturday?.open ? { start: sched.saturday.start, end: sched.saturday.end } : null,
+            };
+            if (Array.isArray(sData.alwaysClosedDays)) {
+              const dayNameToIndex: Record<string, number> = {
+                sunday: 0,
+                monday: 1,
+                tuesday: 2,
+                wednesday: 3,
+                thursday: 4,
+                friday: 5,
+                saturday: 6,
+              };
+              for (const closedDay of sData.alwaysClosedDays) {
+                const idx = dayNameToIndex[closedDay.toLowerCase()];
+                if (idx !== undefined) mapped[idx] = null;
+              }
+            }
+            setOpeningHours(mapped);
+          }
+        }
+
+        // 2. Fetch blocked individual dates from availability collection
+        const availSnap = await getDocs(collection(db, "availability"));
+        const blockedList: string[] = [];
+        availSnap.forEach((d) => {
+          if (d.data().isOpen === false) {
+            blockedList.push(d.id);
+          }
+        });
+        setBlockedDates(blockedList);
+      } catch (err) {
+        console.warn("Live availability sync error (using defaults):", err);
+      }
+    }
+    fetchLiveAvailability();
+  }, []);
+
   const [viewMonth, setViewMonth] = useState(() =>
     startOfMonth(selectedDate ? new Date(`${selectedDate}T00:00:00`) : today)
   );
@@ -111,7 +171,7 @@ export function BookingCalendar({
   }
 
   const selectedDateObj = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
-  const slots = selectedDateObj ? getSlotsForDate(selectedDateObj) : [];
+  const slots = selectedDateObj ? getSlotsForDate(selectedDateObj, openingHours) : [];
 
   return (
     <div>
@@ -152,7 +212,7 @@ export function BookingCalendar({
           {days.map((date) => {
             const iso = toISODate(date);
             const inMonth = date.getMonth() === viewMonth.getMonth();
-            const bookable = inMonth && isDateBookable(date, today);
+            const bookable = inMonth && isDateBookable(date, today, blockedDates, openingHours);
             const isSelected = selectedDate === iso;
             const isToday = toISODate(today) === iso;
 

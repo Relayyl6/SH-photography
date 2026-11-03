@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   Image as ImageIcon,
   Search,
-  Filter,
   Plus,
   Eye,
   EyeOff,
@@ -14,11 +13,16 @@ import {
   ChevronLeft,
   Sparkles,
   ExternalLink,
+  Upload,
+  X,
+  Camera,
+  Trash2,
 } from "lucide-react";
 import { getPortfolioImages, DEFAULT_PORTFOLIO_IMAGES } from "@/lib/content";
 import { PortfolioImageDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
+import { uploadImageFile } from "@/lib/upload";
 
 const CATEGORIES = [
   { id: "all", label: "All Photos" },
@@ -38,6 +42,18 @@ export default function AdminPortfolioPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Upload modal state
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadCategory, setUploadCategory] = useState("weddings");
+  const [uploadAlt, setUploadAlt] = useState("");
+  const [uploadCaption, setUploadCaption] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function init() {
@@ -74,10 +90,77 @@ export default function AdminPortfolioPage() {
     );
   };
 
-  const handleSave = async () => {
+  const handleDeleteImage = async (id: string) => {
+    if (!confirm(`Delete image "${id}" from portfolio?`)) return;
+    try {
+      await deleteDoc(doc(db, "portfolio", id));
+      setImages((prev) => prev.filter((img) => img.id !== id));
+    } catch (err) {
+      console.error("Failed to delete image:", err);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setFilePreview(URL.createObjectURL(file));
+    if (!uploadAlt) {
+      setUploadAlt(file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "));
+    }
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setUploadError("Please select an image file to upload.");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const downloadUrl = await uploadImageFile(selectedFile, `portfolio/${uploadCategory}`);
+      const newId = `img_${uploadCategory}_${Date.now()}`;
+
+      const newImageDoc: PortfolioImageDoc = {
+        id: newId,
+        url: downloadUrl,
+        path: downloadUrl,
+        thumbUrl: downloadUrl,
+        alt: uploadAlt.trim() || `${uploadCategory} photography by SH Photography`,
+        caption: uploadCaption.trim() || undefined,
+        category: [uploadCategory],
+        order: images.length + 1,
+        published: true,
+        width: 1200,
+        height: 1500,
+        featured: false,
+        updatedAt: Date.now(),
+      };
+
+      await setDoc(doc(db, "portfolio", newId), newImageDoc);
+
+      setImages((prev) => [newImageDoc, ...prev]);
+      setIsUploadModalOpen(false);
+      setSelectedFile(null);
+      setFilePreview(null);
+      setUploadAlt("");
+      setUploadCaption("");
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      setUploadError(err.message || "Failed to upload photo.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
     try {
       setSaving(true);
-      // Save changes to Firestore
       for (const img of images) {
         await setDoc(doc(db, "portfolio", img.id), img, { merge: true });
       }
@@ -110,11 +193,19 @@ export default function AdminPortfolioPage() {
             Portfolio Gallery Manager
           </h1>
           <p className="text-xs sm:text-sm text-[#7a766f] mt-1 max-w-xl">
-            Manage your full portfolio archive ({images.length} photos). Toggle public visibility, inspect image dimensions, and update metadata.
+            Upload new photos into any session category ({images.length} total photos). Toggle public visibility, inspect dimensions, and update metadata.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center flex-wrap gap-3">
+          <button
+            onClick={() => setIsUploadModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#1c1b1a] hover:bg-[#33312e] text-white text-xs font-bold transition-all shadow-sm"
+          >
+            <Camera className="w-4 h-4 text-[#e8491c]" />
+            <span>Upload New Photo</span>
+          </button>
+
           <Link
             href="/portfolio"
             target="_blank"
@@ -125,7 +216,7 @@ export default function AdminPortfolioPage() {
           </Link>
 
           <button
-            onClick={handleSave}
+            onClick={handleSaveAll}
             disabled={saving}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-[#e8491c] hover:bg-[#d03d12] text-white text-xs font-bold transition-all shadow-md shadow-[#e8491c]/20 disabled:opacity-50"
           >
@@ -139,7 +230,7 @@ export default function AdminPortfolioPage() {
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                <span>Save Changes</span>
+                <span>Save Visibility</span>
               </>
             )}
           </button>
@@ -202,21 +293,30 @@ export default function AdminPortfolioPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
-              {/* Status pill on image */}
-              <button
-                onClick={() => togglePublished(img.id)}
-                className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-md transition-colors ${
-                  img.published
-                    ? "bg-black/40 text-white hover:bg-black/60"
-                    : "bg-red-500 text-white"
-                }`}
-                title={img.published ? "Click to hide from public" : "Click to publish"}
-              >
-                {img.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </button>
+              {/* Action buttons on image */}
+              <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                <button
+                  onClick={() => togglePublished(img.id)}
+                  className={`p-1.5 rounded-full backdrop-blur-md transition-colors ${
+                    img.published
+                      ? "bg-black/50 text-white hover:bg-black/70"
+                      : "bg-red-500 text-white"
+                  }`}
+                  title={img.published ? "Click to hide from public" : "Click to publish"}
+                >
+                  {img.published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => handleDeleteImage(img.id)}
+                  className="p-1.5 rounded-full bg-black/50 text-white hover:bg-red-600 transition-colors"
+                  title="Delete Photo"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               <div className="absolute bottom-2 left-2 right-2 text-white text-[10px]">
-                <p className="font-bold truncate">{img.id}</p>
+                <p className="font-bold truncate">{img.alt || img.id}</p>
                 <p className="text-[9px] text-white/70 truncate capitalize">
                   {img.category.join(", ")}
                 </p>
@@ -234,6 +334,137 @@ export default function AdminPortfolioPage() {
           </div>
         ))}
       </div>
+
+      {/* Upload Photo Modal */}
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-[#f0eee8] mb-4">
+              <h3 className="text-lg font-bold text-[#1c1b1a]">Upload Photo to Portfolio</h3>
+              <button
+                onClick={() => setIsUploadModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadSubmit} className="space-y-4">
+              {uploadError && (
+                <p className="text-xs text-red-600 bg-red-50 p-2.5 rounded-xl border border-red-200">
+                  {uploadError}
+                </p>
+              )}
+
+              {/* File selector zone */}
+              <div>
+                <label className="block text-xs font-semibold text-[#48453f] mb-1.5">
+                  Select Image File *
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  accept="image/*"
+                  className="hidden"
+                />
+                {filePreview ? (
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200">
+                    <Image src={filePreview} alt="Preview" fill className="object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs font-semibold rounded-xl hover:bg-black/90"
+                    >
+                      Change Photo
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-[4/3] rounded-2xl border-2 border-dashed border-stone-300 hover:border-[#e8491c] flex flex-col items-center justify-center gap-2 cursor-pointer bg-stone-50/50 hover:bg-orange-50/30 transition-colors p-4 text-center"
+                  >
+                    <Upload className="w-8 h-8 text-stone-400" />
+                    <p className="text-xs font-bold text-stone-700">Click to choose a photo</p>
+                    <p className="text-[11px] text-stone-500">JPG, PNG, WebP up to 15MB</p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#48453f] mb-1">
+                  Session / Category *
+                </label>
+                <select
+                  value={uploadCategory}
+                  onChange={(e) => setUploadCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#e6e4dc] text-xs text-[#1c1b1a]"
+                >
+                  <option value="weddings">Weddings</option>
+                  <option value="portraits">Portraits</option>
+                  <option value="family">Family</option>
+                  <option value="events">Events</option>
+                  <option value="behind-the-scenes">Behind the Scenes</option>
+                  <option value="birthday">Birthdays</option>
+                  <option value="personal">Personal Branding</option>
+                  <option value="sports">Sports &amp; Athletics</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#48453f] mb-1">
+                  Alt Text / Title *
+                </label>
+                <input
+                  type="text"
+                  value={uploadAlt}
+                  onChange={(e) => setUploadAlt(e.target.value)}
+                  placeholder="e.g. Manchester Victoria Baths Wedding"
+                  required
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#e6e4dc] text-xs text-[#1c1b1a]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#48453f] mb-1">
+                  Caption (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={uploadCaption}
+                  onChange={(e) => setUploadCaption(e.target.value)}
+                  placeholder="e.g. Natural editorial light during bridal portraits"
+                  className="w-full px-3.5 py-2 rounded-xl border border-[#e6e4dc] text-xs text-[#1c1b1a]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f0eee8]">
+                <button
+                  type="button"
+                  onClick={() => setIsUploadModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-[#e6e4dc] text-xs font-semibold text-[#55524c]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUploading || !selectedFile}
+                  className="px-5 py-2 rounded-xl bg-[#e8491c] text-white text-xs font-bold hover:bg-[#d03d12] disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isUploading ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <span>Upload &amp; Publish</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -69,8 +69,11 @@ export function PackageCard({ pkg, showIncludes = false }: { pkg: Package; showI
             </>
           )}
 
-          {pkg.showPrice && pkg.priceLabel ? (
-            <p className="mt-4 font-display text-lg">{pkg.priceLabel}</p>
+          {pkg.showPrice ? (
+            <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between">
+              <span className="text-[11px] uppercase tracking-wider font-semibold text-ink/60">Pricing</span>
+              <p className="font-display text-base font-bold text-accent">{pkg.priceLabel || "Price upon request"}</p>
+            </div>
           ) : null}
         </div>
       </div>
