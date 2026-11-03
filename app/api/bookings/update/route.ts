@@ -35,7 +35,7 @@ async function handleUpdate(req: NextRequest) {
         const adminDb = getAdminDb();
         if (adminDb) {
           await adminDb.collection("bookings").doc(actualBookingId).delete();
-        } else if (db && typeof (db as any).type === "string") {
+        } else if (db) {
           const docRef = doc(db, "bookings", actualBookingId);
           await deleteDoc(docRef);
         }

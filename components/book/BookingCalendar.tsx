@@ -58,6 +58,7 @@ export function BookingCalendar({
 }) {
   const today = useMemo(() => new Date(), []);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [bookedSlotsByDate, setBookedSlotsByDate] = useState<Record<string, string[]>>({});
   const [openingHours, setOpeningHours] = useState<Record<number, DayHours>>(DEFAULT_OPENING_HOURS);
   const [leadDays, setLeadDays] = useState(BOOKING_LEAD_DAYS);
   const [windowDays, setWindowDays] = useState(BOOKING_WINDOW_DAYS);
@@ -113,15 +114,52 @@ export function BookingCalendar({
           }
         } catch {}
 
-        // 3. Fetch blocked individual dates from availability collection
-        const availSnap = await getDocs(collection(db, "availability"));
+        // 3. Fetch blocked individual dates from availability collection and active bookings
+        const [availSnap, bookSnap] = await Promise.all([
+          getDocs(collection(db, "availability")),
+          getDocs(collection(db, "bookings")),
+        ]);
         const blockedList: string[] = [];
+        const slotMap: Record<string, string[]> = {};
+
         availSnap.forEach((d) => {
           if (d.data().isOpen === false) {
             blockedList.push(d.id);
           }
         });
+        bookSnap.forEach((d) => {
+          const bData = d.data();
+          if (bData.status === "confirmed" || bData.status === "pending" || bData.status === "reschedule_requested") {
+            const bDate = bData.slot?.date;
+            const bStart = bData.slot?.start;
+            if (bDate) {
+              if (!slotMap[bDate]) slotMap[bDate] = [];
+              if (bStart && !slotMap[bDate].includes(bStart)) {
+                slotMap[bDate].push(bStart);
+              }
+              // If booking covers the whole day or is a full day wedding/event
+              const sessName = String(bData.sessionSnapshot?.name || "").toLowerCase();
+              const duration = String(bData.answers?.estimatedDuration || "").toLowerCase();
+              if (sessName.includes("full day") || duration.includes("full day") || duration.includes("multi-day")) {
+                if (!blockedList.includes(bDate)) {
+                  blockedList.push(bDate);
+                }
+              }
+            }
+            if (bData.secondaryDate && !blockedList.includes(bData.secondaryDate)) {
+              blockedList.push(bData.secondaryDate);
+            }
+            if (Array.isArray(bData.additionalDates)) {
+              for (const addDate of bData.additionalDates) {
+                if (addDate && !blockedList.includes(addDate)) {
+                  blockedList.push(addDate);
+                }
+              }
+            }
+          }
+        });
         setBlockedDates(blockedList);
+        setBookedSlotsByDate(slotMap);
       } catch (err) {
         console.warn("Live availability sync error (using defaults):", err);
       }
@@ -187,7 +225,8 @@ export function BookingCalendar({
   }
 
   const selectedDateObj = selectedDate ? new Date(`${selectedDate}T00:00:00`) : null;
-  const slots = selectedDateObj ? getSlotsForDate(selectedDateObj, openingHours) : [];
+  const bookedTimesSet = selectedDate ? new Set(bookedSlotsByDate[selectedDate] || []) : undefined;
+  const slots = selectedDateObj ? getSlotsForDate(selectedDateObj, openingHours, bookedTimesSet) : [];
 
   return (
     <div>

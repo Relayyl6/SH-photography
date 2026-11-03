@@ -99,6 +99,32 @@ export default function AdminAvailabilityPage() {
           });
         }
       });
+
+      // 3. Load active bookings from bookings collection to display booked days
+      try {
+        const bookSnap = await getDocs(collection(db, "bookings"));
+        bookSnap.forEach((b) => {
+          const bData = b.data();
+          if (bData.status === "confirmed" || bData.status === "pending" || bData.status === "reschedule_requested") {
+            const bookedDate = bData.slot?.date;
+            if (bookedDate && !blocked.some((item) => item.date === bookedDate)) {
+              blocked.push({
+                date: bookedDate,
+                reason: `Booked: ${bData.customer?.name || "Client"} (${bData.sessionSnapshot?.name || "Session"})`,
+              });
+            }
+            if (bData.secondaryDate && !blocked.some((item) => item.date === bData.secondaryDate)) {
+              blocked.push({
+                date: bData.secondaryDate,
+                reason: `Booked (Day 2): ${bData.customer?.name || "Client"}`,
+              });
+            }
+          }
+        });
+      } catch (bookErr) {
+        console.warn("Could not load bookings into availability calendar:", bookErr);
+      }
+
       setBlockedDays(blocked);
     } catch (err) {
       console.error("Failed to load availability from Firestore:", err);
@@ -199,7 +225,16 @@ export default function AdminAvailabilityPage() {
         { merge: true }
       );
 
-      // 2. Save individual blocked dates
+      // 2. Fetch existing availability docs to delete any that were unblocked
+      const existingSnap = await getDocs(collection(db, "availability"));
+      const blockedDateSet = new Set(blockedDays.map((b) => b.date));
+      for (const d of existingSnap.docs) {
+        if (!blockedDateSet.has(d.id)) {
+          await deleteDoc(d.ref);
+        }
+      }
+
+      // 3. Save current blocked dates
       for (const b of blockedDays) {
         await setDoc(
           doc(db, "availability", b.date),

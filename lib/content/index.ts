@@ -11,6 +11,7 @@ import {
   SessionDoc,
   PackageDoc,
   BookingDoc,
+  BookingFieldDoc,
 } from '@/types/firebase';
 import { siteConfig, socialLinks } from '@/lib/site-config';
 import { sessions as baselineSessions } from '@/lib/sessions';
@@ -492,6 +493,38 @@ export async function getBookings(): Promise<BookingDoc[]> {
     console.warn('getBookings error:', err);
     return [];
   }
+}
+
+export async function getBookingFields(): Promise<BookingFieldDoc[]> {
+  try {
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snap = await getDocs(collection(db, 'bookingFields'));
+    return snap.docs
+      .map((d) => d.data() as BookingFieldDoc)
+      .filter((f) => f.published !== false)
+      .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+  } catch (err) {
+    console.warn('getBookingFields error:', err);
+    return [];
+  }
+}
+
+export function extractFieldOptions(field?: BookingFieldDoc): Array<{ label: string; value: string }> {
+  if (!field || !field.options || !Array.isArray(field.options)) return [];
+  return field.options.map((opt) => {
+    if (typeof opt === 'string') {
+      return { label: opt, value: opt };
+    }
+    if (typeof opt === 'object' && opt !== null) {
+      const anyOpt = opt as any;
+      return {
+        label: anyOpt.label || anyOpt.value || '',
+        value: anyOpt.value || anyOpt.label || '',
+      };
+    }
+    return { label: String(opt), value: String(opt) };
+  }).filter((o) => Boolean(o.label && o.value));
 }
 
 // Initial seed template for bookings (used strictly by scripts/seed.ts)

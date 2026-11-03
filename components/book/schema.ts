@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const bookingSchema = z.object({
-  serviceCategory: z.enum(['Wedding', 'Portrait', 'Event', 'Retouching', 'Other']),
+  serviceCategory: z.string().min(1, 'Please select a service category'),
   sessionSubType: z.string().optional(),
   numSubjects: z.string().optional(),
   estimatedDuration: z.string().optional(),
@@ -15,19 +15,19 @@ export const bookingSchema = z.object({
   // Selected from the time-slot calendar alongside preferredDate — see the
   // cross-field check below, which requires it whenever a date is set.
   preferredStartTime: z.string().optional(),
-  dateFlexible: z.enum(['Yes', 'No']),
+  dateFlexible: z.string().min(1, 'Please specify if date is flexible'),
 
-  locationType: z.enum(['Studio', 'Client\'s Location', 'Outdoor', 'Venue', 'Multiple Locations', 'Other']),
+  locationType: z.string().min(1, 'Please select a location type'),
   address: z.string().optional(),
   cityPostcode: z.string().optional(),
-  indoorsOutdoors: z.enum(['Indoors', 'Outdoors', 'Both', 'Not Sure']).optional(),
-  travelRequired: z.enum(['Yes', 'No']),
+  indoorsOutdoors: z.string().optional(),
+  travelRequired: z.string().min(1, 'Please specify if travel is required'),
   travelDetails: z.string().optional(),
   parkingNotes: z.string().optional(),
 
   vision: z.string().min(1, 'Please describe your vision'),
   stylePreferences: z.array(z.string()).min(1, 'Select at least one style'),
-  colorPreference: z.enum(['Color', 'Black & White', 'Mix', 'Benedict\'s choice']),
+  colorPreference: z.string().min(1, 'Please select a color preference'),
   inspirationLinks: z.string().optional(),
   mustHaveShots: z.string().optional(),
   specialRequests: z.string().optional(),
@@ -35,13 +35,13 @@ export const bookingSchema = z.object({
 
   deliverables: z.array(z.string()).min(1, 'Select at least one deliverable'),
   editedImagesExpected: z.string().optional(),
-  turnaroundTime: z.enum(['Standard (2–3 weeks)', 'Rush (under 1 week)', 'Flexible']),
+  turnaroundTime: z.string().min(1, 'Please select turnaround time needed'),
   usageRights: z.string().optional(),
-  secondShooter: z.enum(['Yes', 'No', 'Recommend for me']),
+  secondShooter: z.string().optional(),
 
-  budgetRange: z.enum(['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss']),
-  budgetFlexible: z.enum(['Yes', 'No', 'Slightly']),
-  howSoon: z.enum(['ASAP', 'Within 2 weeks', 'Within a month', '1–3 months', 'Just planning ahead']),
+  budgetRange: z.string().min(1, 'Please select a budget range'),
+  budgetFlexible: z.string().min(1, 'Please select if budget is flexible'),
+  howSoon: z.string().min(1, 'Please select timeline urgency'),
   depositAck: z.boolean().refine(val => val === true, {
     message: 'You must acknowledge the deposit requirement'
   }),
@@ -49,7 +49,7 @@ export const bookingSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(1, 'Phone number is required'),
-  preferredContact: z.enum(['Email', 'Phone', 'WhatsApp']),
+  preferredContact: z.string().min(1, 'Please select preferred contact method'),
   companyName: z.string().optional(),
   instagramHandle: z.string().optional(),
   howDidYouFindMe: z.string().optional(),

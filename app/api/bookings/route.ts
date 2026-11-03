@@ -162,23 +162,26 @@ export async function POST(req: NextRequest) {
       // We do not fail the request if DB write was rejected by rules; proceed to email so lead is not lost.
     }
 
-    // 4. Send emails to owner and customer via Gmail SMTP
+    // 4. Send emails to owner and customer via Gmail SMTP (with timeout protection)
     try {
-      await sendBookingNotifications({
-        bookingId,
-        sessionId,
-        sessionName: sessionName || sessionId,
-        date,
-        timeSlot: { start, end },
-        customer: {
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-        },
-        answers: enrichedAnswers,
-      });
+      await Promise.race([
+        sendBookingNotifications({
+          bookingId,
+          sessionId,
+          sessionName: sessionName || sessionId,
+          date,
+          timeSlot: { start, end },
+          customer: {
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone,
+          },
+          answers: enrichedAnswers,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Email dispatch timeout")), 3500)),
+      ]);
     } catch (emailErr) {
-      console.error("Email notification dispatch error:", emailErr);
+      console.warn("Email notification dispatch warning:", emailErr);
     }
 
     return NextResponse.json({

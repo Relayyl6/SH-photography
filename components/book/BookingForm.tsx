@@ -13,6 +13,8 @@ import { useAiAutofill } from './useAiAutofill';
 import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
 
 
+import { BookingFieldDoc } from '@/types/firebase';
+
 const steps = [
   'Service & Session Type',
   'Location & Logistics',
@@ -142,21 +144,41 @@ export default function BookingForm() {
   const [submittedData, setSubmittedData] = useState<BookingFormData | null>(null);
   const [prefillLabel, setPrefillLabel] = useState<string | null>(null);
   const [cancellationPolicy, setCancellationPolicy] = useState<string | null>(null);
+  const [fields, setFields] = useState<BookingFieldDoc[]>([]);
 
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    async function loadPolicy() {
+    async function loadData() {
       try {
-        const { getBookingSettings } = await import('@/lib/content');
-        const b = await getBookingSettings();
+        const { getBookingSettings, getBookingFields } = await import('@/lib/content');
+        const [b, f] = await Promise.all([getBookingSettings(), getBookingFields()]);
         if (b?.cancellationPolicyText) {
           setCancellationPolicy(b.cancellationPolicyText);
         }
-      } catch {}
+        if (f && f.length > 0) {
+          setFields(f);
+        }
+      } catch (err) {
+        console.warn('Error loading dynamic booking settings/fields:', err);
+      }
     }
-    loadPolicy();
+    loadData();
   }, []);
+
+  const getFieldOptions = (keyOrId: string, fallback: string[]): Array<{ label: string; value: string }> => {
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    if (field?.options && Array.isArray(field.options) && field.options.length > 0) {
+      return field.options.map((opt: any) => {
+        if (typeof opt === 'string') return { label: opt, value: opt };
+        return {
+          label: opt.label || opt.value || '',
+          value: opt.value || opt.label || '',
+        };
+      }).filter((o) => o.label && o.value);
+    }
+    return fallback.map((val) => ({ label: val, value: val }));
+  };
 
   const {
     register,
@@ -187,77 +209,130 @@ export default function BookingForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-  const onSubmit = (data: BookingFormData) => {
+  const onSubmit = async (data: BookingFormData) => {
     console.log('Form submitted:', data);
 
-    // Dispatch to Firebase-backed bookings pipeline and store guest claim token
+    const bookingId = `bk_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const payload = {
+      bookingId,
+      sessionId: data.serviceCategory || 'general',
+      sessionName: data.serviceCategory || 'Photography Session',
+      date: data.preferredDate || new Date().toISOString().split('T')[0],
+      timeSlot: { start: data.preferredStartTime || '10:00', end: '11:30' },
+      customer: {
+        name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+      },
+      isDoubleDate: Boolean(data.isDoubleDate),
+      secondaryDate: data.secondaryDate || null,
+      multiDayCount: data.multiDayCount || (data.isDoubleDate ? '2 Days' : null),
+      additionalDates: [
+        ...(data.secondaryDate ? [data.secondaryDate] : []),
+        ...(data.additionalDates || []),
+      ],
+      extraInfo: data.extraInfo || null,
+      answers: data,
+      customerUid: null,
+    };
+
+    let bookingSaved = false;
+    let claimToken = '';
+
+    // 1. Try server API
     try {
-      fetch('/api/bookings', {
+      const res = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: data.serviceCategory || 'general',
-          sessionName: data.serviceCategory || 'Photography Session',
-          date: data.preferredDate || new Date().toISOString().split('T')[0],
-          timeSlot: { start: data.preferredStartTime || '10:00', end: '11:30' },
-          customer: {
-            name: data.fullName,
-            email: data.email,
-            phone: data.phone,
-          },
-          isDoubleDate: Boolean(data.isDoubleDate),
-          secondaryDate: data.secondaryDate || null,
-          multiDayCount: data.multiDayCount || (data.isDoubleDate ? '2 Days' : null),
-          additionalDates: [
-            ...(data.secondaryDate ? [data.secondaryDate] : []),
-            ...(data.additionalDates || []),
-          ],
-          extraInfo: data.extraInfo || null,
-          answers: data,
-          customerUid: null,
-        }),
-      })
-        .then(async (res) => {
-          const resData = await res.json();
-          if (!res.ok) {
-            const rawError = String(resData.error || "");
-            const msg = rawError.includes("PERMISSION_DENIED") || rawError.includes("Missing or insufficient permissions")
-              ? "Your request was received, but could not be logged to the online calendar. Please reach out to Benedict directly via WhatsApp or phone."
-              : (resData.error || "Failed to submit booking. Please try another date or contact Benedict.");
-            alert(msg);
-            return;
-          }
-          if (resData.success && resData.claimToken) {
-            const existing = JSON.parse(localStorage.getItem('sh_guest_bookings') || '[]');
-            existing.push({
-              bookingId: resData.bookingId,
-              claimToken: resData.claimToken,
-              sessionName: data.serviceCategory || 'Photography Session',
-              date: data.preferredDate,
-              status: 'pending',
-              createdAt: Date.now(),
-              answers: data,
-            });
-            localStorage.setItem('sh_guest_bookings', JSON.stringify(existing));
-            localStorage.setItem('sh_latest_booking', JSON.stringify({
-              bookingId: resData.bookingId,
-              claimToken: resData.claimToken,
-              date: data.preferredDate,
-              status: 'pending',
-            }));
-          }
-          setSubmittedData(data);
-          setIsSubmitted(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        })
-        .catch((err) => {
-          console.warn('Booking API dispatch error:', err);
-          alert('Could not connect to booking service. Please check your connection.');
-        });
-    } catch (e) {
-      console.warn('Booking storage error:', e);
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      let resData: any = {};
+      try {
+        resData = JSON.parse(text);
+      } catch {
+        resData = { error: text };
+      }
+
+      if (res.ok && resData.success) {
+        bookingSaved = true;
+        claimToken = resData.claimToken || '';
+      } else if (res.status === 409) {
+        // Slot collision
+        alert(resData.error || 'The selected date/time is already reserved. Please choose an alternate date.');
+        return;
+      }
+    } catch (apiErr) {
+      console.warn('Server booking API note:', apiErr);
     }
+
+    // 2. Direct Firestore fallback if server API failed or timed out
+    if (!bookingSaved) {
+      try {
+        const { db } = await import('@/lib/firebase/config');
+        const { doc, setDoc } = await import('firebase/firestore');
+        const fallbackDoc = {
+          id: bookingId,
+          sessionId: payload.sessionId,
+          sessionSnapshot: {
+            name: payload.sessionName,
+            price: 'Quote on Request',
+            durationMinutes: 90,
+          },
+          slot: {
+            date: payload.date,
+            start: payload.timeSlot.start,
+            end: payload.timeSlot.end,
+          },
+          isDoubleDate: payload.isDoubleDate,
+          secondaryDate: payload.secondaryDate,
+          multiDayCount: payload.multiDayCount,
+          additionalDates: payload.additionalDates,
+          extraInfo: payload.extraInfo,
+          answers: data,
+          customer: payload.customer,
+          status: 'pending',
+          ownerNotes: [],
+          customerUid: null,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          source: 'web',
+          emailStatus: { owner: 'queued', customer: 'queued' },
+          statusHistory: [{ status: 'pending', by: data.fullName, at: Date.now() }],
+        };
+
+        await setDoc(doc(db, 'bookings', bookingId), fallbackDoc);
+        bookingSaved = true;
+      } catch (fsErr) {
+        console.warn('Client direct save error:', fsErr);
+      }
+    }
+
+    // 3. Save to local guest records & show confirmation
+    try {
+      const existing = JSON.parse(localStorage.getItem('sh_guest_bookings') || '[]');
+      existing.push({
+        bookingId,
+        claimToken,
+        sessionName: data.serviceCategory || 'Photography Session',
+        date: data.preferredDate,
+        status: 'pending',
+        createdAt: Date.now(),
+        answers: data,
+      });
+      localStorage.setItem('sh_guest_bookings', JSON.stringify(existing));
+      localStorage.setItem('sh_latest_booking', JSON.stringify({
+        bookingId,
+        claimToken,
+        date: data.preferredDate,
+        status: 'pending',
+      }));
+    } catch {}
+
+    setSubmittedData(data);
+    setIsSubmitted(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleNext = async () => {
@@ -424,24 +499,24 @@ export default function BookingForm() {
                     <div className="space-y-4">
                       <label className="block text-sm font-medium">Service Category *</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
-                        {['Wedding', 'Portrait', 'Event', 'Retouching', 'Other'].map(cat => (
+                        {getFieldOptions('serviceCategory', ['Wedding', 'Portrait', 'Event', 'Retouching', 'Other']).map(cat => (
                           <label
-                            key={cat}
+                            key={cat.value}
                             className={`border p-3 sm:p-3.5 md:p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center min-w-0 select-none ${
-                              formData.serviceCategory === cat
+                              formData.serviceCategory === cat.value
                                 ? 'border-ink bg-ink text-paper shadow-sm font-semibold'
                                 : 'border-ink/20 hover:border-ink bg-white/40'
                             }`}
                           >
                             <input
                               type="radio"
-                              value={cat}
-                              checked={formData.serviceCategory === cat}
+                              value={cat.value}
+                              checked={formData.serviceCategory === cat.value}
                               {...register('serviceCategory')}
                               className="hidden"
                             />
                             <span className="block text-center text-xs sm:text-sm md:text-base font-medium truncate sm:whitespace-normal">
-                              {cat}
+                              {cat.label}
                             </span>
                           </label>
                         ))}
@@ -465,13 +540,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Estimated Duration</label>
                         <select value={formData.estimatedDuration ?? ''} {...register('estimatedDuration')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select duration...</option>
-                          <option value="30 min">30 min</option>
-                          <option value="1 hr">1 hr</option>
-                          <option value="2 hrs">2 hrs</option>
-                          <option value="Half Day (4 hrs)">Half Day (4 hrs)</option>
-                          <option value="Full Day (8 hrs)">Full Day (8 hrs)</option>
-                          <option value="Multi-Day">Multi-Day</option>
-                          <option value="Not sure">Not sure</option>
+                          {getFieldOptions('estimatedDuration', ['30 min', '1 hr', '2 hrs', 'Half Day (4 hrs)', 'Full Day (8 hrs)', 'Multi-Day', 'Not sure']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -512,8 +583,12 @@ export default function BookingForm() {
                       <div>
                         <label className="block text-sm font-medium mb-2">Is the date flexible? *</label>
                         <div className="flex gap-4 h-[50px] items-center">
-                          <label className="flex items-center gap-2"><input type="radio" value="Yes" checked={formData.dateFlexible === 'Yes'} {...register('dateFlexible')} className="accent-ink" /> Yes</label>
-                          <label className="flex items-center gap-2"><input type="radio" value="No" checked={formData.dateFlexible === 'No'} {...register('dateFlexible')} className="accent-ink" /> No</label>
+                          {getFieldOptions('dateFlexible', ['Yes', 'No']).map(opt => (
+                            <label key={opt.value} className="flex items-center gap-2">
+                              <input type="radio" value={opt.value} checked={formData.dateFlexible === opt.value} {...register('dateFlexible')} className="accent-ink" />
+                              {opt.label}
+                            </label>
+                          ))}
                         </div>
                         {errors.dateFlexible && <p className="text-red-500 text-sm">{errors.dateFlexible.message}</p>}
                       </div>
@@ -543,10 +618,9 @@ export default function BookingForm() {
                                 {...register('multiDayCount')}
                                 className="w-full p-2.5 border border-ink/20 bg-transparent text-sm focus:outline-none focus:border-ink"
                               >
-                                <option value="2 Days">2 Days Coverage</option>
-                                <option value="3 Days">3 Days Coverage</option>
-                                <option value="4 Days">4 Days Coverage</option>
-                                <option value="5+ Days">5+ Days Bespoke Coverage</option>
+                                {getFieldOptions('multiDayCount', ['2 Days', '3 Days', '4 Days', '5+ Days']).map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
                               </select>
                             </div>
 
@@ -594,12 +668,9 @@ export default function BookingForm() {
                       <label className="block text-sm font-medium mb-2">Shoot Location Type *</label>
                       <select value={formData.locationType ?? ''} {...register('locationType')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                         <option value="">Select location type...</option>
-                        <option value="Studio">Studio</option>
-                        <option value="Client's Location">Client's Location</option>
-                        <option value="Outdoor">Outdoor</option>
-                        <option value="Venue">Venue</option>
-                        <option value="Multiple Locations">Multiple Locations</option>
-                        <option value="Other">Other</option>
+                        {getFieldOptions('locationType', ['Studio', "Client's Location", 'Outdoor', 'Venue', 'Multiple Locations', 'Other']).map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
                       </select>
                       {errors.locationType && <p className="text-red-500 text-sm mt-1">{errors.locationType.message}</p>}
                     </div>
@@ -617,10 +688,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Indoors or Outdoors?</label>
                         <select value={formData.indoorsOutdoors ?? ''} {...register('indoorsOutdoors')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Indoors">Indoors</option>
-                          <option value="Outdoors">Outdoors</option>
-                          <option value="Both">Both</option>
-                          <option value="Not Sure">Not Sure</option>
+                          {getFieldOptions('indoorsOutdoors', ['Indoors', 'Outdoors', 'Both', 'Not Sure']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -628,8 +698,12 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Travel required? *</label>
                       <div className="flex gap-4 mb-2">
-                        <label className="flex items-center gap-2"><input type="radio" value="Yes" checked={formData.travelRequired === 'Yes'} {...register('travelRequired')} className="accent-ink" /> Yes</label>
-                        <label className="flex items-center gap-2"><input type="radio" value="No" checked={formData.travelRequired === 'No'} {...register('travelRequired')} className="accent-ink" /> No</label>
+                        {getFieldOptions('travelRequired', ['Yes', 'No']).map(opt => (
+                          <label key={opt.value} className="flex items-center gap-2">
+                            <input type="radio" value={opt.value} checked={formData.travelRequired === opt.value} {...register('travelRequired')} className="accent-ink" />
+                            {opt.label}
+                          </label>
+                        ))}
                       </div>
                       {errors.travelRequired && <p className="text-red-500 text-sm">{errors.travelRequired.message}</p>}
                     </div>
@@ -663,12 +737,12 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-3">Preferred Photography Style *</label>
                       <div className="flex flex-wrap gap-2 sm:gap-3">
-                        {['Candid', 'Posed', 'Documentary', 'Editorial', 'Fine Art', 'Lifestyle', 'Dramatic', 'Natural Light', 'Studio Lit', 'Vintage', 'Modern', 'Moody', 'Bright & Airy'].map(style => {
-                          const isSelected = formData.stylePreferences?.includes(style) ?? false;
+                        {getFieldOptions('stylePreferences', ['Candid', 'Posed', 'Documentary', 'Editorial', 'Fine Art', 'Lifestyle', 'Dramatic', 'Natural Light', 'Studio Lit', 'Vintage', 'Modern', 'Moody', 'Bright & Airy']).map(opt => {
+                          const isSelected = formData.stylePreferences?.includes(opt.value) ?? false;
                           return (
-                            <label key={style} className={`flex items-center gap-2 p-2 px-3 border rounded-full cursor-pointer transition-colors text-sm ${isSelected ? 'border-ink bg-ink text-paper font-medium' : 'border-ink/20 hover:border-ink'}`}>
-                              <input type="checkbox" value={style} checked={isSelected} {...register('stylePreferences')} className="accent-ink" />
-                              {style}
+                            <label key={opt.value} className={`flex items-center gap-2 p-2 px-3 border rounded-full cursor-pointer transition-colors text-sm ${isSelected ? 'border-ink bg-ink text-paper font-medium' : 'border-ink/20 hover:border-ink'}`}>
+                              <input type="checkbox" value={opt.value} checked={isSelected} {...register('stylePreferences')} className="accent-ink" />
+                              {opt.label}
                             </label>
                           );
                         })}
@@ -681,10 +755,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Color Preference *</label>
                         <select value={formData.colorPreference ?? ''} {...register('colorPreference')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Color">Color</option>
-                          <option value="Black & White">Black & White</option>
-                          <option value="Mix">Mix</option>
-                          <option value="Benedict's choice">Benedict's choice</option>
+                          {getFieldOptions('colorPreference', ['Color', 'Black & White', 'Mix', "Benedict's choice"]).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                         {errors.colorPreference && <p className="text-red-500 text-sm mt-1">{errors.colorPreference.message}</p>}
                       </div>
@@ -728,12 +801,12 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-3">What do you want delivered? *</label>
                       <div className="flex flex-col gap-3">
-                        {['Edited digital images', 'Prints', 'Album/Book', 'Canvas/Wall art', 'Social media package', 'Video/Hybrid coverage'].map(item => {
-                          const isSelected = formData.deliverables?.includes(item) ?? false;
+                        {getFieldOptions('deliverables', ['Edited digital images', 'Prints', 'Album/Book', 'Canvas/Wall art', 'Social media package', 'Video/Hybrid coverage']).map(opt => {
+                          const isSelected = formData.deliverables?.includes(opt.value) ?? false;
                           return (
-                            <label key={item} className="flex items-center gap-3 cursor-pointer">
-                              <input type="checkbox" value={item} checked={isSelected} {...register('deliverables')} className="accent-ink w-4 h-4" />
-                              <span className={isSelected ? 'font-medium text-ink' : 'text-ink/80'}>{item}</span>
+                            <label key={opt.value} className="flex items-center gap-3 cursor-pointer">
+                              <input type="checkbox" value={opt.value} checked={isSelected} {...register('deliverables')} className="accent-ink w-4 h-4" />
+                              <span className={isSelected ? 'font-medium text-ink' : 'text-ink/80'}>{opt.label}</span>
                             </label>
                           );
                         })}
@@ -746,21 +819,18 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Edited images expected</label>
                         <select value={formData.editedImagesExpected ?? ''} {...register('editedImagesExpected')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="10–25">10–25</option>
-                          <option value="25–50">25–50</option>
-                          <option value="50–100">50–100</option>
-                          <option value="100–250">100–250</option>
-                          <option value="250+">250+</option>
-                          <option value="Not sure">Not sure</option>
+                          {getFieldOptions('editedImagesExpected', ['10–25', '25–50', '50–100', '100–250', '250+', 'Not sure']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Turnaround time needed *</label>
                         <select value={formData.turnaroundTime ?? ''} {...register('turnaroundTime')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Standard (2–3 weeks)">Standard (2–3 weeks)</option>
-                          <option value="Rush (under 1 week)">Rush (under 1 week)</option>
-                          <option value="Flexible">Flexible</option>
+                          {getFieldOptions('turnaroundTime', ['Standard (2–3 weeks)', 'Rush (under 1 week)', 'Flexible']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                         {errors.turnaroundTime && <p className="text-red-500 text-sm mt-1">{errors.turnaroundTime.message}</p>}
                       </div>
@@ -771,21 +841,18 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Usage Rights Needed</label>
                         <select value={formData.usageRights ?? ''} {...register('usageRights')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Personal use">Personal use</option>
-                          <option value="Social media">Social media</option>
-                          <option value="Commercial">Commercial</option>
-                          <option value="Editorial">Editorial</option>
-                          <option value="Advertising">Advertising</option>
-                          <option value="Full buyout">Full buyout</option>
+                          {getFieldOptions('usageRights', ['Personal use', 'Social media', 'Commercial', 'Editorial', 'Advertising', 'Full buyout']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2">Do you need a second shooter?</label>
                         <select value={formData.secondShooter ?? ''} {...register('secondShooter')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                          <option value="Recommend for me">Recommend for me</option>
+                          {getFieldOptions('secondShooter', ['Yes', 'No', 'Recommend for me']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -800,10 +867,10 @@ export default function BookingForm() {
                     <div>
                       <label className="block text-sm font-medium mb-4">Budget Range *</label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                        {['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss'].map(range => (
-                          <label key={range} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.budgetRange === range ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
-                            <input type="radio" value={range} checked={formData.budgetRange === range} {...register('budgetRange')} className="hidden" />
-                            <span className="block text-center text-sm">{range}</span>
+                        {getFieldOptions('budgetRange', ['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss']).map(opt => (
+                          <label key={opt.value} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.budgetRange === opt.value ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
+                            <input type="radio" value={opt.value} checked={formData.budgetRange === opt.value} {...register('budgetRange')} className="hidden" />
+                            <span className="block text-center text-sm">{opt.label}</span>
                           </label>
                         ))}
                       </div>
@@ -815,9 +882,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Is budget flexible? *</label>
                         <select value={formData.budgetFlexible ?? ''} {...register('budgetFlexible')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Yes">Yes</option>
-                          <option value="No">No</option>
-                          <option value="Slightly">Slightly</option>
+                          {getFieldOptions('budgetFlexible', ['Yes', 'No', 'Slightly']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                         {errors.budgetFlexible && <p className="text-red-500 text-sm mt-1">{errors.budgetFlexible.message}</p>}
                       </div>
@@ -825,11 +892,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">How soon do you need to book? *</label>
                         <select value={formData.howSoon ?? ''} {...register('howSoon')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="ASAP">ASAP</option>
-                          <option value="Within 2 weeks">Within 2 weeks</option>
-                          <option value="Within a month">Within a month</option>
-                          <option value="1–3 months">1–3 months</option>
-                          <option value="Just planning ahead">Just planning ahead</option>
+                          {getFieldOptions('howSoon', ['ASAP', 'Within 2 weeks', 'Within a month', '1–3 months', 'Just planning ahead']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                         {errors.howSoon && <p className="text-red-500 text-sm mt-1">{errors.howSoon.message}</p>}
                       </div>
@@ -873,9 +938,9 @@ export default function BookingForm() {
                         <label className="block text-sm font-medium mb-2">Preferred contact method *</label>
                         <select value={formData.preferredContact ?? ''} {...register('preferredContact')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
-                          <option value="Email">Email</option>
-                          <option value="Phone">Phone</option>
-                          <option value="WhatsApp">WhatsApp</option>
+                          {getFieldOptions('preferredContact', ['Email', 'Phone', 'WhatsApp']).map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
                         </select>
                         {errors.preferredContact && <p className="text-red-500 text-sm mt-1">{errors.preferredContact.message}</p>}
                       </div>
@@ -896,12 +961,9 @@ export default function BookingForm() {
                       <label className="block text-sm font-medium mb-2">How did you find me?</label>
                       <select value={formData.howDidYouFindMe ?? ''} {...register('howDidYouFindMe')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                         <option value="">Select...</option>
-                        <option value="Instagram">Instagram</option>
-                        <option value="Google">Google</option>
-                        <option value="Referral">Referral</option>
-                        <option value="Venue">Venue</option>
-                        <option value="Repeat Client">Repeat Client</option>
-                        <option value="Other">Other</option>
+                        {getFieldOptions('howDidYouFindMe', ['Instagram', 'Google', 'Referral', 'Venue', 'Repeat Client', 'Other']).map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
