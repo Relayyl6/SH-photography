@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { doc, setDoc } from "firebase/firestore";
 import { sendBookingNotifications } from "@/lib/email";
 import { findSlotConflict } from "@/lib/bookings-conflict";
@@ -142,8 +143,24 @@ export async function POST(req: NextRequest) {
       ],
     };
 
-    // 3. Save to Firestore DB first (Save before you send rule)
-    await setDoc(doc(db, "bookings", bookingId), bookingDoc);
+    // 3. Save to Firestore DB (using Admin DB if available to bypass rules, or client SDK)
+    let savedToDb = false;
+    try {
+      const adminDb = getAdminDb();
+      if (adminDb) {
+        await adminDb.collection("bookings").doc(bookingId).set(bookingDoc);
+        savedToDb = true;
+      } else {
+        await setDoc(doc(db, "bookings", bookingId), bookingDoc);
+        savedToDb = true;
+      }
+    } catch (dbErr: any) {
+      console.error(
+        "[WARN] Firestore booking save error (ensure firestore.rules are deployed to Firebase Console):",
+        dbErr?.message || dbErr
+      );
+      // We do not fail the request if DB write was rejected by rules; proceed to email so lead is not lost.
+    }
 
     // 4. Send emails to owner and customer via Gmail SMTP
     try {

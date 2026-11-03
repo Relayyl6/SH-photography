@@ -266,7 +266,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* 2. Main Content Area */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 pb-20 md:pb-6 ${collapsed ? "md:ml-20" : "md:ml-72"}`}>
+      <div className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 pb-20 md:pb-6 overflow-x-hidden w-full max-w-full ${collapsed ? "md:ml-20" : "md:ml-72"}`}>
         {/* Top Header Bar for Desktop & Mobile */}
         <header className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-[#e8e6df] sticky top-0 z-30 px-4 sm:px-6 md:px-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -378,7 +378,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Page Inner Container */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto min-w-0">{children}</main>
       </div>
 
       {/* 3. Mobile Bottom Navigation Bar (Zero Horizontal Scroll) */}

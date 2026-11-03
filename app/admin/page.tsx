@@ -25,15 +25,18 @@ import {
   getBentoSlots,
   getPortfolioImages,
   getSessions,
+  getBookings,
   DEFAULT_BENTO_HOME,
   DEFAULT_PORTFOLIO_IMAGES,
+  DEFAULT_BOOKINGS,
 } from "@/lib/content";
-import { BentoHomeDoc, PortfolioImageDoc, SessionDoc } from "@/types/firebase";
+import { BentoHomeDoc, PortfolioImageDoc, SessionDoc, BookingDoc } from "@/types/firebase";
 
 export default function AdminOverviewPage() {
   const [bento, setBento] = useState<BentoHomeDoc>(DEFAULT_BENTO_HOME);
   const [images, setImages] = useState<PortfolioImageDoc[]>(DEFAULT_PORTFOLIO_IMAGES);
   const [sessions, setSessions] = useState<SessionDoc[]>([]);
+  const [recentBookings, setRecentBookings] = useState<BookingDoc[]>(DEFAULT_BOOKINGS);
   const [loading, setLoading] = useState(true);
 
   // Today's formatted date
@@ -54,14 +57,16 @@ export default function AdminOverviewPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [bentoData, imgs, sess] = await Promise.all([
+        const [bentoData, imgs, sess, bks] = await Promise.all([
           getBentoSlots(),
           getPortfolioImages(),
           getSessions(),
+          getBookings(),
         ]);
         setBento(bentoData);
         setImages(imgs);
         setSessions(sess);
+        if (bks && bks.length > 0) setRecentBookings(bks.slice(0, 4));
       } catch (e) {
         console.error("Error loading dashboard data:", e);
       } finally {
@@ -290,47 +295,34 @@ export default function AdminOverviewPage() {
 
             {/* Bookings List */}
             <div className="space-y-3">
-              {[
-                {
-                  id: "bk_101",
-                  name: "Eleanor Vance",
-                  session: "Weddings (Full Day)",
-                  date: "Sat, 14 Nov 2026",
-                  status: "confirmed",
-                  statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
-                },
-                {
-                  id: "bk_102",
-                  name: "Marcus Sterling",
-                  session: "Portraits & Beauty",
-                  date: "Wed, 18 Nov 2026",
-                  status: "pending",
-                  statusColor: "text-amber-700 bg-amber-50 border-amber-200",
-                },
-                {
-                  id: "bk_103",
-                  name: "Sophia Chen",
-                  session: "Family Milestones",
-                  date: "Sun, 22 Nov 2026",
-                  status: "pending",
-                  statusColor: "text-amber-700 bg-amber-50 border-amber-200",
-                },
-              ].map((booking) => (
+              {recentBookings.map((booking) => (
                 <div
                   key={booking.id}
                   className="p-3.5 rounded-2xl bg-[#faf9f6] border border-[#e8e6df] hover:bg-[#f5f4ef] transition-colors flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
-                    <p className="text-xs font-bold text-[#1c1b1a] truncate">{booking.name}</p>
-                    <p className="text-[11px] text-[#7a766f] truncate mt-0.5">{booking.session}</p>
+                    <p className="text-xs font-bold text-[#1c1b1a] truncate">
+                      {booking.customer?.name || "Client"}
+                    </p>
+                    <p className="text-[11px] text-[#7a766f] truncate mt-0.5">
+                      {booking.sessionSnapshot?.name || "Session"}
+                    </p>
                     <p className="text-[10px] text-[#9d9990] mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      <span>{booking.date}</span>
+                      <span>
+                        {booking.slot?.date} · {booking.slot?.start}
+                      </span>
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1.5">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${booking.statusColor}`}
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${
+                        booking.status === "confirmed"
+                          ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                          : booking.status === "pending"
+                          ? "text-amber-700 bg-amber-50 border-amber-200"
+                          : "text-stone-700 bg-stone-50 border-stone-200"
+                      }`}
                     >
                       {booking.status}
                     </span>

@@ -182,13 +182,15 @@ export function Footer() {
       </div>
 
       {/* Landscape Illustration */}
-      <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none p-0 m-0 overflow-hidden leading-none">
+        {/* Linear gradient atop it fading from white to the color of it without padding or margin */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/30 to-transparent pointer-events-none z-10" />
         <Image 
-          src="/footer-landscape.jpg"
+          src="/footer-landscape-1.png"
           alt="Landscape Illustration"
           width={1920}
           height={600}
-          className="w-full h-auto object-cover object-bottom opacity-95 mix-blend-multiply"
+          className="w-full h-auto object-cover object-bottom p-0 m-0 block"
         />
       </div>
     </footer>

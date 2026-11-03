@@ -238,16 +238,16 @@ export default function AdminPortfolioPage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#e8e6df] shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#e8e6df] shadow-sm flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between min-w-0 max-w-full">
         {/* Category Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 scrollbar-none min-w-0 flex-1">
           {CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors ${
                   isActive
                     ? "bg-[#1c1b1a] text-white"
                     : "bg-[#f5f4ef] text-[#615e57] hover:bg-[#ebe9e1]"
@@ -260,7 +260,7 @@ export default function AdminPortfolioPage() {
         </div>
 
         {/* Search Input */}
-        <div className="relative w-full md:w-64">
+        <div className="relative w-full lg:w-64 shrink-0">
           <Search className="w-4 h-4 text-[#9d9990] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -273,11 +273,11 @@ export default function AdminPortfolioPage() {
       </div>
 
       {/* Media Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 min-w-0">
         {filteredImages.map((img) => (
           <div
             key={img.id}
-            className={`group bg-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border transition-all ${
+            className={`group bg-white rounded-2xl sm:rounded-3xl p-2.5 sm:p-3 border transition-all min-w-0 overflow-hidden ${
               img.published
                 ? "border-[#e8e6df] hover:border-[#dedad0] shadow-sm"
                 : "border-red-200 bg-red-50/20 opacity-60"

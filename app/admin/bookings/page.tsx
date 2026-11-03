@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   CalendarCheck2,
   ChevronLeft,
@@ -19,8 +20,12 @@ import { BookingDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { collection, query, getDocs, doc, updateDoc } from "firebase/firestore";
 import { siteConfig } from "@/lib/site-config";
+import { getBookings, DEFAULT_BOOKINGS } from "@/lib/content";
 
 export default function AdminBookingsPage() {
+  const searchParams = useSearchParams();
+  const urlBookingId = searchParams.get("id");
+
   const [bookings, setBookings] = useState<BookingDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<BookingDoc | null>(null);
@@ -34,21 +39,23 @@ export default function AdminBookingsPage() {
   async function loadBookings() {
     setLoading(true);
     try {
-      const q = query(collection(db, "bookings"));
-      const snap = await getDocs(q);
-      const loaded: BookingDoc[] = [];
-      snap.forEach((d) => {
-        loaded.push(d.data() as BookingDoc);
-      });
-      // Sort newest first
-      loaded.sort((a, b) => {
-        const timeA = typeof a.createdAt === "number" ? a.createdAt : 0;
-        const timeB = typeof b.createdAt === "number" ? b.createdAt : 0;
-        return timeB - timeA;
-      });
+      const loaded = await getBookings();
       setBookings(loaded);
+      if (urlBookingId) {
+        const found = loaded.find((b) => b.id === urlBookingId);
+        if (found) setSelectedBooking(found);
+      } else if (!selectedBooking && loaded.length > 0) {
+        setSelectedBooking(loaded[0] || null);
+      }
     } catch (err) {
       console.error("Failed to load bookings from Firestore:", err);
+      setBookings(DEFAULT_BOOKINGS);
+      if (urlBookingId) {
+        const found = DEFAULT_BOOKINGS.find((b) => b.id === urlBookingId);
+        if (found) setSelectedBooking(found);
+      } else {
+        setSelectedBooking(DEFAULT_BOOKINGS[0] || null);
+      }
     } finally {
       setLoading(false);
     }
@@ -57,6 +64,13 @@ export default function AdminBookingsPage() {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  useEffect(() => {
+    if (urlBookingId && bookings.length > 0) {
+      const found = bookings.find((b) => b.id === urlBookingId);
+      if (found) setSelectedBooking(found);
+    }
+  }, [urlBookingId, bookings]);
 
   const pendingReschedulesCount = bookings.filter(
     (b) => b.status === "reschedule_requested" || Boolean(b.pendingChangeRequest)

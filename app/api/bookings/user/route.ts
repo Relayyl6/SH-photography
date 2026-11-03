@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
           .where("customerUid", "==", uid)
           .get();
 
-        snap.forEach((doc) => {
+        snap.forEach((doc: any) => {
           if (!seenIds.has(doc.id)) {
             seenIds.add(doc.id);
             bookings.push({ id: doc.id, ...doc.data() });
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
           .where("customer.email", "==", email.toLowerCase().trim())
           .get();
 
-        snap.forEach((doc) => {
+        snap.forEach((doc: any) => {
           if (!seenIds.has(doc.id)) {
             seenIds.add(doc.id);
             bookings.push({ id: doc.id, ...doc.data() });

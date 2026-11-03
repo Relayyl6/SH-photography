@@ -10,6 +10,7 @@ import {
   PortfolioImageDoc,
   SessionDoc,
   PackageDoc,
+  BookingDoc,
 } from '@/types/firebase';
 import { siteConfig, socialLinks } from '@/lib/site-config';
 import { sessions as baselineSessions } from '@/lib/sessions';
@@ -394,4 +395,131 @@ export async function getPackages(): Promise<PackageDoc[]> {
 export async function getPackageBySlug(slug: string): Promise<PackageDoc | null> {
   const all = await getPackages();
   return all.find((p) => p.sessionSlug === slug || p.id === slug) || null;
+}
+
+export const DEFAULT_BOOKINGS: BookingDoc[] = [
+  {
+    id: "bk_101",
+    sessionId: "weddings",
+    sessionSnapshot: {
+      name: "Weddings (Full Day)",
+      price: 850,
+      durationMinutes: 480,
+    },
+    slot: {
+      date: "2026-11-14",
+      start: "10:00",
+      end: "18:00",
+    },
+    customer: {
+      name: "Eleanor Vance",
+      email: "eleanor.vance@example.co.uk",
+      phone: "+44 7700 900123",
+    },
+    status: "confirmed",
+    source: "web",
+    answers: {
+      location: "Victoria Baths, Manchester",
+      ceremonyType: "Full Day Documentary",
+    },
+    ownerNotes: [
+      { text: "Ceremony at Victoria Baths. High priority documentary coverage.", by: "Benedict Henry", at: Date.now() - 86400000 * 2 }
+    ],
+    customerUid: null,
+    emailStatus: { owner: "sent", customer: "sent" },
+    statusHistory: [
+      { status: "confirmed", by: "Benedict Henry", at: Date.now() - 86400000 * 2 }
+    ],
+    createdAt: Date.now() - 86400000 * 2,
+    updatedAt: Date.now() - 86400000 * 2,
+  },
+  {
+    id: "bk_102",
+    sessionId: "portraits",
+    sessionSnapshot: {
+      name: "Portraits & Beauty",
+      price: 350,
+      durationMinutes: 120,
+    },
+    slot: {
+      date: "2026-11-18",
+      start: "14:00",
+      end: "16:00",
+    },
+    customer: {
+      name: "Marcus Sterling",
+      email: "marcus.s@example.com",
+      phone: "+44 7700 900456",
+    },
+    status: "pending",
+    source: "web",
+    answers: {
+      location: "Studio Manchester",
+      lookCount: "3 wardrobe changes",
+    },
+    ownerNotes: [
+      { text: "Studio editorial portrait session in Manchester.", by: "Benedict Henry", at: Date.now() - 86400000 }
+    ],
+    customerUid: null,
+    emailStatus: { owner: "sent", customer: "sent" },
+    statusHistory: [
+      { status: "pending", by: "system", at: Date.now() - 86400000 }
+    ],
+    createdAt: Date.now() - 86400000,
+    updatedAt: Date.now() - 86400000,
+  },
+  {
+    id: "bk_103",
+    sessionId: "family",
+    sessionSnapshot: {
+      name: "Family Milestones",
+      price: 275,
+      durationMinutes: 90,
+    },
+    slot: {
+      date: "2026-11-22",
+      start: "11:00",
+      end: "12:30",
+    },
+    customer: {
+      name: "Sophia Chen",
+      email: "sophia.chen@example.com",
+      phone: "+44 7700 900789",
+    },
+    status: "pending",
+    source: "web",
+    answers: {
+      location: "Heaton Park, Manchester",
+      familyMembers: "2 adults, 1 toddler",
+    },
+    ownerNotes: [
+      { text: "Outdoor golden hour milestone session with parents and toddler.", by: "Benedict Henry", at: Date.now() - 3600000 * 5 }
+    ],
+    customerUid: null,
+    emailStatus: { owner: "sent", customer: "sent" },
+    statusHistory: [
+      { status: "pending", by: "system", at: Date.now() - 3600000 * 5 }
+    ],
+    createdAt: Date.now() - 3600000 * 5,
+    updatedAt: Date.now() - 3600000 * 5,
+  },
+];
+
+export async function getBookings(): Promise<BookingDoc[]> {
+  try {
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
+    const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt', 'desc')));
+    if (!snap.empty) {
+      const fromDb = snap.docs.map((d) => d.data() as BookingDoc);
+      // Ensure mock bookings are also present if not duplicated
+      const existingIds = new Set(fromDb.map((b) => b.id));
+      const merged = [...fromDb];
+      for (const mb of DEFAULT_BOOKINGS) {
+        if (!existingIds.has(mb.id)) merged.push(mb);
+      }
+      return merged;
+    }
+  } catch {}
+  return DEFAULT_BOOKINGS;
 }
