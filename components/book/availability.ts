@@ -59,7 +59,7 @@ export function isDateBookable(
 
 export type TimeSlot = { value: string; label: string };
 
-function formatLabel(hhmm: string): string {
+export function formatLabel(hhmm: string): string {
   const [hStr = "0", mStr = "00"] = hhmm.split(":");
   const h = Number(hStr);
   const period = h >= 12 ? "PM" : "AM";
