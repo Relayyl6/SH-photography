@@ -165,13 +165,13 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
   const currentPhoto = CAROUSEL_PHOTOS[activeSlide] || CAROUSEL_PHOTOS[0]!;
 
   return (
-    <div className="min-h-screen w-full flex bg-white font-sans antialiased text-[#101828]">
+    <div className="h-screen w-full flex bg-white font-sans antialiased text-[#101828] overflow-hidden">
       {/* ========================================================
           LEFT COLUMN: Clean UntitledUI Authentication Form
       ======================================================== */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 md:p-16 lg:p-20 xl:p-24 overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex flex-col overflow-hidden p-6 sm:p-8 md:p-12 lg:p-14 xl:p-16">
         {/* Top Header & Logo */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-shrink-0">
           <Link href="/" className="inline-flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-2xl bg-[#101828] text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-sm group-hover:scale-105 transition-transform">
               SH
@@ -188,7 +188,8 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
         </div>
 
         {/* Form Container */}
-        <div className="max-w-md w-full mx-auto my-10 sm:my-14">
+        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="max-w-md w-full mx-auto py-8 sm:py-10">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#101828]">
               {mode === "signin"
@@ -397,10 +398,6 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="text-center lg:text-left text-xs text-[#98a2b3]">
-          © {new Date().getFullYear()} SH Photography. All rights reserved.
         </div>
       </div>
 

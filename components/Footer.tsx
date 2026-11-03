@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 export function Footer() {
   const pathname = usePathname();
   const isStylePage = pathname === "/style";
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/account")) return null;
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/account") || pathname?.startsWith("/login")) return null;
 
   return (
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>

@@ -33,7 +33,7 @@ export function Header() {
   const [mobilePortfolioOpen, setMobilePortfolioOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const isAdminOrAccount = pathname?.startsWith("/admin") || pathname?.startsWith("/account");
+  const isAdminOrAccount = pathname?.startsWith("/admin") || pathname?.startsWith("/account") || pathname?.startsWith("/login");
   
   const headerRef = useRef<HTMLElement>(null);
   const { user, isOwner, isAdmin } = useAuth();
