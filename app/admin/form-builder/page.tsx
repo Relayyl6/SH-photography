@@ -51,6 +51,28 @@ const FIELD_TYPES: Array<{
   { type: "file", label: "File Attachment", icon: Upload, description: "Inspiration or document upload" },
 ];
 
+function normalizeFieldOptions(
+  rawOptions: any
+): Array<{ label: string; value: string; order: number; priceDelta?: number }> {
+  if (!rawOptions || !Array.isArray(rawOptions)) return [];
+  return rawOptions.map((opt: any, idx: number) => {
+    if (typeof opt === "string") {
+      return { label: opt, value: opt, order: idx + 1 };
+    }
+    if (typeof opt === "object" && opt !== null) {
+      const lbl = opt.label !== undefined ? String(opt.label) : (opt.value !== undefined ? String(opt.value) : "");
+      const val = opt.value !== undefined ? String(opt.value) : (opt.label !== undefined ? String(opt.label) : "");
+      return {
+        label: lbl,
+        value: val,
+        order: typeof opt.order === "number" ? opt.order : idx + 1,
+        priceDelta: typeof opt.priceDelta === "number" ? opt.priceDelta : undefined,
+      };
+    }
+    return { label: String(opt), value: String(opt), order: idx + 1 };
+  });
+}
+
 export default function AdminFormBuilderPage() {
   const [fields, setFields] = useState<BookingFieldDoc[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +108,12 @@ export default function AdminFormBuilderPage() {
       const snap = await getDocs(collection(db, "bookingFields"));
       const loaded: BookingFieldDoc[] = [];
       snap.forEach((d) => {
-        loaded.push(d.data() as BookingFieldDoc);
+        const raw = d.data();
+        loaded.push({
+          ...raw,
+          id: d.id,
+          options: normalizeFieldOptions(raw.options),
+        } as BookingFieldDoc);
       });
       // Sort by order
       loaded.sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -96,6 +123,15 @@ export default function AdminFormBuilderPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openEditFieldModal = (f: BookingFieldDoc) => {
+    setEditingField({
+      ...f,
+      options: normalizeFieldOptions(f.options),
+    });
+    setNewOptionLabel("");
+    setNewOptionValue("");
   };
 
   useEffect(() => {
@@ -169,7 +205,7 @@ export default function AdminFormBuilderPage() {
   const handleAddOptionToEditing = () => {
     if (!newOptionLabel.trim() || !editingField) return;
     const val = newOptionValue.trim() || newOptionLabel.trim();
-    const currentOptions = editingField.options || [];
+    const currentOptions = normalizeFieldOptions(editingField.options);
     const updatedOptions = [
       ...currentOptions,
       { label: newOptionLabel.trim(), value: val, order: currentOptions.length + 1 },
@@ -181,7 +217,10 @@ export default function AdminFormBuilderPage() {
 
   const handleRemoveOptionFromEditing = (optIndex: number) => {
     if (!editingField || !editingField.options) return;
-    const updated = editingField.options.filter((_, i) => i !== optIndex);
+    const currentOptions = normalizeFieldOptions(editingField.options);
+    const updated = currentOptions
+      .filter((_, i) => i !== optIndex)
+      .map((opt, idx) => ({ ...opt, order: idx + 1 }));
     setEditingField({ ...editingField, options: updated });
   };
 
@@ -190,17 +229,22 @@ export default function AdminFormBuilderPage() {
     patch: { label?: string; value?: string }
   ) => {
     if (!editingField || !editingField.options) return;
-    const updated = [...editingField.options];
+    const currentOptions = normalizeFieldOptions(editingField.options);
+    const updated = [...currentOptions];
     const current = updated[optIndex];
     if (current) {
-      updated[optIndex] = { ...current, ...patch };
+      updated[optIndex] = {
+        ...current,
+        label: patch.label !== undefined ? patch.label : (current.label || current.value || ""),
+        value: patch.value !== undefined ? patch.value : (current.value || current.label || ""),
+      };
       setEditingField({ ...editingField, options: updated });
     }
   };
 
   const handleMoveOptionInEditing = (optIndex: number, direction: "up" | "down") => {
     if (!editingField || !editingField.options) return;
-    const opts = [...editingField.options];
+    const opts = [...normalizeFieldOptions(editingField.options)];
     if (
       (direction === "up" && optIndex === 0) ||
       (direction === "down" && optIndex === opts.length - 1)
@@ -224,13 +268,25 @@ export default function AdminFormBuilderPage() {
     if (!editingField) return;
 
     try {
+      const cleanOptions = normalizeFieldOptions(editingField.options)
+        .map((o, idx) => ({
+          label: (o.label || o.value || "").trim(),
+          value: (o.value || o.label || "").trim(),
+          order: idx + 1,
+          ...(typeof o.priceDelta === "number" ? { priceDelta: o.priceDelta } : {}),
+        }))
+        .filter((o) => Boolean(o.label || o.value));
+
       const payload: BookingFieldDoc = {
         ...editingField,
+        options: cleanOptions,
         updatedAt: Date.now(),
       };
       await setDoc(doc(db, "bookingFields", payload.id), payload, { merge: true });
       setFields((prev) => prev.map((f) => (f.id === payload.id ? payload : f)));
       setEditingField(null);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Failed to save edited field:", err);
     }
@@ -343,8 +399,8 @@ export default function AdminFormBuilderPage() {
   }, [fields, searchQuery, filterType]);
 
   const activeCount = fields.filter((f) => f.published).length;
-  const isEnumField = (type: BookingFieldDoc["type"]) =>
-    type === "select" || type === "radio" || type === "checkbox";
+  const isEnumField = (type: any) =>
+    type === "select" || type === "radio" || type === "checkbox" || type === "multiselect";
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-12 min-w-0">
@@ -473,7 +529,7 @@ export default function AdminFormBuilderPage() {
               return (
                 <div
                   key={f.id}
-                  onClick={() => setEditingField(f)}
+                  onClick={() => openEditFieldModal(f)}
                   className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group hover:shadow-sm ${
                     f.published
                       ? "bg-[#faf9f6] border-[#f0eee8] hover:border-[#d0cdc2]"
@@ -543,7 +599,7 @@ export default function AdminFormBuilderPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEditingField(f);
+                        openEditFieldModal(f);
                       }}
                       className="px-3 py-1.5 rounded-xl bg-white border border-[#e6e4dc] text-xs font-semibold text-[#1c1b1a] hover:bg-[#f5f4ef] flex items-center gap-1.5 transition-colors shadow-2xs"
                       title="Edit Field Schema & Options"
@@ -832,7 +888,7 @@ export default function AdminFormBuilderPage() {
                           </span>
                           <input
                             type="text"
-                            value={opt.label}
+                            value={opt.label || ""}
                             onChange={(e) =>
                               handleUpdateOptionInEditing(optIdx, {
                                 label: e.target.value,
@@ -843,7 +899,7 @@ export default function AdminFormBuilderPage() {
                           />
                           <input
                             type="text"
-                            value={opt.value}
+                            value={opt.value || ""}
                             onChange={(e) =>
                               handleUpdateOptionInEditing(optIdx, {
                                 value: e.target.value,

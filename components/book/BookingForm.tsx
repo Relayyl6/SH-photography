@@ -149,10 +149,12 @@ export default function BookingForm() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    let isMounted = true;
     async function loadData() {
       try {
         const { getBookingSettings, getBookingFields } = await import('@/lib/content');
         const [b, f] = await Promise.all([getBookingSettings(), getBookingFields()]);
+        if (!isMounted) return;
         if (b?.cancellationPolicyText) {
           setCancellationPolicy(b.cancellationPolicyText);
         }
@@ -164,6 +166,33 @@ export default function BookingForm() {
       }
     }
     loadData();
+
+    // Live real-time listener for bookingFields so options configured in admin reflect instantly on live form
+    let unsubFields: (() => void) | undefined;
+    import('@/lib/firebase/config').then(({ db }) => {
+      import('firebase/firestore').then(({ collection, onSnapshot }) => {
+        if (!isMounted) return;
+        unsubFields = onSnapshot(collection(db, 'bookingFields'), (snap) => {
+          if (!isMounted) return;
+          const liveList: BookingFieldDoc[] = [];
+          snap.forEach((d) => {
+            const data = d.data() as BookingFieldDoc;
+            if (data.published !== false) {
+              liveList.push({ ...data, id: d.id });
+            }
+          });
+          liveList.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+          if (liveList.length > 0) {
+            setFields(liveList);
+          }
+        });
+      });
+    });
+
+    return () => {
+      isMounted = false;
+      if (unsubFields) unsubFields();
+    };
   }, []);
 
   const isFieldRequired = (keyOrId: string, defaultRequired: boolean = false): boolean => {

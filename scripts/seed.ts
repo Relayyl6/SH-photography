@@ -594,7 +594,14 @@ async function seed() {
   if (!isDryRun) {
     const batch = writeBatch(db);
     for (const field of defaultFields) {
-      batch.set(doc(db, 'bookingFields', field.id), field, { merge: true });
+      const fieldPayload: any = { ...field };
+      if (Array.isArray(field.options)) {
+        fieldPayload.options = field.options.map((opt: any, idx: number) => {
+          if (typeof opt === "string") return { label: opt, value: opt, order: idx + 1 };
+          return opt;
+        });
+      }
+      batch.set(doc(db, 'bookingFields', field.id), fieldPayload, { merge: true });
     }
     await batch.commit();
   }
