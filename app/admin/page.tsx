@@ -36,7 +36,17 @@ export default function AdminOverviewPage() {
   const [bento, setBento] = useState<BentoHomeDoc>(DEFAULT_BENTO_HOME);
   const [images, setImages] = useState<PortfolioImageDoc[]>(DEFAULT_PORTFOLIO_IMAGES);
   const [sessions, setSessions] = useState<SessionDoc[]>([]);
-  const [recentBookings, setRecentBookings] = useState<BookingDoc[]>(DEFAULT_BOOKINGS);
+  const [recentBookings, setRecentBookings] = useState<BookingDoc[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const deletedIds: string[] = JSON.parse(localStorage.getItem("sh_deleted_booking_ids") || "[]");
+        if (deletedIds.length > 0) {
+          return DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
+        }
+      } catch {}
+    }
+    return DEFAULT_BOOKINGS;
+  });
   const [loading, setLoading] = useState(true);
 
   // Today's formatted date
@@ -66,7 +76,11 @@ export default function AdminOverviewPage() {
         setBento(bentoData);
         setImages(imgs);
         setSessions(sess);
-        if (bks && bks.length > 0) setRecentBookings(bks.slice(0, 4));
+        const deletedIds: string[] = JSON.parse(
+          (typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]"
+        );
+        const activeBookings = (bks || []).filter((b) => !deletedIds.includes(b.id));
+        setRecentBookings(activeBookings.slice(0, 4));
       } catch (e) {
         console.error("Error loading dashboard data:", e);
       } finally {
@@ -147,12 +161,14 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl sm:text-4xl font-extrabold text-[#1c1b1a]">3</span>
+            <span className="text-3xl sm:text-4xl font-extrabold text-[#1c1b1a]">{recentBookings.length}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-              Confirmed
+              Active
             </span>
           </div>
-          <p className="text-[11px] text-[#8a867f] mt-2">Next shoot: Saturday, 11:00 AM</p>
+          <p className="text-[11px] text-[#8a867f] mt-2">
+            {recentBookings[0] ? `Next shoot: ${recentBookings[0].slot?.date || "Upcoming"}` : "No active shoots scheduled"}
+          </p>
         </div>
 
         {/* Card 2: Total Gallery Media */}
@@ -295,9 +311,14 @@ export default function AdminOverviewPage() {
 
             {/* Bookings List */}
             <div className="space-y-3">
-              {recentBookings.map((booking) => (
-                <div
-                  key={booking.id}
+              {recentBookings.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#8a867f] bg-[#faf9f6] rounded-2xl border border-dashed border-[#e8e6df]">
+                  No active bookings found.
+                </div>
+              ) : (
+                recentBookings.map((booking) => (
+                  <div
+                    key={booking.id}
                   className="p-3.5 rounded-2xl bg-[#faf9f6] border border-[#e8e6df] hover:bg-[#f5f4ef] transition-colors flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
@@ -334,7 +355,8 @@ export default function AdminOverviewPage() {
                     </Link>
                   </div>
                 </div>
-              ))}
+              ))
+            )}
             </div>
           </div>
 

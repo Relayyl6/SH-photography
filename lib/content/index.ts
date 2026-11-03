@@ -589,14 +589,28 @@ export async function getBookings(): Promise<BookingDoc[]> {
     const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt', 'desc')));
     if (!snap.empty) {
       const fromDb = snap.docs.map((d) => d.data() as BookingDoc);
-      // Ensure mock bookings are also present if not duplicated
-      const existingIds = new Set(fromDb.map((b) => b.id));
-      const merged = [...fromDb];
-      for (const mb of DEFAULT_BOOKINGS) {
-        if (!existingIds.has(mb.id)) merged.push(mb);
+      if (typeof window !== 'undefined') {
+        try {
+          const deletedIds: string[] = JSON.parse(localStorage.getItem('sh_deleted_booking_ids') || '[]');
+          if (deletedIds.length > 0) {
+            return fromDb.filter((b) => !deletedIds.includes(b.id));
+          }
+        } catch {}
       }
-      return merged;
+      return fromDb;
     }
-  } catch {}
+  } catch (err) {
+    console.warn("getBookings error:", err);
+  }
+
+  // Fallback to default mock records if database has no records yet
+  if (typeof window !== 'undefined') {
+    try {
+      const deletedIds: string[] = JSON.parse(localStorage.getItem('sh_deleted_booking_ids') || '[]');
+      if (deletedIds.length > 0) {
+        return DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
+      }
+    } catch {}
+  }
   return DEFAULT_BOOKINGS;
 }
