@@ -189,8 +189,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error("Error creating booking:", err);
+    const rawMsg = String(err?.message || "");
+    const friendlyError = rawMsg.includes("PERMISSION_DENIED") || rawMsg.includes("Missing or insufficient permissions")
+      ? "We were unable to reserve this slot at this moment. Please reach out to Benedict directly or select an alternate date."
+      : (err.message || "Failed to process booking.");
+
     return NextResponse.json(
-      { error: err.message || "Failed to process booking." },
+      { error: friendlyError },
       { status: 500 }
     );
   }

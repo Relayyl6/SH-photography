@@ -29,15 +29,14 @@ async function handleUpdate(req: NextRequest) {
       return NextResponse.json({ error: "Missing bookingId." }, { status: 400 });
     }
 
-    const docRef = doc(db, "bookings", actualBookingId);
-
     // 0. DELETE BOOKING (Admin Delete)
     if (action === "delete") {
       try {
         const adminDb = getAdminDb();
         if (adminDb) {
           await adminDb.collection("bookings").doc(actualBookingId).delete();
-        } else {
+        } else if (db && typeof (db as any).type === "string") {
+          const docRef = doc(db, "bookings", actualBookingId);
           await deleteDoc(docRef);
         }
       } catch (delErr) {
@@ -45,6 +44,8 @@ async function handleUpdate(req: NextRequest) {
       }
       return NextResponse.json({ success: true, action: "deleted", bookingId: actualBookingId });
     }
+
+    const docRef = doc(db, "bookings", actualBookingId);
 
     const snap = await getDoc(docRef);
 

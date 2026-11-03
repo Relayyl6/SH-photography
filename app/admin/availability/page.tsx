@@ -129,12 +129,19 @@ export default function AdminAvailabilityPage() {
     year: "numeric",
   });
 
+  const today = new Date();
+  const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
   const isBlocked = (dateStr: string) => blockedDays.some((b) => b.date === dateStr);
 
   const handleToggleDay = (day: number) => {
     const formattedMonth = String(month + 1).padStart(2, "0");
     const formattedDay = String(day).padStart(2, "0");
     const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
+
+    if (dateStr < todayIso) {
+      return; // Passed dates are automatically locked and cannot be opened
+    }
 
     if (isBlocked(dateStr)) {
       setBlockedDays(blockedDays.filter((b) => b.date !== dateStr));
@@ -316,7 +323,8 @@ export default function AdminAvailabilityPage() {
               const formattedMonth = String(month + 1).padStart(2, "0");
               const formattedDay = String(day).padStart(2, "0");
               const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
-              const blocked = isBlocked(dateStr);
+              const isPast = dateStr < todayIso;
+              const blocked = !isPast && isBlocked(dateStr);
 
               // Check if day of week is permanently closed
               const dayDate = new Date(year, month, day);
@@ -327,18 +335,24 @@ export default function AdminAvailabilityPage() {
                 <button
                   key={day}
                   type="button"
-                  onClick={() => handleToggleDay(day)}
+                  disabled={isPast}
+                  onClick={() => !isPast && handleToggleDay(day)}
                   className={`aspect-square rounded-2xl p-2 text-left flex flex-col justify-between transition-all border ${
-                    blocked
+                    isPast
+                      ? "bg-[#f5f4ef]/60 border-[#e8e6df] text-[#a8a49c] cursor-not-allowed opacity-60 select-none"
+                      : blocked
                       ? "bg-red-50/80 border-red-200 text-red-900 hover:bg-red-100"
                       : isDayOff
                       ? "bg-stone-100/70 border-stone-200 text-stone-500"
                       : "bg-[#faf9f6] border-[#e8e6df] text-[#1c1b1a] hover:bg-[#f5f4ef] hover:border-[#1c1b1a]"
                   }`}
+                  title={isPast ? "Date has passed (automatically locked)" : blocked ? "Locked date" : isDayOff ? "Closed day" : "Click to lock date"}
                 >
                   <span className="text-xs font-bold">{day}</span>
                   <div className="flex items-center justify-between">
-                    {blocked ? (
+                    {isPast ? (
+                      <Clock className="w-3.5 h-3.5 text-[#a8a49c]" />
+                    ) : blocked ? (
                       <Lock className="w-3.5 h-3.5 text-red-600" />
                     ) : isDayOff ? (
                       <span className="text-[9px] font-semibold text-stone-400">Off</span>
@@ -346,7 +360,7 @@ export default function AdminAvailabilityPage() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     )}
                     <span className="text-[9px] font-semibold text-[#8a867f]">
-                      {blocked ? "Locked" : isDayOff ? "Closed" : "Open"}
+                      {isPast ? "Passed" : blocked ? "Locked" : isDayOff ? "Closed" : "Open"}
                     </span>
                   </div>
                 </button>
@@ -355,7 +369,7 @@ export default function AdminAvailabilityPage() {
           </div>
 
           {/* Legend */}
-          <div className="pt-3 border-t border-[#f0eee8] flex items-center gap-4 text-xs text-[#7a766f]">
+          <div className="pt-3 border-t border-[#f0eee8] flex flex-wrap items-center gap-4 text-xs text-[#7a766f]">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
               <span>Open for Booking</span>
@@ -366,7 +380,11 @@ export default function AdminAvailabilityPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
-              <span>Weekly Day Off</span>
+              <span>Closed Day (Off)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-[#a8a49c]" />
+              <span>Passed Dates (Auto-Locked)</span>
             </span>
           </div>
         </div>

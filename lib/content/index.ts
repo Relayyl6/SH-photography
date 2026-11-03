@@ -86,8 +86,8 @@ export const DEFAULT_HOME_PAGE: HomePageDoc = {
     'Creative Behind the Scenes',
   ],
   youtube: {
-    videoId: 'vE8pQC6XHoU',
-    title: 'Behind the Scenes & Photography Techniques with Benedict',
+    videoId: 'Z8mnzVNaiD0',
+    title: 'Behind the Scenes & Photography Techniques — Benedict Henry',
     autoplay: false,
     muted: true,
   },
@@ -318,10 +318,10 @@ export async function getHomePageContent(): Promise<HomePageDoc> {
     const snap = await getDoc(doc(db, 'pages', 'home'));
     if (snap.exists()) {
       const data = snap.data() as HomePageDoc;
-      if (data?.youtube?.videoId === 'dQw4w9WgXcQ' || !data?.youtube?.videoId) {
+      if (data?.youtube?.videoId === 'dQw4w9WgXcQ' || data?.youtube?.videoId === 'vE8pQC6XHoU' || !data?.youtube?.videoId) {
         data.youtube = {
           ...data.youtube,
-          videoId: 'vE8pQC6XHoU',
+          videoId: 'Z8mnzVNaiD0',
           title: data?.youtube?.title || DEFAULT_HOME_PAGE.youtube.title,
         };
       }
@@ -378,22 +378,26 @@ export function sanitizeBentoSlots(doc: BentoHomeDoc): BentoHomeDoc {
     let imgId = existing.portfolioImageId;
     let label = existing.label;
 
-    // Detect inverted or legacy slot labels / ids
+    // Enforce correct canonical category labels & prevent cross-contamination
+    let customTitle = existing.customTitle;
     if (id === '5') {
-      if (label === 'Birthdays') label = 'Behind the Scenes';
+      if (label === 'Birthdays' || !label) label = 'Behind the Scenes';
+      if (customTitle === 'Birthdays') customTitle = undefined;
       if (imgId === 'birthday_01') imgId = 'behind-the-scenes_01';
     } else if (id === '6') {
-      if (label === 'Behind the Scenes') label = 'Birthdays';
+      if (label === 'Behind the Scenes' || !label) label = 'Birthdays';
+      if (customTitle === 'Behind the Scenes') customTitle = undefined;
       if (imgId === 'behind-the-scenes_01') imgId = 'birthday_01';
     } else if (id === '9') {
       if (label === 'Editorial Stories' || !label) label = 'Photography Classes & Retouching';
+      if (customTitle === 'Editorial Stories') customTitle = undefined;
       if (imgId === 'weddings_02') imgId = 'behind-the-scenes_05';
     }
 
     return {
       ...existing,
       slotId: id,
-      label: existing.customTitle || label || canonical.label,
+      label: customTitle || label || canonical.label,
       portfolioImageId: imgId || canonical.defaultImg,
     };
   });

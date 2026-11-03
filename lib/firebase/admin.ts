@@ -33,17 +33,22 @@ export function getAdminApp(): App | null {
     }
   }
 
-  try {
-    _adminApp = initializeApp({
-      credential: applicationDefault(),
-      projectId,
-      storageBucket,
-    });
-    return _adminApp;
-  } catch (e) {
-    // Graceful fallback when no server credentials are set in environment
-    return null;
+  // If explicit GOOGLE_APPLICATION_CREDENTIALS or gcp env is defined
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    try {
+      _adminApp = initializeApp({
+        credential: applicationDefault(),
+        projectId,
+        storageBucket,
+      });
+      return _adminApp;
+    } catch (e) {
+      return null;
+    }
   }
+
+  // Graceful fallback when no server credentials are set in environment
+  return null;
 }
 
 export function getAdminDb(): Firestore | null {

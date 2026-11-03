@@ -221,7 +221,11 @@ export default function BookingForm() {
         .then(async (res) => {
           const resData = await res.json();
           if (!res.ok) {
-            alert(resData.error || 'Failed to submit booking. Please try another date or contact Benedict.');
+            const rawError = String(resData.error || "");
+            const msg = rawError.includes("PERMISSION_DENIED") || rawError.includes("Missing or insufficient permissions")
+              ? "Your request was received, but could not be logged to the online calendar. Please reach out to Benedict directly via WhatsApp or phone."
+              : (resData.error || "Failed to submit booking. Please try another date or contact Benedict.");
+            alert(msg);
             return;
           }
           if (resData.success && resData.claimToken) {

@@ -107,12 +107,12 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-5">
           {/* Col 1: Portfolio / Sessions */}
           <div>
-            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Portfolio</p>
-            <ul className="space-y-4 text-sm font-semibold text-black">
-              <li><Link href="/portfolio" className="hover:text-accent transition-colors">All sessions</Link></li>
+            <p className="mb-6 text-sm font-black text-black uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">Portfolio</p>
+            <ul className="space-y-4 text-sm font-bold text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
+              <li><Link href="/portfolio" className="text-black hover:text-[#e8491c] transition-colors">All sessions</Link></li>
               {sessions.slice(0, 6).map((s) => (
                 <li key={s.slug}>
-                  <Link href={`/portfolio/${s.slug}`} className="hover:text-accent transition-colors">
+                  <Link href={`/portfolio/${s.slug}`} className="text-black hover:text-[#e8491c] transition-colors">
                     {s.title}
                   </Link>
                 </li>
@@ -122,72 +122,76 @@ export function Footer() {
           
           {/* Col 2: Services */}
           <div>
-            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Services</p>
-            <ul className="space-y-4 text-sm font-semibold text-black">
-              <li><Link href="/services" className="hover:text-accent transition-colors">Packages &amp; Pricing</Link></li>
-              <li><Link href="/services#classes" className="hover:text-accent transition-colors">Photography Classes</Link></li>
-              <li><Link href="/services#retouching" className="hover:text-accent transition-colors">Retouching</Link></li>
+            <p className="mb-6 text-sm font-black text-black uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">Services</p>
+            <ul className="space-y-4 text-sm font-bold text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
+              <li><Link href="/services" className="text-black hover:text-[#e8491c] transition-colors">Packages &amp; Pricing</Link></li>
+              <li><Link href="/services#classes" className="text-black hover:text-[#e8491c] transition-colors">Photography Classes</Link></li>
+              <li><Link href="/services#retouching" className="text-black hover:text-[#e8491c] transition-colors">Retouching</Link></li>
             </ul>
           </div>
 
           {/* Col 3: Contact */}
           <div>
-            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Contact</p>
-            <ul className="space-y-4 text-sm font-semibold text-black">
+            <p className="mb-6 text-sm font-black text-black uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">Contact</p>
+            <ul className="space-y-4 text-sm font-bold text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
               <li>
-                <a href={`tel:${phoneHref}`} className="hover:text-accent transition-colors">
+                <a href={`tel:${phoneHref}`} className="text-black hover:text-[#e8491c] transition-colors">
                   {phoneDisplay}
                 </a>
               </li>
               <li>
-                <a href={`mailto:${emailVal}`} className="hover:text-accent transition-colors break-all">
+                <a href={`mailto:${emailVal}`} className="text-black hover:text-[#e8491c] transition-colors break-all">
                   {emailVal}
                 </a>
               </li>
-              <li><Link href="/book" className="hover:text-accent transition-colors">Book a session</Link></li>
+              <li><Link href="/book" className="text-black hover:text-[#e8491c] transition-colors">Book a session</Link></li>
             </ul>
           </div>
 
           {/* Col 4: About Us */}
           <div>
-            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">About us</p>
-            <ul className="space-y-4 text-sm font-semibold text-black">
-              <li><Link href="/about" className="hover:text-accent transition-colors">About SH</Link></li>
-              <li><Link href="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-accent transition-colors">Terms of Service</Link></li>
+            <p className="mb-6 text-sm font-black text-black uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">About us</p>
+            <ul className="space-y-4 text-sm font-bold text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
+              <li><Link href="/about" className="text-black hover:text-[#e8491c] transition-colors">About SH</Link></li>
+              <li><Link href="/privacy" className="text-black hover:text-[#e8491c] transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="text-black hover:text-[#e8491c] transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 
           {/* Col 5: Social Media */}
           <div>
-            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Social Media</p>
+            <p className="mb-6 text-sm font-black text-black uppercase tracking-widest drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">Social Media</p>
             <SocialLinks
-              className="!flex-col !items-start gap-4 text-sm font-semibold text-black"
-              itemClassName="!text-black !font-semibold hover:!text-accent"
+              className="!flex-col !items-start gap-4 text-sm font-bold text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]"
+              itemClassName="!text-black !font-bold hover:!text-[#e8491c]"
             />
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-bold text-black md:flex-row md:items-center">
-          <p className="text-black">{copyrightText}</p>
+        <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-bold text-black md:flex-row md:items-center drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">
+          <p className="text-black font-bold">{copyrightText}</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <p className="text-black">
+            <p className="text-black font-bold">
               Made By Yemuel -{' '}
-              <a href="tel:09064982841" className="hover:text-accent transition-colors text-black underline">
+              <a href="tel:09064982841" className="hover:text-[#e8491c] transition-colors text-black font-bold underline">
                 09064982841
               </a>
             </p>
-            <span className="hidden sm:inline text-black/50">•</span>
-            <p className="text-black">❤️ Made with love in Manchester</p>
+            <span className="hidden sm:inline text-black/70">•</span>
+            <p className="text-black font-bold">❤️ Made with love in Manchester</p>
           </div>
         </div>
       </div>
 
       {/* Landscape Illustration */}
-      <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none p-0 m-0 overflow-hidden leading-none z-10">
-        {/* Subtle linear gradient entering from the top background color (#FAF7F2) without harsh white */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/50 to-transparent pointer-events-none z-10" />
+      <div 
+        className="absolute bottom-0 left-0 right-0 w-full pointer-events-none p-0 m-0 overflow-hidden leading-none z-10"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 10%, rgba(0,0,0,0.85) 28%, black 48%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.15) 10%, rgba(0,0,0,0.85) 28%, black 48%)',
+        }}
+      >
         <Image 
           src="/footer-landscape-1.png"
           alt="Landscape Illustration"
