@@ -14,6 +14,7 @@ import {
 import { siteConfig, socialLinks } from '@/lib/site-config';
 import { sessions as baselineSessions } from '@/lib/sessions';
 import { packages as baselinePackages } from '@/lib/packages';
+import { aboutParagraphs } from '@/lib/about-copy';
 import galleryData from '@/lib/gallery-data.json';
 
 // Baseline fallback records (used strictly if DB is initializing or unreachable)
@@ -103,14 +104,10 @@ export const DEFAULT_HOME_PAGE: HomePageDoc = {
 
 export const DEFAULT_ABOUT_PAGE: AboutPageDoc = {
   heading: 'Get to Know Me',
-  body: `I am a freelance photographer with passion for all types of photography: fashion, corporate events, family shoots, weddings, behind the scenes, and birthdays. Photography is my passion, which has been in me right from when I was a child. Seeing pictures, looking at people's expressions, and freezing time has always fascinated me.
-
-What sets my work apart is the personal connection I create with every subject. I don't just take pictures; I tell your story. Whether it's an intimate wedding in Cheshire, a high-energy brand launch in Manchester city centre, or a quiet studio portrait, my focus is always on genuine, unforced emotion and refined editorial style.
-
-Beyond commercial assignments, I also conduct one-on-one mentorship classes in general photography and advanced Photoshop / Lightroom retouching—available both online and in-person here in Manchester.`,
+  body: aboutParagraphs.join('\n\n'),
   coverImage: {
-    url: '/photos/portraits/portraits_01.jpg',
-    path: '/photos/portraits/portraits_01.jpg',
+    url: '/photos/personal/personal_01.jpg',
+    path: '/photos/personal/personal_01.jpg',
     alt: 'Benedict Henry, founder and lead photographer at SH Photography',
   },
   stats: [

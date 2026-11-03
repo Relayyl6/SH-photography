@@ -59,6 +59,8 @@ export function BookingCalendar({
   const today = useMemo(() => new Date(), []);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [openingHours, setOpeningHours] = useState<Record<number, DayHours>>(DEFAULT_OPENING_HOURS);
+  const [leadDays, setLeadDays] = useState(BOOKING_LEAD_DAYS);
+  const [windowDays, setWindowDays] = useState(BOOKING_WINDOW_DAYS);
 
   useEffect(() => {
     async function fetchLiveAvailability() {
@@ -97,7 +99,21 @@ export function BookingCalendar({
           }
         }
 
-        // 2. Fetch blocked individual dates from availability collection
+        // 2. Fetch booking policies for lead time & advance days
+        try {
+          const bookSnap = await getDoc(doc(db, "settings", "booking"));
+          if (bookSnap.exists()) {
+            const bData = bookSnap.data();
+            if (bData.leadTimeHours) {
+              setLeadDays(Math.max(1, Math.ceil(bData.leadTimeHours / 24)));
+            }
+            if (bData.maxAdvanceDays) {
+              setWindowDays(bData.maxAdvanceDays);
+            }
+          }
+        } catch {}
+
+        // 3. Fetch blocked individual dates from availability collection
         const availSnap = await getDocs(collection(db, "availability"));
         const blockedList: string[] = [];
         availSnap.forEach((d) => {
@@ -135,9 +151,9 @@ export function BookingCalendar({
   const minMonth = startOfMonth(today);
   const maxMonth = useMemo(() => {
     const d = new Date(today);
-    d.setDate(d.getDate() + BOOKING_WINDOW_DAYS);
+    d.setDate(d.getDate() + windowDays);
     return startOfMonth(d);
-  }, [today]);
+  }, [today, windowDays]);
 
   const canGoPrev = viewMonth > minMonth;
   const canGoNext = viewMonth < maxMonth;
@@ -212,7 +228,7 @@ export function BookingCalendar({
           {days.map((date) => {
             const iso = toISODate(date);
             const inMonth = date.getMonth() === viewMonth.getMonth();
-            const bookable = inMonth && isDateBookable(date, today, blockedDates, openingHours);
+            const bookable = inMonth && isDateBookable(date, today, blockedDates, openingHours, leadDays, windowDays);
             const isSelected = selectedDate === iso;
             const isToday = toISODate(today) === iso;
 
@@ -246,7 +262,7 @@ export function BookingCalendar({
         </div>
 
         <p className="mt-3 text-xs text-ink/50">
-          Earliest available date is {BOOKING_LEAD_DAYS} days out; bookable up to {BOOKING_WINDOW_DAYS} days ahead.
+          Earliest available date is {leadDays} days out; bookable up to {windowDays} days ahead.
         </p>
         {dateError && (
           <p role="alert" className="mt-2 text-sm text-accentDark">

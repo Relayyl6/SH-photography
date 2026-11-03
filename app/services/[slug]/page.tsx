@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { packages } from "@/lib/packages";
-import { getPackages } from "@/lib/content";
+import { getPackages, getContactSettings } from "@/lib/content";
 import { siteConfig } from "@/lib/site-config";
 
 type Props = { params: { slug: string } };
@@ -27,7 +27,10 @@ import { serviceMedia, defaultMedia } from "@/lib/service-media";
 
 export default async function ServiceDetailPage({ params }: Props) {
   const { slug } = params;
-  const dbPackages = await getPackages();
+  const [dbPackages, contactSettings] = await Promise.all([
+    getPackages(),
+    getContactSettings(),
+  ]);
   const dbPkg = dbPackages.find((p) => p.sessionSlug === slug || p.id === slug);
   const baseline = packages.find((p) => p.slug === slug);
 
@@ -58,6 +61,7 @@ export default async function ServiceDetailPage({ params }: Props) {
       ? "In Person"
       : null;
 
+  const whatsappNumber = contactSettings.whatsapp?.replace(/\D/g, "") || siteConfig.whatsappE164;
   const whatsappMessage = encodeURIComponent(
     `Hi Benedict, I'm interested in booking your ${pkg.name} service. Could you please share more details and availability?`
   );
@@ -201,7 +205,7 @@ export default async function ServiceDetailPage({ params }: Props) {
 
                 {/* Direct WhatsApp Route */}
                 <a
-                  href={`https://wa.me/${siteConfig.whatsappE164}?text=${whatsappMessage}`}
+                  href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-ink/20 bg-paper/60 px-6 py-3.5 text-xs sm:text-sm font-semibold text-ink transition-all duration-300 hover:border-emerald-600 hover:text-emerald-700 hover:bg-white hover:scale-[1.01] active:scale-[0.98] cursor-pointer"

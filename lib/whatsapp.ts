@@ -16,7 +16,11 @@ export type EnquiryFormValues = {
 
 // Builds a wa.me deep link with a URL-encoded, readable pre-filled message
 // (client_spec.md A8.2, Phase 4). Pure function — easy to unit test.
-export function buildWhatsappUrl(values: EnquiryFormValues, serviceLabel?: string): string {
+export function buildWhatsappUrl(
+  values: EnquiryFormValues,
+  serviceLabel?: string,
+  overrideWhatsapp?: string
+): string {
   const isBooking = values.enquiryType === "booking";
   const sLabel = serviceLabel || values.service;
   const lines = [
@@ -37,10 +41,15 @@ export function buildWhatsappUrl(values: EnquiryFormValues, serviceLabel?: strin
   lines.push(``, `*Message:*`, values.message);
 
   const text = encodeURIComponent(lines.join("\n"));
-  return `https://wa.me/${siteConfig.whatsappE164}?text=${text}`;
+  const number = (overrideWhatsapp || siteConfig.whatsappE164).replace(/\D/g, "");
+  return `https://wa.me/${number}?text=${text}`;
 }
 
-export function buildEnquiryMailtoUrl(values: EnquiryFormValues, serviceLabel?: string): string {
+export function buildEnquiryMailtoUrl(
+  values: EnquiryFormValues,
+  serviceLabel?: string,
+  overrideEmail?: string
+): string {
   const isBooking = values.enquiryType === "booking";
   const sLabel = serviceLabel || values.service;
   const subject = `New ${isBooking ? "Booking Request" : "Enquiry"}: ${values.name}${sLabel ? ` (${sLabel})` : ""}`;
@@ -73,10 +82,14 @@ export function buildEnquiryMailtoUrl(values: EnquiryFormValues, serviceLabel?: 
     `Sent from SH Photography contact form`
   );
 
-  return buildMailtoUrl(subject, bodyLines.join("\n"));
+  return buildMailtoUrl(subject, bodyLines.join("\n"), overrideEmail);
 }
 
-export function buildGmailComposeUrl(values: EnquiryFormValues, serviceLabel?: string): string {
+export function buildGmailComposeUrl(
+  values: EnquiryFormValues,
+  serviceLabel?: string,
+  overrideEmail?: string
+): string {
   const isBooking = values.enquiryType === "booking";
   const sLabel = serviceLabel || values.service;
   const subject = `New ${isBooking ? "Booking Request" : "Enquiry"}: ${values.name}${sLabel ? ` (${sLabel})` : ""}`;
@@ -112,7 +125,7 @@ export function buildGmailComposeUrl(values: EnquiryFormValues, serviceLabel?: s
   const params = new URLSearchParams({
     view: "cm",
     fs: "1",
-    to: siteConfig.email,
+    to: overrideEmail || siteConfig.email,
     su: subject,
     body: bodyLines.join("\n"),
   });
@@ -120,7 +133,11 @@ export function buildGmailComposeUrl(values: EnquiryFormValues, serviceLabel?: s
   return `https://mail.google.com/mail/?${params.toString()}`;
 }
 
-export function buildOutlookComposeUrl(values: EnquiryFormValues, serviceLabel?: string): string {
+export function buildOutlookComposeUrl(
+  values: EnquiryFormValues,
+  serviceLabel?: string,
+  overrideEmail?: string
+): string {
   const isBooking = values.enquiryType === "booking";
   const sLabel = serviceLabel || values.service;
   const subject = `New ${isBooking ? "Booking Request" : "Enquiry"}: ${values.name}${sLabel ? ` (${sLabel})` : ""}`;
@@ -154,7 +171,7 @@ export function buildOutlookComposeUrl(values: EnquiryFormValues, serviceLabel?:
   );
 
   const params = new URLSearchParams({
-    to: siteConfig.email,
+    to: overrideEmail || siteConfig.email,
     subject: subject,
     body: bodyLines.join("\n"),
   });
@@ -162,14 +179,14 @@ export function buildOutlookComposeUrl(values: EnquiryFormValues, serviceLabel?:
   return `https://outlook.live.com/mail/0/deeplink/compose?${params.toString()}`;
 }
 
-export function buildMailtoUrl(subject: string, body?: string): string {
+export function buildMailtoUrl(subject: string, body?: string, overrideEmail?: string): string {
   const params = new URLSearchParams();
   if (subject) params.set("subject", subject);
   if (body) params.set("body", body);
   const qs = params.toString();
-  return `mailto:${siteConfig.email}${qs ? `?${qs}` : ""}`;
+  return `mailto:${overrideEmail || siteConfig.email}${qs ? `?${qs}` : ""}`;
 }
 
-export function buildTelUrl(): string {
-  return `tel:${siteConfig.phoneE164}`;
+export function buildTelUrl(overridePhone?: string): string {
+  return `tel:${(overridePhone || siteConfig.phoneE164).replace(/\s+/g, "")}`;
 }

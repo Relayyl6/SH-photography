@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { siteConfig, featuredVideoId } from "@/lib/site-config";
-import { getSessions, getHomePageContent } from "@/lib/content";
+import { getSessions, getHomePageContent, getContactSettings } from "@/lib/content";
 import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 import { VideoFacade } from "@/components/VideoFacade";
 import { SocialLinks } from "@/components/SocialLinks";
@@ -12,9 +12,10 @@ import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
 import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 
 export default async function HomePage() {
-  const [dbSessions, homeContent] = await Promise.all([
+  const [dbSessions, homeContent, contactSettings] = await Promise.all([
     getSessions(),
     getHomePageContent(),
+    getContactSettings(),
   ]);
   const sessions = dbSessions.map((s) => ({
     slug: s.slug,
@@ -40,7 +41,7 @@ export default async function HomePage() {
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-sand/90 border border-line/60 backdrop-blur-sm mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
                   <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-accent">
-                    {siteConfig.location} · Est. 2020
+                    {contactSettings.address || siteConfig.location} · Est. 2020
                   </p>
                 </div>
               </StaggerItem>
@@ -466,13 +467,16 @@ export default async function HomePage() {
       </Reveal>
 
       {/* ---------- Video ---------- */}
-      {featuredVideoId && (
+      {(homeContent?.youtube?.videoId || featuredVideoId) && (
         <Reveal>
           <section className="container-site pb-12">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent">Behind the Lens</p>
             <h2 className="mt-3 font-display text-display-md">How the MAGIC happens, a walkthrough of my work</h2>
             <div className="mt-8">
-              <VideoFacade videoId={featuredVideoId} title="Photoshoot behind the scenes" />
+              <VideoFacade
+                videoId={homeContent?.youtube?.videoId || featuredVideoId}
+                title={homeContent?.youtube?.title || "Photoshoot behind the scenes"}
+              />
             </div>
           </section>
         </Reveal>

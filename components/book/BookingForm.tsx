@@ -141,8 +141,22 @@ export default function BookingForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedData, setSubmittedData] = useState<BookingFormData | null>(null);
   const [prefillLabel, setPrefillLabel] = useState<string | null>(null);
+  const [cancellationPolicy, setCancellationPolicy] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    async function loadPolicy() {
+      try {
+        const { getBookingSettings } = await import('@/lib/content');
+        const b = await getBookingSettings();
+        if (b?.cancellationPolicyText) {
+          setCancellationPolicy(b.cancellationPolicyText);
+        }
+      } catch {}
+    }
+    loadPolicy();
+  }, []);
 
   const {
     register,
@@ -897,6 +911,13 @@ export default function BookingForm() {
                         <span className="text-sm">I consent to being contacted about this inquiry *</span>
                       </label>
                       {errors.contactConsent && <p className="text-red-500 text-sm ml-7">{errors.contactConsent.message}</p>}
+
+                      {cancellationPolicy && (
+                        <div className="mt-4 p-4 rounded-2xl bg-sand/60 border border-line/60 text-xs text-ink/75 space-y-1">
+                          <p className="font-semibold text-ink uppercase tracking-wider text-[10px]">Studio Cancellation Policy</p>
+                          <p className="leading-relaxed">{cancellationPolicy}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

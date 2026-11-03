@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -7,11 +8,35 @@ import { siteConfig } from "@/lib/site-config";
 import { SocialLinks } from "./SocialLinks";
 import { sessions } from "@/lib/sessions";
 import { usePathname } from "next/navigation";
+import { getContactSettings, getSiteSettings, DEFAULT_CONTACT_SETTINGS, DEFAULT_SITE_SETTINGS } from "@/lib/content";
+import { ContactSettingsDoc, SiteSettingsDoc } from "@/types/firebase";
 
 export function Footer() {
   const pathname = usePathname();
   const isStylePage = pathname === "/style";
+  const [contact, setContact] = useState<ContactSettingsDoc>(DEFAULT_CONTACT_SETTINGS);
+  const [site, setSite] = useState<SiteSettingsDoc>(DEFAULT_SITE_SETTINGS);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const [c, s] = await Promise.all([getContactSettings(), getSiteSettings()]);
+        setContact(c);
+        setSite(s);
+      } catch (err) {
+        // Fallback to defaults
+      }
+    }
+    loadSettings();
+  }, []);
+
   if (pathname?.startsWith("/admin") || pathname?.startsWith("/account") || pathname?.startsWith("/login")) return null;
+
+  const phoneDisplay = contact.phone || siteConfig.phoneDisplay;
+  const phoneHref = (contact.phone || siteConfig.phoneE164).replace(/\s+/g, "");
+  const emailVal = contact.email || siteConfig.email;
+  const businessNameVal = site.businessName || siteConfig.businessName;
+  const copyrightText = site.footerText || `Copyright ${businessNameVal} ${new Date().getFullYear()}`;
 
   return (
     <footer className={`relative overflow-hidden text-ink bg-paper ${isStylePage ? '' : 'mt-24 border-t border-line/50'}`}>
@@ -70,7 +95,7 @@ export function Footer() {
           <Link href="/" className="inline-block group">
             <Image
               src="/logo.png"
-              alt="SH Photography"
+              alt={businessNameVal}
               width={160}
               height={120}
               className="h-16 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80"
@@ -110,13 +135,13 @@ export function Footer() {
             <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Contact</p>
             <ul className="space-y-4 text-sm font-medium text-ink/80">
               <li>
-                <a href={`tel:${siteConfig.phoneE164}`} className="hover:text-accent transition-colors">
-                  {siteConfig.phoneDisplay}
+                <a href={`tel:${phoneHref}`} className="hover:text-accent transition-colors">
+                  {phoneDisplay}
                 </a>
               </li>
               <li>
-                <a href={`mailto:${siteConfig.email}`} className="hover:text-accent transition-colors break-all">
-                  {siteConfig.email}
+                <a href={`mailto:${emailVal}`} className="hover:text-accent transition-colors break-all">
+                  {emailVal}
                 </a>
               </li>
               <li><Link href="/book" className="hover:text-accent transition-colors">Book a session</Link></li>
@@ -142,7 +167,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-medium text-ink/60 md:flex-row md:items-center">
-          <p>Copyright {siteConfig.businessName} {new Date().getFullYear()}</p>
+          <p>{copyrightText}</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p>
               Made By Yemuel -{' '}

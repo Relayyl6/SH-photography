@@ -22,7 +22,19 @@ function getServiceLabel(value?: string) {
   return found ? found.label : value;
 }
 
-export function ContactForm() {
+export function ContactForm({
+  contactEmail,
+  whatsappNumber,
+  phoneDisplay,
+}: {
+  contactEmail?: string;
+  whatsappNumber?: string;
+  phoneDisplay?: string;
+} = {}) {
+  const activeEmail = contactEmail || siteConfig.email;
+  const activeWhatsapp = whatsappNumber || siteConfig.whatsappE164;
+  const activePhoneDisplay = phoneDisplay || siteConfig.phoneDisplay;
+
   const searchParams = useSearchParams();
   const preselected = searchParams.get("service") ?? "";
 
@@ -75,8 +87,8 @@ export function ContactForm() {
     setErrors({});
     setStatus("sending");
     const sLabel = getServiceLabel(parsed.data.service);
-    const gmailUrl = buildGmailComposeUrl(parsed.data, sLabel);
-    const mailtoUrl = buildEnquiryMailtoUrl(parsed.data, sLabel);
+    const gmailUrl = buildGmailComposeUrl(parsed.data, sLabel, activeEmail);
+    const mailtoUrl = buildEnquiryMailtoUrl(parsed.data, sLabel, activeEmail);
 
     // Save lead in background before routing (non-blocking)
     fetch("/api/enquiries", {
@@ -127,7 +139,7 @@ export function ContactForm() {
 
     setErrors({});
     const sLabel = getServiceLabel(parsed.data.service);
-    const whatsappUrl = buildWhatsappUrl(parsed.data, sLabel);
+    const whatsappUrl = buildWhatsappUrl(parsed.data, sLabel, activeWhatsapp);
 
     // Save lead in background before routing
     fetch("/api/enquiries", {
@@ -158,10 +170,10 @@ export function ContactForm() {
 
   if (status === "sent" && lastSentData) {
     const { values, serviceLabel, method } = lastSentData;
-    const gmailUrl = buildGmailComposeUrl(values, serviceLabel);
-    const outlookUrl = buildOutlookComposeUrl(values, serviceLabel);
-    const mailtoUrl = buildEnquiryMailtoUrl(values, serviceLabel);
-    const whatsappUrl = buildWhatsappUrl(values, serviceLabel);
+    const gmailUrl = buildGmailComposeUrl(values, serviceLabel, activeEmail);
+    const outlookUrl = buildOutlookComposeUrl(values, serviceLabel, activeEmail);
+    const mailtoUrl = buildEnquiryMailtoUrl(values, serviceLabel, activeEmail);
+    const whatsappUrl = buildWhatsappUrl(values, serviceLabel, activeWhatsapp);
 
     return (
       <div role="status" className="rounded-2xl border border-line bg-sand/95 p-6 sm:p-8 space-y-6">
@@ -177,8 +189,8 @@ export function ContactForm() {
             </h2>
             <p className="mt-1 text-sm text-ink/75 leading-relaxed">
               {method === "email"
-                ? `Pre-filled and addressed to ${siteConfig.email}. If Gmail didn't launch automatically, tap below.`
-                : `Connected to WhatsApp (${siteConfig.phoneDisplay}) with your message details.`}
+                ? `Pre-filled and addressed to ${activeEmail}. If Gmail didn't launch automatically, tap below.`
+                : `Connected to WhatsApp (${activePhoneDisplay}) with your message details.`}
             </p>
           </div>
         </div>

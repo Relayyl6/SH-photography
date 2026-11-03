@@ -36,13 +36,15 @@ export function isDateBookable(
   date: Date,
   today: Date = new Date(),
   customBlockedDates?: string[],
-  customHours?: Record<number, DayHours>
+  customHours?: Record<number, DayHours>,
+  customLeadDays: number = BOOKING_LEAD_DAYS,
+  customWindowDays: number = BOOKING_WINDOW_DAYS
 ): boolean {
   const day = startOfDay(date);
   const earliest = startOfDay(today);
-  earliest.setDate(earliest.getDate() + BOOKING_LEAD_DAYS);
+  earliest.setDate(earliest.getDate() + customLeadDays);
   const latest = startOfDay(today);
-  latest.setDate(latest.getDate() + BOOKING_WINDOW_DAYS);
+  latest.setDate(latest.getDate() + customWindowDays);
 
   if (day < earliest || day > latest) return false;
 

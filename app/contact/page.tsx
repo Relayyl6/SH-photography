@@ -3,17 +3,30 @@ import { Suspense } from "react";
 import { siteConfig } from "@/lib/site-config";
 import { ContactForm } from "@/components/ContactForm";
 import { SocialLinks } from "@/components/SocialLinks";
+import { getContactSettings, getSocialSettings } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact",
   description: "Send a message or request a booking.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [contact, social] = await Promise.all([
+    getContactSettings(),
+    getSocialSettings(),
+  ]);
+
+  const whatsappNumber = contact.whatsapp?.replace(/\D/g, "") || siteConfig.whatsappE164;
+  const emailVal = contact.email || siteConfig.email;
+  const phoneDisplayVal = contact.phone || siteConfig.phoneDisplay;
+  const phoneHref = (contact.phone || siteConfig.phoneE164).replace(/\s+/g, "");
+  const locationLineVal = contact.address || siteConfig.locationLine;
+
   return (
     <>
       <div className="container-site pt-12 md:pt-20 pb-0">
-        
         <div className="grid gap-12 lg:gap-20 lg:grid-cols-[1fr_1.3fr]">
           {/* Left Column: Headline and Quick Contact */}
           <div className="lg:sticky lg:top-32 lg:self-start">
@@ -28,18 +41,29 @@ export default function ContactPage() {
                 <h2 className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-5">Quick contact</h2>
                 <ul className="space-y-4">
                   <li>
-                    <a href={`https://wa.me/${siteConfig.whatsappE164}`} target="_blank" rel="noopener noreferrer" className="font-display text-2xl hover:text-accent transition-colors">
+                    <a
+                      href={`https://wa.me/${whatsappNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-display text-2xl hover:text-accent transition-colors"
+                    >
                       WhatsApp me →
                     </a>
                   </li>
                   <li>
-                    <a href={`mailto:${siteConfig.email}`} className="font-display text-2xl hover:text-accent break-all transition-colors">
+                    <a
+                      href={`mailto:${emailVal}`}
+                      className="font-display text-2xl hover:text-accent break-all transition-colors"
+                    >
                       Email me →
                     </a>
                   </li>
                   <li>
-                    <a href={`tel:${siteConfig.phoneE164}`} className="font-display text-2xl hover:text-accent transition-colors">
-                      {siteConfig.phoneDisplay}
+                    <a
+                      href={`tel:${phoneHref}`}
+                      className="font-display text-2xl hover:text-accent transition-colors"
+                    >
+                      {phoneDisplayVal}
                     </a>
                   </li>
                 </ul>
@@ -47,12 +71,15 @@ export default function ContactPage() {
 
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-3">Location</p>
-                <p className="text-lg text-ink/80">{siteConfig.locationLine}</p>
+                <p className="text-lg text-ink/80">{locationLineVal}</p>
+                {contact.hours && (
+                  <p className="text-xs text-ink/60 mt-1">Studio Hours: {contact.hours}</p>
+                )}
               </div>
 
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-ink/40 mb-4">Follow</p>
-                <SocialLinks className="mt-3" />
+                <SocialLinks links={social.links} className="mt-3" />
               </div>
             </div>
           </div>
@@ -60,7 +87,11 @@ export default function ContactPage() {
           {/* Right Column: Form */}
           <div className="mt-8 lg:mt-0 mb-8 md:mb-12">
             <Suspense fallback={null}>
-              <ContactForm />
+              <ContactForm
+                contactEmail={emailVal}
+                whatsappNumber={whatsappNumber}
+                phoneDisplay={phoneDisplayVal}
+              />
             </Suspense>
           </div>
         </div>

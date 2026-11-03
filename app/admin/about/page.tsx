@@ -34,7 +34,11 @@ export default function AdminAboutPage() {
     async function init() {
       try {
         const data = await getAboutPageContent();
-        setAbout(data);
+        if (!data.body || data.body.includes("I am a freelance photographer with passion for all types")) {
+          setAbout({ ...data, body: DEFAULT_ABOUT_PAGE.body });
+        } else {
+          setAbout(data);
+        }
       } catch (e) {
         console.error("Failed to load about page:", e);
       }

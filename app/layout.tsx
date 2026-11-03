@@ -4,29 +4,37 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 import { siteConfig } from "@/lib/site-config";
+import { getSiteSettings } from "@/lib/content";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.siteUrl),
-  title: {
-    default: `${siteConfig.businessName} — Photographer in Manchester`,
-    template: `%s — ${siteConfig.businessName}`,
-  },
-  description: siteConfig.positioningLine,
-  openGraph: {
-    title: siteConfig.businessName,
-    description: siteConfig.positioningLine,
-    type: "website",
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" },
-    ],
-    apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
-    ],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await getSiteSettings();
+  const bName = site.businessName || siteConfig.businessName;
+  const pageTitle = site.seo?.title || `${bName} — Photographer in Manchester`;
+  const pageDesc = site.seo?.description || siteConfig.positioningLine;
+
+  return {
+    metadataBase: new URL(siteConfig.siteUrl),
+    title: {
+      default: pageTitle,
+      template: `%s — ${bName}`,
+    },
+    description: pageDesc,
+    openGraph: {
+      title: pageTitle,
+      description: pageDesc,
+      type: "website",
+    },
+    icons: {
+      icon: [
+        { url: site.favicon || "/favicon.ico", sizes: "any" },
+        { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      ],
+      apple: [
+        { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+      ],
+    },
+  };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
