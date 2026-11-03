@@ -20,25 +20,30 @@ import {
   getContactSettings,
   getSocialSettings,
   getBookingSettings,
+  getHomePageContent,
   DEFAULT_SITE_SETTINGS,
   DEFAULT_CONTACT_SETTINGS,
   DEFAULT_SOCIAL_SETTINGS,
   DEFAULT_BOOKING_SETTINGS,
+  DEFAULT_HOME_PAGE,
 } from "@/lib/content";
 import {
   SiteSettingsDoc,
   ContactSettingsDoc,
   SocialSettingsDoc,
   BookingSettingsDoc,
+  HomePageDoc,
 } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
+import { Video } from "lucide-react";
 
 export default function AdminSettingsPage() {
   const [site, setSite] = useState<SiteSettingsDoc>(DEFAULT_SITE_SETTINGS);
   const [contact, setContact] = useState<ContactSettingsDoc>(DEFAULT_CONTACT_SETTINGS);
   const [social, setSocial] = useState<SocialSettingsDoc>(DEFAULT_SOCIAL_SETTINGS);
   const [booking, setBooking] = useState<BookingSettingsDoc>(DEFAULT_BOOKING_SETTINGS);
+  const [home, setHome] = useState<HomePageDoc>(DEFAULT_HOME_PAGE);
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -46,16 +51,18 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     async function init() {
       try {
-        const [s, c, soc, b] = await Promise.all([
+        const [s, c, soc, b, h] = await Promise.all([
           getSiteSettings(),
           getContactSettings(),
           getSocialSettings(),
           getBookingSettings(),
+          getHomePageContent(),
         ]);
         setSite(s);
         setContact(c);
         setSocial(soc);
         setBooking(b);
+        setHome(h);
       } catch (e) {
         // Fallback
       }
@@ -72,6 +79,7 @@ export default function AdminSettingsPage() {
         setDoc(doc(db, "settings", "contact"), { ...contact, published: true, updatedAt: Date.now() }, { merge: true }),
         setDoc(doc(db, "settings", "social"), { ...social, published: true, updatedAt: Date.now() }, { merge: true }),
         setDoc(doc(db, "settings", "booking"), { ...booking, published: true, updatedAt: Date.now() }, { merge: true }),
+        setDoc(doc(db, "pages", "home"), { ...home, published: true, updatedAt: Date.now() }, { merge: true }),
       ]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -212,6 +220,104 @@ export default function AdminSettingsPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Featured YouTube Video on Homepage */}
+        <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#e8e6df] shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="text-base font-bold text-[#1c1b1a] flex items-center gap-2">
+              <Video className="w-4 h-4 text-[#e8491c]" />
+              <span>Featured Behind-the-Scenes Video (Home Page)</span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => {
+                setHome({
+                  ...home,
+                  youtube: {
+                    ...home.youtube,
+                    videoId: "vE8pQC6XHoU",
+                    title: "Behind the Scenes & Photography Techniques with Benedict",
+                  },
+                });
+              }}
+              className="text-xs font-bold text-[#e8491c] hover:underline self-start sm:self-auto"
+            >
+              Reset to Original Video (vE8pQC6XHoU)
+            </button>
+          </div>
+          <p className="text-xs text-[#7a766f]">
+            This video is embedded on the homepage in the &ldquo;How the MAGIC happens&rdquo; section using a privacy-friendly facade.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#48453f] mb-1">
+                YouTube Video ID or Full URL
+              </label>
+              <input
+                type="text"
+                value={home.youtube?.videoId || ""}
+                onChange={(e) => {
+                  let val = e.target.value.trim();
+                  // Extract video ID if user pastes full youtube URL
+                  if (val.includes("youtube.com/watch?v=")) {
+                    val = val.split("v=")[1]?.split("&")[0] || val;
+                  } else if (val.includes("youtu.be/")) {
+                    val = val.split("youtu.be/")[1]?.split("?")[0] || val;
+                  }
+                  setHome({
+                    ...home,
+                    youtube: {
+                      ...home.youtube,
+                      videoId: val,
+                      title: home.youtube?.title || "Behind the Scenes & Photography Techniques with Benedict",
+                    },
+                  });
+                }}
+                placeholder="e.g. vE8pQC6XHoU"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#48453f] mb-1">Video Display Title</label>
+              <input
+                type="text"
+                value={home.youtube?.title || ""}
+                onChange={(e) =>
+                  setHome({
+                    ...home,
+                    youtube: {
+                      ...home.youtube,
+                      videoId: home.youtube?.videoId || "vE8pQC6XHoU",
+                      title: e.target.value,
+                    },
+                  })
+                }
+                placeholder="Behind the Scenes & Photography Techniques with Benedict"
+                className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
+              />
+            </div>
+          </div>
+
+          {home.youtube?.videoId && (
+            <div className="mt-3 p-3 bg-[#faf9f6] rounded-2xl border border-[#f0eee8] flex items-center gap-3">
+              <span className="text-xs font-bold text-[#1c1b1a]">Active Video:</span>
+              <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-[#e6e4dc] text-[#e8491c]">
+                {home.youtube.videoId}
+              </span>
+              <a
+                href={`https://www.youtube.com/watch?v=${home.youtube.videoId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-[#8a867f] hover:text-[#1c1b1a] inline-flex items-center gap-1 ml-auto"
+              >
+                <span>Watch on YouTube</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Booking Engine Policies */}

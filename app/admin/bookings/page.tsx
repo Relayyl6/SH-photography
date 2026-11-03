@@ -15,6 +15,7 @@ import {
   MessageCircle,
   RefreshCw,
   CheckCircle,
+  Printer,
 } from "lucide-react";
 import { BookingDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
@@ -44,8 +45,6 @@ export default function AdminBookingsPage() {
       if (urlBookingId) {
         const found = loaded.find((b) => b.id === urlBookingId);
         if (found) setSelectedBooking(found);
-      } else if (!selectedBooking && loaded.length > 0) {
-        setSelectedBooking(loaded[0] || null);
       }
     } catch (err) {
       console.error("Failed to load bookings from Firestore:", err);
@@ -53,8 +52,6 @@ export default function AdminBookingsPage() {
       if (urlBookingId) {
         const found = DEFAULT_BOOKINGS.find((b) => b.id === urlBookingId);
         if (found) setSelectedBooking(found);
-      } else {
-        setSelectedBooking(DEFAULT_BOOKINGS[0] || null);
       }
     } finally {
       setLoading(false);
@@ -478,7 +475,39 @@ export default function AdminBookingsPage() {
       {/* Booking Detail Drawer Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200 space-y-6">
+          <style jsx global>{`
+            @media print {
+              body * {
+                visibility: hidden !important;
+              }
+              #printable-booking-modal,
+              #printable-booking-modal * {
+                visibility: visible !important;
+              }
+              #printable-booking-modal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                max-height: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 20px !important;
+                margin: 0 !important;
+              }
+              .print-hide {
+                display: none !important;
+              }
+            }
+          `}</style>
+
+          <div
+            id="printable-booking-modal"
+            className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200 space-y-6"
+          >
             <div className="flex items-center justify-between pb-4 border-b border-[#f0eee8]">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8491c]">
@@ -487,12 +516,23 @@ export default function AdminBookingsPage() {
                 <h3 className="text-xl font-bold text-[#1c1b1a]">{selectedBooking.customer?.name}</h3>
                 <p className="text-xs text-[#7a766f]">{selectedBooking.sessionSnapshot?.name}</p>
               </div>
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="p-2 rounded-xl text-[#8a867f] hover:bg-[#f5f4ef]"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-1.5 print-hide">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  title="Print Full Booking Details"
+                  className="px-3 py-1.5 rounded-xl text-[#615e57] hover:text-[#1c1b1a] hover:bg-[#f5f4ef] border border-[#e6e4dc] transition-colors inline-flex items-center gap-1 text-xs font-bold"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  className="p-2 rounded-xl text-[#8a867f] hover:bg-[#f5f4ef]"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* In-drawer action alerts */}
@@ -633,12 +673,14 @@ export default function AdminBookingsPage() {
             {/* Custom Form Answers */}
             {selectedBooking.answers && Object.keys(selectedBooking.answers).length > 0 && (
               <div className="p-4 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-2 text-xs">
-                <p className="font-bold text-[#1c1b1a] mb-1">Questionnaire Answers:</p>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                <p className="font-bold text-[#1c1b1a] mb-1">Questionnaire Answers (Full Booking Form):</p>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto print:max-h-none print:overflow-visible">
                   {Object.entries(selectedBooking.answers).map(([k, v]) => (
-                    <div key={k} className="text-[#615e57]">
-                      <span className="font-semibold capitalize text-[#1c1b1a]">{k}:</span>{" "}
-                      <span>{typeof v === "object" ? JSON.stringify(v) : String(v)}</span>
+                    <div key={k} className="text-[#615e57] grid grid-cols-1 sm:grid-cols-3 gap-1 py-1 border-b border-[#f5f4ef] last:border-0">
+                      <span className="font-semibold capitalize text-[#1c1b1a] sm:col-span-1">{k}:</span>{" "}
+                      <span className="sm:col-span-2 text-[#2c2b29] font-medium break-words">
+                        {typeof v === "object" ? JSON.stringify(v) : String(v)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -648,7 +690,7 @@ export default function AdminBookingsPage() {
             {/* Owner Studio Notes */}
             <div className="space-y-3">
               <p className="text-xs font-bold text-[#48453f]">Owner Private Notes:</p>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
+              <div className="space-y-2 max-h-40 overflow-y-auto print:max-h-none print:overflow-visible">
                 {!selectedBooking.ownerNotes || selectedBooking.ownerNotes.length === 0 ? (
                   <p className="text-xs text-[#9d9990] italic">No private notes yet.</p>
                 ) : (
@@ -663,7 +705,7 @@ export default function AdminBookingsPage() {
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 print-hide">
                 <input
                   type="text"
                   value={newNote}
@@ -681,20 +723,31 @@ export default function AdminBookingsPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#f0eee8] flex items-center justify-between">
-              <a
-                href={getClientWhatsappUrl(selectedBooking)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a] transition-colors"
-              >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Chat on WhatsApp</span>
-              </a>
+            <div className="pt-4 border-t border-[#f0eee8] flex items-center justify-between gap-2 print-hide">
+              <div className="flex items-center gap-2">
+                <a
+                  href={getClientWhatsappUrl(selectedBooking)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a] transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Chat on WhatsApp</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#faf9f6] text-xs font-bold text-[#1c1b1a] border border-[#d6d4cb] transition-colors shadow-sm"
+                >
+                  <Printer className="w-3.5 h-3.5 text-[#1c1b1a]" />
+                  <span>Print Full Details</span>
+                </button>
+              </div>
 
               <button
                 onClick={() => setSelectedBooking(null)}
-                className="px-5 py-2 rounded-xl bg-[#1c1b1a] text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-[#1c1b1a] hover:bg-black text-white text-xs font-bold"
               >
                 Close Drawer
               </button>

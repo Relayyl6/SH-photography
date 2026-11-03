@@ -89,7 +89,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="container-site relative z-10 pb-48 pt-16 lg:pb-72">
+      <div className="container-site relative z-20 pb-48 pt-16 lg:pb-72">
         {/* Logo */}
         <div className="mb-12">
           <Link href="/" className="inline-block group">
@@ -107,8 +107,8 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-5">
           {/* Col 1: Portfolio / Sessions */}
           <div>
-            <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Portfolio</p>
-            <ul className="space-y-4 text-sm font-medium text-ink/80">
+            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Portfolio</p>
+            <ul className="space-y-4 text-sm font-semibold text-black">
               <li><Link href="/portfolio" className="hover:text-accent transition-colors">All sessions</Link></li>
               {sessions.slice(0, 6).map((s) => (
                 <li key={s.slug}>
@@ -122,8 +122,8 @@ export function Footer() {
           
           {/* Col 2: Services */}
           <div>
-            <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Services</p>
-            <ul className="space-y-4 text-sm font-medium text-ink/80">
+            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Services</p>
+            <ul className="space-y-4 text-sm font-semibold text-black">
               <li><Link href="/services" className="hover:text-accent transition-colors">Packages &amp; Pricing</Link></li>
               <li><Link href="/services#classes" className="hover:text-accent transition-colors">Photography Classes</Link></li>
               <li><Link href="/services#retouching" className="hover:text-accent transition-colors">Retouching</Link></li>
@@ -132,8 +132,8 @@ export function Footer() {
 
           {/* Col 3: Contact */}
           <div>
-            <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Contact</p>
-            <ul className="space-y-4 text-sm font-medium text-ink/80">
+            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Contact</p>
+            <ul className="space-y-4 text-sm font-semibold text-black">
               <li>
                 <a href={`tel:${phoneHref}`} className="hover:text-accent transition-colors">
                   {phoneDisplay}
@@ -150,8 +150,8 @@ export function Footer() {
 
           {/* Col 4: About Us */}
           <div>
-            <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">About us</p>
-            <ul className="space-y-4 text-sm font-medium text-ink/80">
+            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">About us</p>
+            <ul className="space-y-4 text-sm font-semibold text-black">
               <li><Link href="/about" className="hover:text-accent transition-colors">About SH</Link></li>
               <li><Link href="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-accent transition-colors">Terms of Service</Link></li>
@@ -160,31 +160,34 @@ export function Footer() {
 
           {/* Col 5: Social Media */}
           <div>
-            <p className="mb-6 text-sm font-semibold text-ink/40 uppercase tracking-widest">Social Media</p>
-            <SocialLinks className="!flex-col !items-start gap-4 text-sm font-medium text-ink/80" />
+            <p className="mb-6 text-sm font-bold text-black uppercase tracking-widest">Social Media</p>
+            <SocialLinks
+              className="!flex-col !items-start gap-4 text-sm font-semibold text-black"
+              itemClassName="!text-black !font-semibold hover:!text-accent"
+            />
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-medium text-ink/60 md:flex-row md:items-center">
-          <p>{copyrightText}</p>
+        <div className="mt-24 flex flex-col justify-between gap-4 text-sm font-bold text-black md:flex-row md:items-center">
+          <p className="text-black">{copyrightText}</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-            <p>
+            <p className="text-black">
               Made By Yemuel -{' '}
-              <a href="tel:09064982841" className="hover:text-ink transition-colors">
+              <a href="tel:09064982841" className="hover:text-accent transition-colors text-black underline">
                 09064982841
               </a>
             </p>
-            <span className="hidden sm:inline text-ink/30">•</span>
-            <p>❤️ Made with love in Manchester</p>
+            <span className="hidden sm:inline text-black/50">•</span>
+            <p className="text-black">❤️ Made with love in Manchester</p>
           </div>
         </div>
       </div>
 
       {/* Landscape Illustration */}
-      <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none p-0 m-0 overflow-hidden leading-none">
-        {/* Linear gradient atop it fading from white to the color of it without padding or margin */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/30 to-transparent pointer-events-none z-10" />
+      <div className="absolute bottom-0 left-0 right-0 w-full pointer-events-none p-0 m-0 overflow-hidden leading-none z-10">
+        {/* Subtle linear gradient entering from the top background color (#FAF7F2) without harsh white */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2] via-[#FAF7F2]/50 to-transparent pointer-events-none z-10" />
         <Image 
           src="/footer-landscape-1.png"
           alt="Landscape Illustration"

@@ -1,7 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { siteConfig, featuredVideoId } from "@/lib/site-config";
-import { getSessions, getHomePageContent, getContactSettings } from "@/lib/content";
+import {
+  getSessions,
+  getHomePageContent,
+  getContactSettings,
+  getBentoSlots,
+  getPortfolioImages,
+} from "@/lib/content";
 import { SessionPreviewCarousel } from "@/components/SessionPreviewCarousel";
 import { VideoFacade } from "@/components/VideoFacade";
 import { SocialLinks } from "@/components/SocialLinks";
@@ -12,11 +18,28 @@ import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
 import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 
 export default async function HomePage() {
-  const [dbSessions, homeContent, contactSettings] = await Promise.all([
+  const [dbSessions, homeContent, contactSettings, bentoData, portfolioImages] = await Promise.all([
     getSessions(),
     getHomePageContent(),
     getContactSettings(),
+    getBentoSlots(),
+    getPortfolioImages(),
   ]);
+
+  const imgMap = new Map<string, string>();
+  portfolioImages.forEach((img) => {
+    if (img.id && img.url) imgMap.set(img.id, img.url);
+    const base = img.url?.split("/").pop()?.replace(/\.[^/.]+$/, "");
+    if (base && img.url) imgMap.set(base, img.url);
+  });
+
+  const slotMap = new Map<string, (typeof bentoData.slots)[0]>();
+  if (bentoData?.slots) {
+    bentoData.slots.forEach((s) => {
+      slotMap.set(s.slotId, s);
+    });
+  }
+
   const sessions = dbSessions.map((s) => ({
     slug: s.slug,
     title: s.name,
@@ -347,6 +370,7 @@ export default async function HomePage() {
           <StaggerReveal className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:auto-rows-[220px]">
             {[
               {
+                slotId: "1",
                 slug: "weddings",
                 title: "Weddings",
                 badge: "Photography",
@@ -357,6 +381,7 @@ export default async function HomePage() {
                 desc: "Cinematic, documentary wedding storytelling capturing raw emotion and quiet romance.",
               },
               {
+                slotId: "2",
                 slug: "portraits",
                 title: "Beauty &\nPortraits",
                 badge: "Portraits",
@@ -366,6 +391,7 @@ export default async function HomePage() {
                 titleSize: "text-2xl sm:text-3xl",
               },
               {
+                slotId: "3",
                 slug: "family",
                 title: "Family",
                 badge: "Warmth",
@@ -375,6 +401,7 @@ export default async function HomePage() {
                 titleSize: "text-lg sm:text-xl md:text-2xl",
               },
               {
+                slotId: "4",
                 slug: "events",
                 title: "Events",
                 badge: "Atmosphere",
@@ -384,6 +411,7 @@ export default async function HomePage() {
                 titleSize: "text-lg sm:text-xl md:text-2xl",
               },
               {
+                slotId: "5",
                 slug: "behind-the-scenes",
                 title: "Behind the Scenes",
                 badge: "On Set",
@@ -393,6 +421,7 @@ export default async function HomePage() {
                 titleSize: "text-2xl sm:text-3xl",
               },
               {
+                slotId: "6",
                 slug: "birthdays",
                 title: "Birthdays",
                 badge: "Celebration",
@@ -402,6 +431,7 @@ export default async function HomePage() {
                 titleSize: "text-lg sm:text-xl md:text-2xl",
               },
               {
+                slotId: "7",
                 slug: "personal",
                 title: "Personal Branding",
                 badge: "Identity",
@@ -411,6 +441,7 @@ export default async function HomePage() {
                 titleSize: "text-lg sm:text-xl md:text-2xl",
               },
               {
+                slotId: "8",
                 slug: "sports",
                 title: "Sports & Athletics",
                 badge: "Action",
@@ -420,6 +451,7 @@ export default async function HomePage() {
                 titleSize: "text-2xl sm:text-3xl",
               },
               {
+                slotId: "9",
                 slug: "general-photography-classes",
                 title: "Photography & Retouching Classes",
                 badge: "Education · Online & In-Person",
@@ -428,40 +460,51 @@ export default async function HomePage() {
                 image: "/photos/behind-the-scenes/behind-the-scenes_05.jpg",
                 titleSize: "text-2xl sm:text-3xl",
               },
-            ].map((card) => (
-              <StaggerItem key={card.slug} className={card.span} variant="fadeUpLarge">
-                <Link
-                  href={`/services/${card.slug}`}
-                  className={`group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 ${card.minH} h-full w-full block`}
-                >
-                  <Image
-                    src={card.image}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-85 group-hover:opacity-100"
-                    alt={`${card.title.replace('\n', ' ')} by SH Photography`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                  <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
-                  <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
-                  <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-white/60 pointer-events-none z-10" />
-                  <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-white/60 pointer-events-none z-10" />
-                  <div className="relative z-10">
-                    <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1 border border-white/20 rounded-full px-2.5 py-0.5 inline-block backdrop-blur-sm">
-                      {card.badge}
-                    </p>
-                    <h3 className={`font-display ${card.titleSize} text-white leading-tight tracking-tight whitespace-pre-line`}>
-                      {card.title}
-                    </h3>
-                    {card.desc && (
-                      <p className="mt-2 text-xs sm:text-sm text-white/80 max-w-sm hidden sm:block">
-                        {card.desc}
+            ].map((card) => {
+              const slot = slotMap.get(card.slotId);
+              const resolvedImage =
+                slot?.customImageUrl ||
+                (slot?.portfolioImageId ? imgMap.get(slot.portfolioImageId) : null) ||
+                card.image;
+              const resolvedTitle = slot?.customTitle || slot?.label || card.title;
+              const resolvedBadge = slot?.customBadge || card.badge;
+              const resolvedLink = slot?.customLink || `/services/${card.slug}`;
+
+              return (
+                <StaggerItem key={card.slotId} className={card.span} variant="fadeUpLarge">
+                  <Link
+                    href={resolvedLink}
+                    className={`group relative overflow-hidden rounded-2xl sm:rounded-[2rem] bg-ink flex flex-col justify-end p-4 sm:p-6 ${card.minH} h-full w-full block`}
+                  >
+                    <Image
+                      src={resolvedImage}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-85 group-hover:opacity-100"
+                      alt={`${resolvedTitle.replace('\n', ' ')} by SH Photography`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                    <div className="absolute top-3 left-3 w-2.5 h-2.5 border-t border-l border-white/60 pointer-events-none z-10" />
+                    <div className="absolute top-3 right-3 w-2.5 h-2.5 border-t border-r border-white/60 pointer-events-none z-10" />
+                    <div className="absolute bottom-3 left-3 w-2.5 h-2.5 border-b border-l border-white/60 pointer-events-none z-10" />
+                    <div className="absolute bottom-3 right-3 w-2.5 h-2.5 border-b border-r border-white/60 pointer-events-none z-10" />
+                    <div className="relative z-10">
+                      <p className="text-white/70 font-sans text-[9px] sm:text-[10px] tracking-widest uppercase font-bold mb-1 border border-white/20 rounded-full px-2.5 py-0.5 inline-block backdrop-blur-sm">
+                        {resolvedBadge}
                       </p>
-                    )}
-                  </div>
-                </Link>
-              </StaggerItem>
-            ))}
+                      <h3 className={`font-display ${card.titleSize} text-white leading-tight tracking-tight whitespace-pre-line`}>
+                        {resolvedTitle}
+                      </h3>
+                      {card.desc && (
+                        <p className="mt-2 text-xs sm:text-sm text-white/80 max-w-sm hidden sm:block">
+                          {card.desc}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                </StaggerItem>
+              );
+            })}
           </StaggerReveal>
         </section>
       </Reveal>

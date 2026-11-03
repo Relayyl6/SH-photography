@@ -104,6 +104,10 @@ export interface BentoSlot {
   slotId: string; // "1" to "9"
   portfolioImageId: string;
   label?: string;
+  customImageUrl?: string;
+  customTitle?: string;
+  customBadge?: string;
+  customLink?: string;
   rotation?: {
     enabled: boolean;
     pool: string[];

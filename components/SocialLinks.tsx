@@ -13,9 +13,11 @@ export interface SocialLinkItem {
 
 export function SocialLinks({
   className = "",
+  itemClassName = "",
   links,
 }: {
   className?: string;
+  itemClassName?: string;
   links?: SocialLinkItem[];
 }) {
   const [activeLinks, setActiveLinks] = useState<SocialLinkItem[]>(links || defaultSocialLinks);
@@ -55,7 +57,7 @@ export function SocialLinks({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={link.label || link.platform}
-            className="text-xs sm:text-sm font-medium tracking-wider uppercase text-ink/80 hover:text-accent transition-colors underline-offset-4 hover:underline"
+            className={`text-xs sm:text-sm font-medium tracking-wider uppercase text-ink/80 hover:text-accent transition-colors underline-offset-4 hover:underline ${itemClassName}`}
           >
             {link.label || link.platform}
           </a>
