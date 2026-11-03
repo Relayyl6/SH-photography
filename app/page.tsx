@@ -17,6 +17,9 @@ import { StaggerReveal, StaggerItem } from "@/components/StaggerReveal";
 import { FloatingHeroCamera } from "@/components/FloatingHeroCamera";
 import { HeroBackgroundVideo } from "@/components/HeroBackgroundVideo";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const [dbSessions, homeContent, contactSettings, bentoData, portfolioImages] = await Promise.all([
     getSessions(),
@@ -461,11 +464,18 @@ export default async function HomePage() {
                 titleSize: "text-2xl sm:text-3xl",
               },
             ].map((card) => {
-              const slot = slotMap.get(card.slotId);
-              const resolvedImage =
-                slot?.customImageUrl ||
-                (slot?.portfolioImageId ? imgMap.get(slot.portfolioImageId) : null) ||
-                card.image;
+              const slot = slotMap.get(card.slotId) || slotMap.get(String(card.slotId));
+              let resolvedImage: string | undefined = slot?.customImageUrl;
+              if (!resolvedImage && slot?.portfolioImageId) {
+                resolvedImage =
+                  imgMap.get(slot.portfolioImageId) ||
+                  (slot.portfolioImageId.startsWith("/") || slot.portfolioImageId.startsWith("http")
+                    ? slot.portfolioImageId
+                    : undefined);
+              }
+              if (!resolvedImage) {
+                resolvedImage = card.image;
+              }
               const resolvedTitle = slot?.customTitle || slot?.label || card.title;
               const resolvedBadge = slot?.customBadge || card.badge;
               const resolvedLink = slot?.customLink || `/services/${card.slug}`;

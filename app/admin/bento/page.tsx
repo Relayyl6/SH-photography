@@ -158,15 +158,30 @@ export default function AdminBentoPage() {
   const handleSelectImageForSlot = (imageId: string) => {
     if (!activeSlotId) return;
 
+    const targetImg = allImages.find((img) => img.id === imageId || img.url === imageId);
+    const resolvedUrl = targetImg ? targetImg.url : (imageId.startsWith("/") || imageId.startsWith("http") ? imageId : undefined);
+
+    let found = false;
     const updatedSlots = bento.slots.map((s) => {
       if (s.slotId === activeSlotId) {
+        found = true;
         return {
           ...s,
           portfolioImageId: imageId,
+          ...(resolvedUrl ? { customImageUrl: resolvedUrl } : {}),
         };
       }
       return s;
     });
+
+    if (!found) {
+      updatedSlots.push({
+        slotId: activeSlotId,
+        portfolioImageId: imageId,
+        label: activeSlot?.title || `Slot ${activeSlotId}`,
+        ...(resolvedUrl ? { customImageUrl: resolvedUrl } : {}),
+      });
+    }
 
     setBento({
       ...bento,
@@ -203,13 +218,30 @@ export default function AdminBentoPage() {
   const handleSaveBento = async () => {
     try {
       setSaving(true);
-      await setDoc(doc(db, "bento", "home"), bento, { merge: true });
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          collection: "bento",
+          id: "home",
+          data: bento,
+        }),
+      });
+
+      if (!res.ok) {
+        await setDoc(doc(db, "bento", "home"), bento, { merge: true });
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Error saving bento configuration:", err);
-      // Even if Firestore write fails locally or offline, notify user
-      setSaveSuccess(true);
+      try {
+        await setDoc(doc(db, "bento", "home"), bento, { merge: true });
+        setSaveSuccess(true);
+      } catch (clientErr) {
+        console.error("Client SDK bento save error:", clientErr);
+      }
       setTimeout(() => setSaveSuccess(false), 3000);
     } finally {
       setSaving(false);

@@ -16,6 +16,9 @@ import {
   RefreshCw,
   CheckCircle,
   Printer,
+  Trash2,
+  Edit3,
+  X,
 } from "lucide-react";
 import { BookingDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
@@ -30,6 +33,19 @@ export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<BookingDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<BookingDoc | null>(null);
+  const [editingBooking, setEditingBooking] = useState<BookingDoc | null>(null);
+  const [rescheduleForm, setRescheduleForm] = useState({
+    date: "",
+    start: "10:00",
+    end: "11:30",
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
+    location: "",
+    notes: "",
+    secondaryDate: "",
+    notifyClient: true,
+  });
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -41,14 +57,22 @@ export default function AdminBookingsPage() {
     setLoading(true);
     try {
       const loaded = await getBookings();
-      setBookings(loaded);
+      const deletedIds: string[] = JSON.parse(
+        (typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]"
+      );
+      const activeBookings = loaded.filter((b) => !deletedIds.includes(b.id));
+      setBookings(activeBookings);
       if (urlBookingId) {
-        const found = loaded.find((b) => b.id === urlBookingId);
+        const found = activeBookings.find((b) => b.id === urlBookingId);
         if (found) setSelectedBooking(found);
       }
     } catch (err) {
       console.error("Failed to load bookings from Firestore:", err);
-      setBookings(DEFAULT_BOOKINGS);
+      const deletedIds: string[] = JSON.parse(
+        (typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]"
+      );
+      const activeBookings = DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
+      setBookings(activeBookings);
       if (urlBookingId) {
         const found = DEFAULT_BOOKINGS.find((b) => b.id === urlBookingId);
         if (found) setSelectedBooking(found);
@@ -194,6 +218,130 @@ export default function AdminBookingsPage() {
       setSelectedBooking(null);
     } catch (err: any) {
       setActionError(err.message || "Failed to decline reschedule.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Open Direct Reschedule Modal
+  const handleOpenReschedule = (booking: BookingDoc) => {
+    setEditingBooking(booking);
+    setRescheduleForm({
+      date: booking.slot?.date || "",
+      start: booking.slot?.start || "10:00",
+      end: booking.slot?.end || "11:30",
+      customerName: booking.customer?.name || "",
+      customerEmail: booking.customer?.email || "",
+      customerPhone: booking.customer?.phone || "",
+      location: (booking.answers?.location as string) || "",
+      notes: (booking.answers?.notes as string) || "",
+      secondaryDate: (booking.secondaryDate || booking.answers?.secondaryDate || "") as string,
+      notifyClient: true,
+    });
+    setActionError(null);
+    setActionSuccess(null);
+  };
+
+  // Save Direct Reschedule
+  const handleSaveReschedule = async () => {
+    if (!editingBooking) return;
+    if (!rescheduleForm.date) {
+      setActionError("Please choose a shoot date.");
+      return;
+    }
+
+    setActionLoading(true);
+    setActionError(null);
+    setActionSuccess(null);
+
+    try {
+      const res = await fetch("/api/bookings/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reschedule",
+          bookingId: editingBooking.id,
+          newDate: rescheduleForm.date,
+          newStart: rescheduleForm.start,
+          newEnd: rescheduleForm.end,
+          customerName: rescheduleForm.customerName,
+          customerEmail: rescheduleForm.customerEmail,
+          customerPhone: rescheduleForm.customerPhone,
+          location: rescheduleForm.location,
+          notes: rescheduleForm.notes,
+          secondaryDate: rescheduleForm.secondaryDate,
+          notifyClient: rescheduleForm.notifyClient,
+          bookingFallback: editingBooking,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setActionError(data.error || "Failed to reschedule booking.");
+        setActionLoading(false);
+        return;
+      }
+
+      setActionSuccess(`Booking ${editingBooking.id} successfully rescheduled to ${rescheduleForm.date}!`);
+      if (data.updatedBooking) {
+        if (selectedBooking && selectedBooking.id === editingBooking.id) {
+          setSelectedBooking(data.updatedBooking);
+        }
+        setBookings((prev) =>
+          prev.map((b) => (b.id === editingBooking.id ? data.updatedBooking : b))
+        );
+      } else {
+        await loadBookings();
+      }
+      setEditingBooking(null);
+      setTimeout(() => setActionSuccess(null), 4000);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to reschedule booking.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Delete Booking
+  const handleDeleteBooking = async (bookingId: string) => {
+    const target = bookings.find((b) => b.id === bookingId) || selectedBooking;
+    const confirmMsg = `Are you sure you want to delete this booking for ${target?.customer?.name || "this client"} (${bookingId})? This action cannot be undone.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch("/api/bookings/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          bookingId,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setActionError(data.error || "Failed to delete booking.");
+        setActionLoading(false);
+        return;
+      }
+
+      // Store in local deletion cache
+      const deletedSet = new Set<string>(
+        JSON.parse((typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]")
+      );
+      deletedSet.add(bookingId);
+      localStorage.setItem("sh_deleted_booking_ids", JSON.stringify(Array.from(deletedSet)));
+
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+      if (selectedBooking?.id === bookingId) {
+        setSelectedBooking(null);
+      }
+      setActionSuccess("Booking deleted permanently.");
+      setTimeout(() => setActionSuccess(null), 3000);
+    } catch (err: any) {
+      setActionError(err.message || "Failed to delete booking.");
     } finally {
       setActionLoading(false);
     }
@@ -456,13 +604,36 @@ export default function AdminBookingsPage() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleOpenReschedule(booking);
+                      }}
+                      className="px-3 py-2 rounded-xl bg-white hover:bg-[#faf9f6] text-xs font-bold text-[#e8491c] transition-colors border border-[#e8e6df] inline-flex items-center gap-1 shadow-sm"
+                      title="Reschedule Shoot Date"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-[#e8491c]" />
+                      <span>Reschedule</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedBooking(booking);
                         setActionError(null);
                         setActionSuccess(null);
                       }}
-                      className="px-4 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a] transition-colors border border-[#e6e4dc]"
+                      className="px-3.5 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a] transition-colors border border-[#e6e4dc]"
                     >
                       {isReschedulePending ? "Review Changes &rarr;" : "View Details"}
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteBooking(booking.id);
+                      }}
+                      className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+                      title="Delete Booking"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -519,12 +690,29 @@ export default function AdminBookingsPage() {
               <div className="flex items-center gap-1.5 print-hide">
                 <button
                   type="button"
+                  onClick={() => handleOpenReschedule(selectedBooking)}
+                  title="Edit or Reschedule Shoot"
+                  className="px-3 py-1.5 rounded-xl text-[#e8491c] hover:bg-[#fff2ed] border border-[#fbdcd0] transition-colors inline-flex items-center gap-1 text-xs font-bold"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Reschedule</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => window.print()}
                   title="Print Full Booking Details"
                   className="px-3 py-1.5 rounded-xl text-[#615e57] hover:text-[#1c1b1a] hover:bg-[#f5f4ef] border border-[#e6e4dc] transition-colors inline-flex items-center gap-1 text-xs font-bold"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteBooking(selectedBooking.id)}
+                  title="Delete Booking"
+                  className="p-1.5 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setSelectedBooking(null)}
@@ -723,8 +911,8 @@ export default function AdminBookingsPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#f0eee8] flex items-center justify-between gap-2 print-hide">
-              <div className="flex items-center gap-2">
+            <div className="pt-4 border-t border-[#f0eee8] flex flex-wrap items-center justify-between gap-2 print-hide">
+              <div className="flex flex-wrap items-center gap-2">
                 <a
                   href={getClientWhatsappUrl(selectedBooking)}
                   target="_blank"
@@ -732,8 +920,17 @@ export default function AdminBookingsPage() {
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a] transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Chat on WhatsApp</span>
+                  <span>WhatsApp</span>
                 </a>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenReschedule(selectedBooking)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#fff2ed] hover:bg-[#ffe6dc] text-xs font-bold text-[#e8491c] border border-[#fbdcd0] transition-colors"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Reschedule Shoot</span>
+                </button>
 
                 <button
                   type="button"
@@ -741,7 +938,16 @@ export default function AdminBookingsPage() {
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#faf9f6] text-xs font-bold text-[#1c1b1a] border border-[#d6d4cb] transition-colors shadow-sm"
                 >
                   <Printer className="w-3.5 h-3.5 text-[#1c1b1a]" />
-                  <span>Print Full Details</span>
+                  <span>Print Summary</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteBooking(selectedBooking.id)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-700 border border-rose-200 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Delete</span>
                 </button>
               </div>
 
@@ -750,6 +956,162 @@ export default function AdminBookingsPage() {
                 className="px-5 py-2 rounded-xl bg-[#1c1b1a] hover:bg-black text-white text-xs font-bold"
               >
                 Close Drawer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Admin Direct Reschedule Modal */}
+      {editingBooking && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#f0eee8]">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8491c]">
+                  Reschedule Shoot · {editingBooking.id}
+                </span>
+                <h3 className="text-lg font-bold text-[#1c1b1a]">Update Shoot Date &amp; Details</h3>
+                <p className="text-xs text-[#7a766f]">{editingBooking.sessionSnapshot?.name}</p>
+              </div>
+              <button
+                onClick={() => setEditingBooking(null)}
+                className="p-1.5 rounded-xl text-[#8a867f] hover:bg-[#f5f4ef]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {actionError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{actionError}</span>
+              </div>
+            )}
+
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-1">
+                  <label className="block font-bold text-[#1c1b1a] mb-1">Shoot Date *</label>
+                  <input
+                    type="date"
+                    value={rescheduleForm.date}
+                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, date: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs font-semibold"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1c1b1a] mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={rescheduleForm.start}
+                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, start: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1c1b1a] mb-1">End Time</label>
+                  <input
+                    type="time"
+                    value={rescheduleForm.end}
+                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, end: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#1c1b1a] mb-1">Secondary / Additional Date (Optional)</label>
+                <input
+                  type="date"
+                  value={rescheduleForm.secondaryDate}
+                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, secondaryDate: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-[#1c1b1a] mb-1">Client Name</label>
+                  <input
+                    type="text"
+                    value={rescheduleForm.customerName}
+                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, customerName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-[#1c1b1a] mb-1">Client Phone</label>
+                  <input
+                    type="text"
+                    value={rescheduleForm.customerPhone}
+                    onChange={(e) => setRescheduleForm({ ...rescheduleForm, customerPhone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#1c1b1a] mb-1">Client Email</label>
+                <input
+                  type="email"
+                  value={rescheduleForm.customerEmail}
+                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, customerEmail: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#1c1b1a] mb-1">Location or Venue</label>
+                <input
+                  type="text"
+                  value={rescheduleForm.location}
+                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, location: e.target.value })}
+                  placeholder="e.g. Victoria Baths, Manchester"
+                  className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#1c1b1a] mb-1">Creative Notes &amp; Instructions</label>
+                <textarea
+                  rows={2}
+                  value={rescheduleForm.notes}
+                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, notes: e.target.value })}
+                  placeholder="Special shot list or notes..."
+                  className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs"
+                />
+              </div>
+
+              <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rescheduleForm.notifyClient}
+                  onChange={(e) => setRescheduleForm({ ...rescheduleForm, notifyClient: e.target.checked })}
+                  className="w-4 h-4 rounded text-[#e8491c] focus:ring-[#e8491c]"
+                />
+                <span className="font-semibold text-[#48453f]">
+                  Email updated confirmation to client
+                </span>
+              </label>
+            </div>
+
+            <div className="pt-4 border-t border-[#f0eee8] flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingBooking(null)}
+                className="px-4 py-2 rounded-xl bg-[#f5f4ef] hover:bg-[#ebe9e1] text-xs font-bold text-[#1c1b1a]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={actionLoading}
+                onClick={handleSaveReschedule}
+                className="px-5 py-2 rounded-xl bg-[#e8491c] hover:bg-[#d03d12] text-white text-xs font-bold transition-all shadow-md shadow-[#e8491c]/25 disabled:opacity-50"
+              >
+                {actionLoading ? "Saving..." : "Save & Reschedule Shoot"}
               </button>
             </div>
           </div>

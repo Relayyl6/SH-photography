@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { sendRescheduleRequestNotification, sendRescheduleDecisionNotification } from "@/lib/email";
 import { findSlotConflict } from "@/lib/bookings-conflict";
 
@@ -29,7 +30,116 @@ async function handleUpdate(req: NextRequest) {
     }
 
     const docRef = doc(db, "bookings", actualBookingId);
+
+    // 0. DELETE BOOKING (Admin Delete)
+    if (action === "delete") {
+      try {
+        const adminDb = getAdminDb();
+        if (adminDb) {
+          await adminDb.collection("bookings").doc(actualBookingId).delete();
+        } else {
+          await deleteDoc(docRef);
+        }
+      } catch (delErr) {
+        console.warn("Delete in Firestore caught:", delErr);
+      }
+      return NextResponse.json({ success: true, action: "deleted", bookingId: actualBookingId });
+    }
+
     const snap = await getDoc(docRef);
+
+    // 0.5 ADMIN DIRECT RESCHEDULE / UPDATE
+    if (action === "reschedule") {
+      const {
+        newDate,
+        newStart,
+        newEnd,
+        customerName,
+        customerEmail,
+        customerPhone,
+        location,
+        notes,
+        secondaryDate,
+        notifyClient,
+        bookingFallback,
+      } = body;
+
+      const current = snap.exists() ? snap.data() : (bookingFallback || {});
+      const targetDate = newDate || current.slot?.date;
+      const targetStart = newStart || current.slot?.start || "10:00";
+      const targetEnd = newEnd || current.slot?.end || "11:30";
+
+      const updatedSlot = {
+        date: targetDate,
+        start: targetStart,
+        end: targetEnd,
+      };
+
+      const updatedCustomer = {
+        ...(current.customer || {}),
+        ...(customerName ? { name: customerName } : {}),
+        ...(customerEmail ? { email: customerEmail } : {}),
+        ...(customerPhone ? { phone: customerPhone } : {}),
+      };
+
+      const updatedAnswers = {
+        ...(current.answers || {}),
+        ...(location ? { location } : {}),
+        ...(notes ? { notes } : {}),
+      };
+
+      const payload = {
+        ...current,
+        id: actualBookingId,
+        slot: updatedSlot,
+        customer: updatedCustomer,
+        answers: updatedAnswers,
+        ...(secondaryDate ? { secondaryDate, isDoubleDate: true } : {}),
+        status: current.status === "reschedule_requested" ? "confirmed" : (current.status || "confirmed"),
+        pendingChangeRequest: null,
+        updatedAt: Date.now(),
+        statusHistory: [
+          ...(current.statusHistory || []),
+          {
+            status: current.status || "confirmed",
+            by: "Benedict Henry (Admin Rescheduled)",
+            at: Date.now(),
+          },
+        ],
+      };
+
+      const adminDb = getAdminDb();
+      if (adminDb) {
+        await adminDb.collection("bookings").doc(actualBookingId).set(payload, { merge: true });
+      } else {
+        await setDoc(docRef, payload, { merge: true });
+      }
+
+      if (notifyClient && updatedCustomer.email) {
+        try {
+          await sendRescheduleDecisionNotification({
+            bookingId: actualBookingId,
+            sessionName: current.sessionSnapshot?.name || "Photography Session",
+            status: "approved",
+            slot: updatedSlot,
+            customer: {
+              name: updatedCustomer.name || "Client",
+              email: updatedCustomer.email,
+            },
+            ownerMessage: "Your photoshoot schedule has been updated by Benedict Henry at SH Photography.",
+          });
+        } catch (mailErr) {
+          console.warn("Failed to send reschedule email to client:", mailErr);
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        action: "rescheduled",
+        bookingId: actualBookingId,
+        updatedBooking: payload,
+      });
+    }
 
     if (!snap.exists()) {
       return NextResponse.json({ error: "Booking not found." }, { status: 404 });
