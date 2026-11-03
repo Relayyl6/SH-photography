@@ -239,7 +239,7 @@ export default function AdminOverviewPage() {
             <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-[#f7f6f2] border border-[#e6e4dc]">
               {bento.slots.map((slot, index) => {
                 const img = imgMap.get(slot.portfolioImageId);
-                const displaySrc = img ? img.url : `/photos/weddings/weddings_0${(index % 4) + 1}.jpg`;
+                const displaySrc = slot.customImageUrl || (img ? img.url : `/photos/weddings/weddings_0${(index % 4) + 1}.jpg`);
                 return (
                   <Link
                     key={slot.slotId}

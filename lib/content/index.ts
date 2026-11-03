@@ -128,11 +128,11 @@ export const DEFAULT_BENTO_HOME: BentoHomeDoc = {
     { slotId: '2', portfolioImageId: 'portraits_01', label: 'Portraits' },
     { slotId: '3', portfolioImageId: 'family_01', label: 'Family' },
     { slotId: '4', portfolioImageId: 'events_01', label: 'Events' },
-    { slotId: '5', portfolioImageId: 'birthday_01', label: 'Birthdays' },
-    { slotId: '6', portfolioImageId: 'behind-the-scenes_01', label: 'Behind the Scenes' },
+    { slotId: '5', portfolioImageId: 'behind-the-scenes_01', label: 'Behind the Scenes' },
+    { slotId: '6', portfolioImageId: 'birthday_01', label: 'Birthdays' },
     { slotId: '7', portfolioImageId: 'personal_01', label: 'Personal Branding' },
     { slotId: '8', portfolioImageId: 'sports_01', label: 'Sports & Athletics' },
-    { slotId: '9', portfolioImageId: 'weddings_02', label: 'Editorial Stories' },
+    { slotId: '9', portfolioImageId: 'behind-the-scenes_05', label: 'Photography Classes & Retouching' },
   ],
   published: true,
   updatedAt: Date.now(),
@@ -341,12 +341,75 @@ export async function getAboutPageContent(): Promise<AboutPageDoc> {
   return DEFAULT_ABOUT_PAGE;
 }
 
+export function sanitizeBentoSlots(doc: BentoHomeDoc): BentoHomeDoc {
+  if (!doc?.slots || !Array.isArray(doc.slots)) {
+    return DEFAULT_BENTO_HOME;
+  }
+
+  const slotMap = new Map<string, any>();
+  doc.slots.forEach((s) => {
+    if (s?.slotId) slotMap.set(String(s.slotId), s);
+  });
+
+  const CANONICAL_DEFAULTS: Record<string, { label: string; defaultImg: string }> = {
+    '1': { label: 'Weddings', defaultImg: 'weddings_01' },
+    '2': { label: 'Portraits', defaultImg: 'portraits_01' },
+    '3': { label: 'Family', defaultImg: 'family_01' },
+    '4': { label: 'Events', defaultImg: 'events_01' },
+    '5': { label: 'Behind the Scenes', defaultImg: 'behind-the-scenes_01' },
+    '6': { label: 'Birthdays', defaultImg: 'birthday_01' },
+    '7': { label: 'Personal Branding', defaultImg: 'personal_01' },
+    '8': { label: 'Sports & Athletics', defaultImg: 'sports_01' },
+    '9': { label: 'Photography Classes & Retouching', defaultImg: 'behind-the-scenes_05' },
+  };
+
+  const fixedSlots = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((id) => {
+    const canonical = CANONICAL_DEFAULTS[id] || { label: `Slot ${id}`, defaultImg: 'weddings_01' };
+    const existing = slotMap.get(id);
+
+    if (!existing) {
+      return {
+        slotId: id,
+        portfolioImageId: canonical.defaultImg,
+        label: canonical.label,
+      };
+    }
+
+    let imgId = existing.portfolioImageId;
+    let label = existing.label;
+
+    // Detect inverted or legacy slot labels / ids
+    if (id === '5') {
+      if (label === 'Birthdays') label = 'Behind the Scenes';
+      if (imgId === 'birthday_01') imgId = 'behind-the-scenes_01';
+    } else if (id === '6') {
+      if (label === 'Behind the Scenes') label = 'Birthdays';
+      if (imgId === 'behind-the-scenes_01') imgId = 'birthday_01';
+    } else if (id === '9') {
+      if (label === 'Editorial Stories' || !label) label = 'Photography Classes & Retouching';
+      if (imgId === 'weddings_02') imgId = 'behind-the-scenes_05';
+    }
+
+    return {
+      ...existing,
+      slotId: id,
+      label: existing.customTitle || label || canonical.label,
+      portfolioImageId: imgId || canonical.defaultImg,
+    };
+  });
+
+  return {
+    ...doc,
+    slots: fixedSlots,
+  };
+}
+
 export async function getBentoSlots(): Promise<BentoHomeDoc> {
   try {
     const { db } = await import('@/lib/firebase/config');
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'bento', 'home'));
-    if (snap.exists()) return snap.data() as BentoHomeDoc;
+    if (snap.exists()) return sanitizeBentoSlots(snap.data() as BentoHomeDoc);
   } catch {}
   return DEFAULT_BENTO_HOME;
 }

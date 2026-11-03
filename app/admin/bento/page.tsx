@@ -13,6 +13,7 @@ import {
   Sliders,
   CheckCircle2,
   ExternalLink,
+  RotateCcw,
 } from "lucide-react";
 import {
   getBentoSlots,
@@ -101,7 +102,7 @@ const FIXED_SLOTS: SlotConfig[] = [
   {
     slotId: "9",
     category: "behind-the-scenes",
-    title: "Classes & Retouching",
+    title: "Photography Classes & Retouching",
     badge: "Education",
     aspect: "aspect-[16/9]",
     dimensionsNote: "Wide Landscape 2x1",
@@ -167,6 +168,7 @@ export default function AdminBentoPage() {
         found = true;
         return {
           ...s,
+          label: activeSlot?.title || s.label,
           portfolioImageId: imageId,
           ...(resolvedUrl ? { customImageUrl: resolvedUrl } : {}),
         };
@@ -213,6 +215,12 @@ export default function AdminBentoPage() {
       slots: updatedSlots,
       updatedAt: Date.now(),
     });
+  };
+
+  const handleResetToDefaults = () => {
+    if (confirm("Reset all 9 Bento slots to standard recommended layout? This will fix any inverted categories or photos.")) {
+      setBento(DEFAULT_BENTO_HOME);
+    }
   };
 
   const handleSaveBento = async () => {
@@ -271,6 +279,16 @@ export default function AdminBentoPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleResetToDefaults}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-[#faf9f6] hover:bg-[#ebe9e1] text-[#7a766f] hover:text-[#1c1b1a] text-xs font-bold transition-colors border border-[#e6e4dc]"
+            title="Reset slots to recommended alignment (Behind the Scenes on #5, Birthdays on #6, Classes on #9)"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Alignment</span>
+          </button>
+
           <Link
             href="/"
             target="_blank"

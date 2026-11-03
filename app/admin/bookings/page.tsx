@@ -19,6 +19,20 @@ import {
   Trash2,
   Edit3,
   X,
+  User,
+  MapPin,
+  Sparkles,
+  Palette,
+  Layers,
+  FileText,
+  CheckCircle2,
+  DollarSign,
+  ShieldCheck,
+  Phone,
+  Compass,
+  Briefcase,
+  Camera,
+  PackageCheck,
 } from "lucide-react";
 import { BookingDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
@@ -677,8 +691,28 @@ export default function AdminBookingsPage() {
 
           <div
             id="printable-booking-modal"
-            className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200 space-y-6"
+            className="bg-white rounded-3xl max-w-3xl lg:max-w-4xl w-full max-h-[92vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-[#e6e4dc] animate-in zoom-in-95 duration-200 space-y-6"
           >
+            {/* Printable Call Sheet Header (Print Only) */}
+            <div className="hidden print:block pb-4 mb-2 border-b-2 border-black">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-xl font-black uppercase tracking-wider text-black">
+                    SH Photography · Shoot Call Sheet &amp; Booking Dossier
+                  </h1>
+                  <p className="text-xs text-gray-700">
+                    Lead Photographer: Benedict Henry · Manchester, United Kingdom · {siteConfig.phoneDisplay} · {siteConfig.email}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-mono font-bold text-black">REF: #{selectedBooking.id}</p>
+                  <p className="text-[10px] text-gray-600 uppercase font-semibold">
+                    Status: {selectedBooking.status}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center justify-between pb-4 border-b border-[#f0eee8]">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#e8491c]">
@@ -823,57 +857,482 @@ export default function AdminBookingsPage() {
               </div>
             </div>
 
-            {/* Contact Details */}
-            <div className="p-4 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-2 text-xs">
-              <p className="font-bold text-[#1c1b1a] mb-1">Customer Information:</p>
-              <p className="text-[#615e57]">
-                <strong>Email:</strong> {selectedBooking.customer?.email}
-              </p>
-              <p className="text-[#615e57]">
-                <strong>Phone:</strong> {selectedBooking.customer?.phone || "Not provided"}
-              </p>
-              <p className="text-[#615e57]">
-                <strong>Primary Slot:</strong> {selectedBooking.slot?.date} ({selectedBooking.slot?.start} – {selectedBooking.slot?.end})
-              </p>
+            {/* ========================================================================= */}
+            {/* EXHAUSTIVE QUESTIONNAIRE & BOOKING SPECIFICATION */}
+            {/* ========================================================================= */}
+            {(() => {
+              const a = (selectedBooking.answers || {}) as Record<string, any>;
 
-              {/* Double Date specification */}
-              {Boolean(selectedBooking.isDoubleDate || selectedBooking.answers?.isDoubleDate) && (
-                <div className="pt-2 border-t border-[#f0eee8] text-purple-900 font-medium">
-                  <strong>Multiple / Double Dates:</strong> Yes
-                  <br />
-                  <span>
-                    Secondary Date: {String(selectedBooking.secondaryDate || selectedBooking.answers?.secondaryDate || "To be confirmed with client")}
-                  </span>
-                </div>
-              )}
+              // 1. Client profile
+              const clientName = a.fullName || selectedBooking.customer?.name || "Client";
+              const clientEmail = a.email || selectedBooking.customer?.email || "";
+              const clientPhone = a.phone || selectedBooking.customer?.phone || "";
+              const clientPrefContact = a.preferredContact || "Email";
+              const clientCompany = a.companyName || "";
+              const clientInstagram = a.instagramHandle || "";
+              const clientReferral = a.howDidYouFindMe || "";
 
-              {/* Extra Info / Unaccounted details */}
-              {Boolean(selectedBooking.extraInfo || selectedBooking.answers?.extraInfo) && (
-                <div className="pt-2 border-t border-[#f0eee8] text-gray-800">
-                  <p className="font-bold text-[#1c1b1a]">Additional Details &amp; Custom Requests:</p>
-                  <p className="mt-0.5 bg-sand/40 p-2.5 rounded-lg border border-[#e8e6df] whitespace-pre-wrap">
-                    {String(selectedBooking.extraInfo || selectedBooking.answers?.extraInfo || "")}
-                  </p>
-                </div>
-              )}
-            </div>
+              // 2. Session & Scheduling
+              const sessCategory = a.serviceCategory || selectedBooking.sessionSnapshot?.name || selectedBooking.sessionId || "Standard Session";
+              const sessSubType = a.sessionSubType || "";
+              const sessNumSubjects = a.numSubjects || "";
+              const sessDuration = a.estimatedDuration || "";
+              const sessDate = a.preferredDate || selectedBooking.slot?.date || "To be arranged";
+              const sessTime = a.preferredStartTime || (selectedBooking.slot ? `${selectedBooking.slot.start} – ${selectedBooking.slot.end}` : "Flexible");
+              const sessDateFlexible = a.dateFlexible || "";
+              const sessAltDate = a.alternateDate || "";
+              const sessIsDoubleDate = Boolean(selectedBooking.isDoubleDate || a.isDoubleDate);
+              const sessSecondaryDate = selectedBooking.secondaryDate || a.secondaryDate || "";
+              const sessMultiDayCount = a.multiDayCount || "";
+              const sessAdditionalDates = Array.isArray(a.additionalDates) ? a.additionalDates : [];
+              const sessAdditionalDatesText = a.additionalDatesText || "";
 
-            {/* Custom Form Answers */}
-            {selectedBooking.answers && Object.keys(selectedBooking.answers).length > 0 && (
-              <div className="p-4 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-2 text-xs">
-                <p className="font-bold text-[#1c1b1a] mb-1">Questionnaire Answers (Full Booking Form):</p>
-                <div className="space-y-1.5 max-h-48 overflow-y-auto print:max-h-none print:overflow-visible">
-                  {Object.entries(selectedBooking.answers).map(([k, v]) => (
-                    <div key={k} className="text-[#615e57] grid grid-cols-1 sm:grid-cols-3 gap-1 py-1 border-b border-[#f5f4ef] last:border-0">
-                      <span className="font-semibold capitalize text-[#1c1b1a] sm:col-span-1">{k}:</span>{" "}
-                      <span className="sm:col-span-2 text-[#2c2b29] font-medium break-words">
-                        {typeof v === "object" ? JSON.stringify(v) : String(v)}
-                      </span>
+              // 3. Location & Travel
+              const locType = a.locationType || "";
+              const locAddress = a.address || "";
+              const locCityPostcode = a.cityPostcode || "";
+              const locIndoorsOutdoors = a.indoorsOutdoors || "";
+              const locTravelRequired = a.travelRequired || "";
+              const locTravelDetails = a.travelDetails || "";
+              const locParkingNotes = a.parkingNotes || "";
+
+              // 4. Creative Vision & Aesthetic
+              const creativeVision = a.vision || "";
+              const creativeStyles: string[] = Array.isArray(a.stylePreferences)
+                ? a.stylePreferences
+                : a.stylePreferences ? [String(a.stylePreferences)] : [];
+              const creativeColorPref = a.colorPreference || "";
+              const creativeInspirationLinks = a.inspirationLinks || "";
+              const creativeMustHaveShots = a.mustHaveShots || "";
+              const creativeSpecialRequests = a.specialRequests || "";
+              const creativeExtraInfo = a.extraInfo || selectedBooking.extraInfo || "";
+
+              // 5. Deliverables & Production
+              const prodDeliverables: string[] = Array.isArray(a.deliverables)
+                ? a.deliverables
+                : a.deliverables ? [String(a.deliverables)] : [];
+              const prodEditedImages = a.editedImagesExpected || "";
+              const prodTurnaround = a.turnaroundTime || "";
+              const prodUsageRights = a.usageRights || "";
+              const prodSecondShooter = a.secondShooter || "";
+
+              // 6. Budget & Timeline
+              const finBudgetRange = a.budgetRange || "";
+              const finBudgetFlexible = a.budgetFlexible || "";
+              const finHowSoon = a.howSoon || "";
+              const finDepositAck = Boolean(a.depositAck);
+
+              // 7. Consents
+              const legalTermsAgreed = Boolean(a.termsAgreed);
+              const legalPrivacyAgreed = Boolean(a.privacyAgreed);
+              const legalContactConsent = Boolean(a.contactConsent);
+
+              // 8. Custom / Unaccounted fields
+              const STANDARD_KEYS = new Set([
+                'fullName', 'email', 'phone', 'preferredContact', 'companyName', 'instagramHandle', 'howDidYouFindMe',
+                'serviceCategory', 'sessionSubType', 'numSubjects', 'estimatedDuration', 'preferredDate', 'preferredStartTime',
+                'dateFlexible', 'alternateDate', 'isDoubleDate', 'secondaryDate', 'multiDayCount', 'additionalDates', 'additionalDatesText',
+                'locationType', 'address', 'cityPostcode', 'indoorsOutdoors', 'travelRequired', 'travelDetails', 'parkingNotes',
+                'vision', 'stylePreferences', 'colorPreference', 'inspirationLinks', 'mustHaveShots', 'specialRequests', 'extraInfo',
+                'deliverables', 'editedImagesExpected', 'turnaroundTime', 'usageRights', 'secondShooter',
+                'budgetRange', 'budgetFlexible', 'howSoon', 'depositAck',
+                'termsAgreed', 'privacyAgreed', 'contactConsent'
+              ]);
+              const customEntries = Object.entries(a).filter(
+                ([k, v]) => !STANDARD_KEYS.has(k) && v !== undefined && v !== null && v !== ""
+              );
+
+              return (
+                <div className="space-y-4">
+                  {/* Section 1: Customer Profile & Contact */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <User className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">1. Customer Profile &amp; Contact</h4>
                     </div>
-                  ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Full Name</p>
+                        <p className="font-bold text-[#1c1b1a] text-sm">{clientName}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Email Address</p>
+                        {clientEmail ? (
+                          <a href={`mailto:${clientEmail}`} className="font-semibold text-[#e8491c] hover:underline flex items-center gap-1">
+                            <span>{clientEmail}</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="font-medium text-gray-500">Not provided</p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Phone Number</p>
+                        {clientPhone ? (
+                          <a href={`tel:${clientPhone}`} className="font-semibold text-[#1c1b1a] hover:underline flex items-center gap-1">
+                            <span>{clientPhone}</span>
+                            <Phone className="w-3 h-3 text-emerald-600" />
+                          </a>
+                        ) : (
+                          <p className="font-medium text-gray-500">Not provided</p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Preferred Contact Method</p>
+                        <p className="font-semibold text-[#1c1b1a]">{clientPrefContact}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Company / Organization</p>
+                        <p className="font-semibold text-[#1c1b1a]">{clientCompany || "Individual / Private"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Instagram / Social Handle</p>
+                        {clientInstagram ? (
+                          <a
+                            href={`https://instagram.com/${clientInstagram.replace(/^@/, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-[#e8491c] hover:underline"
+                          >
+                            {clientInstagram.startsWith("@") ? clientInstagram : `@${clientInstagram}`}
+                          </a>
+                        ) : (
+                          <p className="font-medium text-gray-500">None provided</p>
+                        )}
+                      </div>
+                      <div className="sm:col-span-2 md:col-span-3">
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Referral Source</p>
+                        <p className="font-semibold text-[#1c1b1a]">{clientReferral || "Direct Website Visit"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Session & Scheduling */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <Calendar className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">2. Session &amp; Schedule Details</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Service Category</p>
+                        <p className="font-bold text-[#1c1b1a]">{sessCategory}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Session Sub-Type / Concept</p>
+                        <p className="font-semibold text-[#1c1b1a]">{sessSubType || "Bespoke Shoot"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Number of Subjects</p>
+                        <p className="font-semibold text-[#1c1b1a]">{sessNumSubjects || "Not specified"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Primary Shoot Date</p>
+                        <p className="font-bold text-emerald-800 text-sm">📅 {sessDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Time Slot / Preferred Start</p>
+                        <p className="font-bold text-[#1c1b1a]">⏰ {sessTime}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Estimated Duration</p>
+                        <p className="font-semibold text-[#1c1b1a]">{sessDuration || "Standard package duration"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Date Flexible?</p>
+                        <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                          sessDateFlexible === "Yes" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-700"
+                        }`}>
+                          {sessDateFlexible === "Yes" ? "Yes — Client has flexible schedule" : sessDateFlexible || "No / Strict"}
+                        </span>
+                      </div>
+                      {sessAltDate && (
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-[#7a766f]">Alternate Shoot Date</p>
+                          <p className="font-semibold text-gray-700">📅 {sessAltDate}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Double Date / Multi-day Alert box */}
+                    {sessIsDoubleDate && (
+                      <div className="mt-3 p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 space-y-1">
+                        <div className="flex items-center gap-1.5 font-bold text-xs">
+                          <Layers className="w-4 h-4 text-purple-700" />
+                          <span>Multi-Day / Double Date Shoot Confirmed</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                          <p><strong>Secondary Date:</strong> {sessSecondaryDate || "To be arranged with client"}</p>
+                          {sessMultiDayCount && <p><strong>Total Days:</strong> {sessMultiDayCount}</p>}
+                        </div>
+                        {(sessAdditionalDates.length > 0 || sessAdditionalDatesText) && (
+                          <div className="pt-1 text-xs">
+                            <strong>Additional Specified Dates:</strong>{" "}
+                            {sessAdditionalDates.length > 0 ? sessAdditionalDates.join(", ") : sessAdditionalDatesText}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section 3: Location & Logistics */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <MapPin className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">3. Shoot Location &amp; Travel Logistics</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Location Type</p>
+                        <p className="font-bold text-[#1c1b1a]">{locType || "Studio / Venue"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Environment</p>
+                        <p className="font-semibold text-[#1c1b1a]">{locIndoorsOutdoors || "Indoors"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Travel Outside Manchester?</p>
+                        <p className={`font-bold ${locTravelRequired === "Yes" ? "text-amber-800" : "text-gray-700"}`}>
+                          {locTravelRequired === "Yes" ? "Yes — Travel Required" : "No — Local Manchester"}
+                        </p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Street Address / Venue</p>
+                        <p className="font-semibold text-[#1c1b1a]">{locAddress || "Studio / Venue address to be confirmed"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">City / Postcode</p>
+                        <p className="font-semibold text-[#1c1b1a]">{locCityPostcode || "Manchester, UK"}</p>
+                      </div>
+                      {locTravelDetails && (
+                        <div className="sm:col-span-2 md:col-span-3">
+                          <p className="text-[10px] uppercase font-bold text-[#7a766f]">Travel &amp; Transit Details</p>
+                          <p className="font-semibold text-[#1c1b1a]">{locTravelDetails}</p>
+                        </div>
+                      )}
+                      {locParkingNotes && (
+                        <div className="sm:col-span-2 md:col-span-3">
+                          <p className="text-[10px] uppercase font-bold text-[#7a766f]">Parking &amp; Venue Access Notes</p>
+                          <p className="font-semibold text-[#1c1b1a]">{locParkingNotes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Section 4: Creative Vision & Aesthetics */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <Sparkles className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">4. Creative Concept, Vision &amp; Style</h4>
+                    </div>
+
+                    {/* Vision Statement */}
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-1">Creative Narrative &amp; Vision</p>
+                      <div className="p-3.5 rounded-xl bg-white border border-[#e6e4dc] text-gray-800 italic whitespace-pre-wrap leading-relaxed shadow-inner">
+                        &ldquo;{creativeVision || "No specific narrative submitted."}&rdquo;
+                      </div>
+                    </div>
+
+                    {/* Style Preferences Chips */}
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-1.5">Style Preferences</p>
+                      {creativeStyles.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {creativeStyles.map((style, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg bg-[#fff2ed] text-[#e8491c] font-bold text-[11px] border border-[#fbdcd0]"
+                            >
+                              {style}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="font-medium text-gray-500">Standard SH Photography signature style</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Color Palette Preference</p>
+                        <p className="font-semibold text-[#1c1b1a]">{creativeColorPref || "Color & B/W Balanced"}</p>
+                      </div>
+
+                      {creativeInspirationLinks && (
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-[#7a766f]">Inspiration Links / Moodboard</p>
+                          {creativeInspirationLinks.startsWith("http") ? (
+                            <a
+                              href={creativeInspirationLinks}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-semibold text-[#e8491c] hover:underline flex items-center gap-1 truncate"
+                            >
+                              <span className="truncate">{creativeInspirationLinks}</span>
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                            </a>
+                          ) : (
+                            <p className="font-semibold text-[#1c1b1a] whitespace-pre-wrap">{creativeInspirationLinks}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {creativeMustHaveShots && (
+                      <div className="pt-1">
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-0.5">Must-Have Shots / Key Moments</p>
+                        <div className="p-2.5 rounded-xl bg-white border border-[#e6e4dc] whitespace-pre-wrap font-medium text-gray-800">
+                          {creativeMustHaveShots}
+                        </div>
+                      </div>
+                    )}
+
+                    {creativeSpecialRequests && (
+                      <div className="pt-1">
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-0.5">Special Requests, Wardrobe &amp; Props</p>
+                        <div className="p-2.5 rounded-xl bg-white border border-[#e6e4dc] whitespace-pre-wrap font-medium text-gray-800">
+                          {creativeSpecialRequests}
+                        </div>
+                      </div>
+                    )}
+
+                    {creativeExtraInfo && (
+                      <div className="pt-1">
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-0.5">Additional Client Comments &amp; Notes</p>
+                        <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200 whitespace-pre-wrap font-medium text-gray-800">
+                          {creativeExtraInfo}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section 5: Deliverables & Production */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <PackageCheck className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">5. Deliverables &amp; Post-Production</h4>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-[#7a766f] mb-1.5">Required Deliverables</p>
+                      {prodDeliverables.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {prodDeliverables.map((d, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2.5 py-1 rounded-lg bg-[#f0f9ff] text-sky-800 font-bold text-[11px] border border-sky-200"
+                            >
+                              ✓ {d}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="font-medium text-gray-500">Standard session digital gallery</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Edited Images Expected</p>
+                        <p className="font-semibold text-[#1c1b1a]">{prodEditedImages || "Standard session package"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Turnaround Speed</p>
+                        <p className="font-semibold text-[#1c1b1a]">{prodTurnaround || "Standard (2–3 weeks)"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Usage Rights</p>
+                        <p className="font-semibold text-[#1c1b1a]">{prodUsageRights || "Personal & Social Media Rights"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Second Shooter Required?</p>
+                        <p className="font-semibold text-[#1c1b1a]">{prodSecondShooter || "No / Lead Only"}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 6: Budget & Investment */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <DollarSign className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">6. Budget, Timeline &amp; Investment</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Stated Budget Range</p>
+                        <p className="font-black text-[#e8491c] text-sm">{finBudgetRange || "To discuss"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Budget Flexibility</p>
+                        <p className="font-semibold text-[#1c1b1a]">{finBudgetFlexible || "Standard"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Booking Horizon / Urgency</p>
+                        <p className="font-semibold text-[#1c1b1a]">{finHowSoon || "Standard planning"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-[#7a766f]">Deposit Acknowledged</p>
+                        <p className={`font-bold ${finDepositAck ? "text-emerald-700" : "text-amber-700"}`}>
+                          {finDepositAck ? "✓ Confirmed by Client" : "Pending Confirmation"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 7: Legal Agreements & Consents */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-3 text-xs print:bg-white print:border-gray-300">
+                    <div className="flex items-center gap-2 pb-2 border-b border-[#eceae3]">
+                      <ShieldCheck className="w-4 h-4 text-[#e8491c]" />
+                      <h4 className="font-bold text-[#1c1b1a] text-sm">7. Consents &amp; Verification</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-4 h-4 ${legalTermsAgreed ? "text-emerald-600" : "text-gray-300"}`} />
+                        <div>
+                          <p className="font-bold text-[#1c1b1a]">Terms &amp; Conditions</p>
+                          <p className="text-[10px] text-gray-500">{legalTermsAgreed ? "Agreed upon submit" : "Pending"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-4 h-4 ${legalPrivacyAgreed ? "text-emerald-600" : "text-gray-300"}`} />
+                        <div>
+                          <p className="font-bold text-[#1c1b1a]">Privacy Policy</p>
+                          <p className="text-[10px] text-gray-500">{legalPrivacyAgreed ? "Agreed upon submit" : "Pending"}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-4 h-4 ${legalContactConsent ? "text-emerald-600" : "text-gray-300"}`} />
+                        <div>
+                          <p className="font-bold text-[#1c1b1a]">Contact Consent</p>
+                          <p className="text-[10px] text-gray-500">{legalContactConsent ? "Consent granted" : "Pending"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 8: Catch-All for Any Custom Dynamic Fields */}
+                  {customEntries.length > 0 && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/50 border border-amber-200/80 space-y-3 text-xs print:bg-white print:border-gray-300">
+                      <div className="flex items-center gap-2 pb-2 border-b border-amber-200 text-amber-900">
+                        <FileText className="w-4 h-4 text-amber-700" />
+                        <h4 className="font-bold text-sm">8. Additional Questionnaire Responses</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {customEntries.map(([k, v]) => (
+                          <div key={k} className="p-2.5 bg-white rounded-xl border border-amber-100">
+                            <p className="text-[10px] uppercase font-bold text-amber-800">{k.replace(/([A-Z])/g, ' $1')}</p>
+                            <p className="font-semibold text-gray-900 mt-0.5 break-words">
+                              {typeof v === "object" ? JSON.stringify(v) : String(v)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Owner Studio Notes */}
             <div className="space-y-3">
