@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth, isAdminEmail } from "@/lib/auth/auth-context";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -115,8 +115,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   }
 
-  // Authenticated but NOT owner: Access Denied
-  if (!isOwner) {
+  // Authenticated but NOT owner/admin: Access Denied
+  const isAuthorized = isOwner || isAdminEmail(user.email);
+  if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-[#f5f4ef] flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-lg border border-[#e6e4dc] text-center">

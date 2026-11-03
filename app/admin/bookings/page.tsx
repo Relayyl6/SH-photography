@@ -456,6 +456,173 @@ export default function AdminBookingsPage() {
     return `https://wa.me/${cleanPhone || siteConfig.whatsappE164}?text=${msg}`;
   };
 
+  const handlePrintBooking = (b: BookingDoc) => {
+    const a = b.answers || {};
+    const clientName = b.customer?.name || "Anonymous Client";
+    const clientEmail = b.customer?.email || "";
+    const clientPhone = b.customer?.phone || "";
+    const clientPrefContact = (a.preferredContact as string) || (b.customer as any)?.preferredContact || "Email";
+    const clientCompany = (a.companyName as string) || (a.company as string) || "";
+    const clientInstagram = (a.instagramHandle as string) || (a.instagram as string) || "";
+
+    const sessionTitle = b.sessionSnapshot?.name || b.sessionId || "Photography Session";
+    const shootDate = b.slot?.date || "Date Pending";
+    const shootTime = `${b.slot?.start || "10:00"} – ${b.slot?.end || "11:30"}`;
+    const duration = (a.estimatedDuration as string) || (a.duration as string) || "Standard";
+    const subjects = (a.numSubjects as string) || (a.subjects as string) || "Individual / Couple";
+
+    const locType = (a.locationType as string) || "Studio / Venue";
+    const address = (a.address as string) || (a.venue as string) || "To be confirmed";
+    const city = (a.cityPostcode as string) || (a.city as string) || "Manchester, UK";
+    const setting = (a.indoorsOutdoors as string) || "Indoors";
+    const travel = (a.travelRequired as string) === "Yes" ? (a.travelDetails as string) || "Yes" : "No";
+
+    const vision = (a.vision as string) || (a.narrative as string) || "Standard signature shoot";
+    const styles = Array.isArray(a.stylePreferences) ? a.stylePreferences.join(", ") : (a.stylePreferences as string) || "Standard signature style";
+    const color = (a.colorPreference as string) || "Balanced Color & B/W";
+    const mustHave = (a.mustHaveShots as string) || "";
+    const requests = (a.specialRequests as string) || "";
+    const extra = (a.extraInfo as string) || "";
+
+    const deliverables = Array.isArray(a.deliverables) ? a.deliverables.join(", ") : (a.deliverables as string) || "Standard digital gallery";
+    const turnaround = (a.turnaroundTime as string) || "Standard (2–3 weeks)";
+    const usage = (a.usageRights as string) || "Personal & Social Media Rights";
+    const budget = (a.budgetRange as string) || "Discuss";
+
+    const STANDARD_KEYS = new Set([
+      'fullName', 'email', 'phone', 'preferredContact', 'companyName', 'instagramHandle', 'howDidYouFindMe',
+      'serviceCategory', 'sessionSubType', 'numSubjects', 'estimatedDuration', 'preferredDate', 'preferredStartTime',
+      'dateFlexible', 'alternateDate', 'isDoubleDate', 'secondaryDate', 'multiDayCount', 'additionalDates', 'additionalDatesText',
+      'locationType', 'address', 'cityPostcode', 'indoorsOutdoors', 'travelRequired', 'travelDetails', 'parkingNotes',
+      'vision', 'stylePreferences', 'colorPreference', 'inspirationLinks', 'mustHaveShots', 'specialRequests', 'extraInfo',
+      'deliverables', 'editedImagesExpected', 'turnaroundTime', 'usageRights', 'secondShooter',
+      'budgetRange', 'budgetFlexible', 'howSoon', 'depositAck',
+      'termsAgreed', 'privacyAgreed', 'contactConsent'
+    ]);
+    const customEntries = Object.entries(a).filter(
+      ([k, v]) => !STANDARD_KEYS.has(k) && v !== undefined && v !== null && v !== ""
+    );
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Call Sheet - ${clientName} (#${b.id})</title>
+          <style>
+            @page { size: A4; margin: 15mm 15mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1c1917; margin: 0; padding: 20px; font-size: 13px; line-height: 1.5; }
+            .header { border-bottom: 2px solid #1c1917; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+            .brand { font-size: 18px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; margin: 0; }
+            .sub { font-size: 11px; color: #57534e; margin-top: 3px; }
+            .ref { font-family: monospace; font-size: 13px; font-weight: 700; text-align: right; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 4px; border: 1px solid #d6d3d1; }
+            .card { border: 1px solid #e7e5e4; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; break-inside: avoid; page-break-inside: avoid; }
+            .card-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px 0; padding-bottom: 6px; border-bottom: 1px solid #f5f5f4; color: #ea580c; }
+            .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #78716c; margin: 0 0 2px 0; }
+            .val { font-size: 12px; font-weight: 600; color: #1c1917; margin: 0; word-break: break-word; }
+            .quote-box { background: #fafaf9; border-left: 3px solid #ea580c; padding: 8px 12px; margin-top: 6px; font-style: italic; }
+            .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e7e5e4; font-size: 11px; color: #78716c; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 class="brand">SH Photography · Shoot Call Sheet</h1>
+              <p class="sub">Lead Photographer: Benedict Henry · Manchester, United Kingdom · ${siteConfig.phoneDisplay} · ${siteConfig.email}</p>
+            </div>
+            <div class="ref">
+              REF: #${b.id}<br>
+              <span class="badge">${b.status}</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">1. Customer Profile & Contact</h2>
+            <div class="grid-3">
+              <div><p class="label">Client Name</p><p class="val">${clientName}</p></div>
+              <div><p class="label">Email Address</p><p class="val">${clientEmail || "None"}</p></div>
+              <div><p class="label">Phone Number</p><p class="val">${clientPhone || "None"}</p></div>
+              <div><p class="label">Preferred Contact</p><p class="val">${clientPrefContact}</p></div>
+              <div><p class="label">Company / Private</p><p class="val">${clientCompany || "Individual / Private"}</p></div>
+              <div><p class="label">Instagram / Social</p><p class="val">${clientInstagram || "None"}</p></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">2. Session & Schedule Details</h2>
+            <div class="grid-3">
+              <div><p class="label">Service Category</p><p class="val">${sessionTitle}</p></div>
+              <div><p class="label">Shoot Date</p><p class="val">📅 ${shootDate}</p></div>
+              <div><p class="label">Time Window</p><p class="val">⏰ ${shootTime}</p></div>
+              <div><p class="label">Estimated Duration</p><p class="val">${duration}</p></div>
+              <div><p class="label">Number of Subjects</p><p class="val">${subjects}</p></div>
+              ${b.secondaryDate ? `<div><p class="label">Secondary Date (Multi-Day)</p><p class="val">📅 ${b.secondaryDate}</p></div>` : ""}
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">3. Location & Logistics</h2>
+            <div class="grid">
+              <div><p class="label">Location Type</p><p class="val">${locType}</p></div>
+              <div><p class="label">Indoors / Outdoors</p><p class="val">${setting}</p></div>
+              <div><p class="label">Address / Venue</p><p class="val">${address}</p></div>
+              <div><p class="label">City / Postcode</p><p class="val">${city}</p></div>
+              <div><p class="label">Travel Required</p><p class="val">${travel}</p></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">4. Creative Brief & Style</h2>
+            <div><p class="label">Vision & Concept</p><div class="quote-box">“${vision}”</div></div>
+            <div class="grid" style="margin-top: 10px;">
+              <div><p class="label">Style Preferences</p><p class="val">${styles}</p></div>
+              <div><p class="label">Color Preference</p><p class="val">${color}</p></div>
+              ${mustHave ? `<div><p class="label">Must-Have Shots</p><p class="val">${mustHave}</p></div>` : ""}
+              ${requests ? `<div><p class="label">Special Requests</p><p class="val">${requests}</p></div>` : ""}
+              ${extra ? `<div><p class="label">Extra Notes</p><p class="val">${extra}</p></div>` : ""}
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">5. Deliverables & Budget</h2>
+            <div class="grid-3">
+              <div><p class="label">Deliverables</p><p class="val">${deliverables}</p></div>
+              <div><p class="label">Turnaround Time</p><p class="val">${turnaround}</p></div>
+              <div><p class="label">Usage Rights</p><p class="val">${usage}</p></div>
+              <div><p class="label">Budget Range</p><p class="val">${budget}</p></div>
+            </div>
+          </div>
+
+          ${customEntries.length > 0 ? `
+          <div class="card">
+            <h2 class="card-title">6. Additional Questionnaire Responses</h2>
+            <div class="grid">
+              ${customEntries.map(([k, v]) => `<div><p class="label">${k.replace(/([A-Z])/g, ' $1')}</p><p class="val">${Array.isArray(v) ? v.join(', ') : String(v)}</p></div>`).join('')}
+            </div>
+          </div>` : ""}
+
+          <div class="footer">
+            Benedict Henry • SH Photography • Manchester, United Kingdom • ${siteConfig.phoneDisplay} • ${siteConfig.email}
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+
+    const printWin = window.open("", "_blank");
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(printHtml);
+      printWin.document.close();
+    } else {
+      window.print();
+    }
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-12">
       <div className="space-y-6 sm:space-y-8 print:hidden">
@@ -742,20 +909,22 @@ export default function AdminBookingsPage() {
 
               /* Completely flatten backdrop to avoid fixed overlapping */
               .booking-modal-backdrop {
-                position: static !important;
-                inset: auto !important;
-                display: block !important;
-                background: transparent !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
                 width: 100% !important;
                 height: auto !important;
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                z-index: 99999 !important;
+                display: block !important;
                 overflow: visible !important;
               }
 
               /* Flatten the modal container into normal document flow */
               #printable-booking-modal {
-                position: static !important;
+                position: relative !important;
                 display: block !important;
                 width: 100% !important;
                 max-width: 100% !important;
@@ -765,7 +934,7 @@ export default function AdminBookingsPage() {
                 box-shadow: none !important;
                 border: none !important;
                 border-radius: 0 !important;
-                padding: 0 !important;
+                padding: 10px !important;
                 margin: 0 !important;
                 transform: none !important;
                 animation: none !important;
@@ -827,7 +996,7 @@ export default function AdminBookingsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handlePrintBooking(selectedBooking)}
                   title="Print Full Booking Details"
                   className="px-3 py-1.5 rounded-xl text-[#615e57] hover:text-[#1c1b1a] hover:bg-[#f5f4ef] border border-[#e6e4dc] transition-colors inline-flex items-center gap-1 text-xs font-bold"
                 >
@@ -1487,7 +1656,7 @@ export default function AdminBookingsPage() {
 
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handlePrintBooking(selectedBooking)}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-[#faf9f6] text-xs font-bold text-[#1c1b1a] border border-[#d6d4cb] transition-colors shadow-sm"
                 >
                   <Printer className="w-3.5 h-3.5 text-[#1c1b1a]" />

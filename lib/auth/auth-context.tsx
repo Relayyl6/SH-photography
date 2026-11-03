@@ -15,6 +15,17 @@ import {
 import { auth, db } from "@/lib/firebase/config";
 import { doc, getDoc } from "firebase/firestore";
 
+export const ADMIN_EMAILS = [
+  "shfotography1@gmail.com",
+  "oseghaleleonard39@gmail.com",
+  "admin@shphotography.com",
+];
+
+export function isAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase().trim());
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -85,8 +96,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      await checkOwnerStatus(currentUser);
+      if (currentUser) {
+        const ADMIN_LIST = ["shfotography1@gmail.com", "oseghaleleonard39@gmail.com", "admin@shphotography.com"];
+        const isEmailAdmin = ADMIN_LIST.includes(currentUser.email?.toLowerCase().trim() || "");
+        if (isEmailAdmin) {
+          setIsOwner(true);
+        }
+        setUser(currentUser);
+        await checkOwnerStatus(currentUser);
+      } else {
+        setUser(null);
+        setIsOwner(false);
+      }
       setLoading(false);
     });
 
@@ -99,8 +120,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const ADMIN_LIST = ["shfotography1@gmail.com", "oseghaleleonard39@gmail.com", "admin@shphotography.com"];
+
   const signInWithEmail = async (email: string, pass: string) => {
     const res = await signInWithEmailAndPassword(auth, email, pass);
+    if (res?.user) {
+      const isEmailAdmin = ADMIN_LIST.includes(res.user.email?.toLowerCase().trim() || "");
+      if (isEmailAdmin) setIsOwner(true);
+    }
     await checkOwnerStatus(res.user);
     return res;
   };
@@ -109,6 +136,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     const res = await signInWithPopup(auth, provider);
+    if (res?.user) {
+      const isEmailAdmin = ADMIN_LIST.includes(res.user.email?.toLowerCase().trim() || "");
+      if (isEmailAdmin) setIsOwner(true);
+    }
     await checkOwnerStatus(res.user);
     return res;
   };
@@ -129,13 +160,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setTokenResult(null);
   };
 
+  const effectiveIsAdmin = isOwner || isAdminEmail(user?.email);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        isOwner,
-        isAdmin: isOwner,
+        isOwner: effectiveIsAdmin,
+        isAdmin: effectiveIsAdmin,
         tokenResult,
         signInWithEmail,
         signInWithGoogle,

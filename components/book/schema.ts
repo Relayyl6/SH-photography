@@ -1,6 +1,17 @@
 import { z } from 'zod';
 import { BookingFieldDoc } from '@/types/firebase';
 
+export const STANDARD_BOOKING_FIELD_KEYS = new Set([
+  'serviceCategory', 'sessionSubType', 'numSubjects', 'estimatedDuration', 'preferredDate', 'alternateDate',
+  'isDoubleDate', 'secondaryDate', 'multiDayCount', 'additionalDates', 'additionalDatesText', 'preferredStartTime', 'dateFlexible',
+  'locationType', 'address', 'cityPostcode', 'indoorsOutdoors', 'travelRequired', 'travelDetails', 'parkingNotes',
+  'vision', 'stylePreferences', 'colorPreference', 'inspirationLinks', 'mustHaveShots', 'specialRequests', 'extraInfo',
+  'deliverables', 'editedImagesExpected', 'turnaroundTime', 'usageRights', 'secondShooter',
+  'budgetRange', 'budgetFlexible', 'howSoon', 'depositAck',
+  'fullName', 'email', 'phone', 'preferredContact', 'companyName', 'instagramHandle', 'howDidYouFindMe',
+  'termsAgreed', 'privacyAgreed', 'contactConsent'
+]);
+
 export function buildBookingSchema(fields?: BookingFieldDoc[]) {
   const reqMap = new Map<string, boolean>();
   if (fields && Array.isArray(fields)) {
@@ -27,7 +38,7 @@ export function buildBookingSchema(fields?: BookingFieldDoc[]) {
       : z.array(z.string()).optional();
   };
 
-  return z.object({
+  const standardShape = {
     serviceCategory: stringField('serviceCategory', true, 'Please select a service category'),
     sessionSubType: stringField('sessionSubType', false, 'Please specify session sub-type'),
     numSubjects: stringField('numSubjects', false, 'Please specify number of subjects'),
@@ -92,7 +103,33 @@ export function buildBookingSchema(fields?: BookingFieldDoc[]) {
     contactConsent: z.boolean().refine(val => val === true, {
       message: 'You must consent to being contacted'
     }),
-  }).superRefine((data, ctx) => {
+  };
+
+  // Dynamically incorporate vendor custom fields from Firestore
+  const customShape: Record<string, z.ZodTypeAny> = {};
+  if (fields && Array.isArray(fields)) {
+    for (const f of fields) {
+      const k = f.key || f.id;
+      if (k && !STANDARD_BOOKING_FIELD_KEYS.has(k) && f.published !== false) {
+        if (f.required) {
+          if (f.type === 'checkbox' || (f.type as string) === 'multiselect') {
+            customShape[k] = z.array(z.string()).min(1, `${f.label} is required`);
+          } else if (f.type === 'email') {
+            customShape[k] = z.string().email('Invalid email address');
+          } else {
+            customShape[k] = z.string().min(1, `${f.label} is required`);
+          }
+        } else {
+          customShape[k] = z.any().optional();
+        }
+      }
+    }
+  }
+
+  return z.object({
+    ...standardShape,
+    ...customShape,
+  }).superRefine((data: any, ctx) => {
     if (data.preferredDate && isReq('preferredStartTime', true) && !data.preferredStartTime) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

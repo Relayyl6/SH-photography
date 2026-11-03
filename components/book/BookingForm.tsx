@@ -5,12 +5,12 @@ import { useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { buildBookingSchema, bookingSchema, BookingFormData } from './schema';
+import { buildBookingSchema, bookingSchema, BookingFormData, STANDARD_BOOKING_FIELD_KEYS } from './schema';
 import { BookingCalendar } from './BookingCalendar';
 import { QuoteReceipt } from './QuoteReceipt';
 import { AiAutofillAssistant } from './AiAutofillAssistant';
 import { useAiAutofill } from './useAiAutofill';
-import { Check, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
 
 import { BookingFieldDoc } from '@/types/firebase';
@@ -354,14 +354,44 @@ export default function BookingForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getFieldsForStep = (stepIdx: number): (keyof BookingFormData)[] => {
+  const formData = watch();
+  const serviceCat = watch('serviceCategory');
+  const travelReq = watch('travelRequired');
+
+  const customFields = useMemo(() => {
+    return fields.filter((f) => {
+      const k = f.key || f.id;
+      if (!k || STANDARD_BOOKING_FIELD_KEYS.has(k)) return false;
+      if (f.published === false) return false;
+      if (!f.appliesTo || f.appliesTo === 'all') return true;
+      if (Array.isArray(f.appliesTo)) {
+        const arr = f.appliesTo as string[];
+        if (arr.includes('all')) return true;
+        if (serviceCat && arr.some((cat: string) => String(cat).toLowerCase() === String(serviceCat).toLowerCase())) return true;
+        return false;
+      }
+      if (typeof f.appliesTo === 'string') {
+        const str = String(f.appliesTo);
+        if (str === 'all') return true;
+        if (serviceCat && str.toLowerCase() === String(serviceCat).toLowerCase()) return true;
+      }
+      return true;
+    });
+  }, [fields, serviceCat]);
+
+  const getFieldsForStep = (stepIdx: number): string[] => {
     switch(stepIdx) {
       case 0:
         return ['serviceCategory', 'preferredDate', 'preferredStartTime', 'dateFlexible'];
       case 1:
         return ['locationType', 'travelRequired'];
       case 2:
-        return ['vision', 'stylePreferences', 'colorPreference'];
+        return [
+          'vision',
+          'stylePreferences',
+          'colorPreference',
+          ...(customFields.map((f) => f.key || f.id)),
+        ];
       case 3:
         return ['deliverables', 'turnaroundTime'];
       case 4:
@@ -380,7 +410,7 @@ export default function BookingForm() {
     // Only validate fields on this step that are currently required per DB configuration
     const fieldsToValidate = candidateFields.filter((key) => isFieldRequired(key, true));
 
-    const isStepValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate));
+    const isStepValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate as any));
     if (isStepValid) {
       setCurrentStep(s => Math.min(s + 1, steps.length - 1));
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -404,10 +434,6 @@ export default function BookingForm() {
     setCurrentStep(s => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const formData = watch();
-  const serviceCat = watch('serviceCategory');
-  const travelReq = watch('travelRequired');
 
   const handleApplyAiFields = (fields: Partial<BookingFormData>) => {
     const sanitized: Record<string, any> = { ...fields };
@@ -529,7 +555,7 @@ export default function BookingForm() {
 
                     <div className="space-y-4">
                       <label className="block text-sm font-medium">Service Category{isFieldRequired('serviceCategory', true) ? ' *' : ''}</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
                         {getFieldOptions('serviceCategory', ['Wedding', 'Portrait', 'Event', 'Retouching', 'Other']).map(cat => (
                           <label
                             key={cat.value}
@@ -546,7 +572,7 @@ export default function BookingForm() {
                               {...register('serviceCategory')}
                               className="hidden"
                             />
-                            <span className="block text-center text-xs sm:text-sm md:text-base font-medium truncate sm:whitespace-normal">
+                            <span className="block text-center text-xs sm:text-sm font-medium break-words leading-tight px-1">
                               {cat.label}
                             </span>
                           </label>
@@ -807,6 +833,151 @@ export default function BookingForm() {
                       <label className="block text-sm font-medium mb-2">Any special requests?</label>
                       <textarea value={formData.specialRequests ?? ''} {...register('specialRequests')} rows={2} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                     </div>
+
+                    {/* Dynamic Vendor Custom Fields added from Admin Form Builder */}
+                    {customFields.length > 0 && (
+                      <div className="pt-4 border-t border-ink/10 space-y-5">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-accent" />
+                          <h4 className="font-display text-lg sm:text-xl text-ink">
+                            Additional Session Specifications
+                          </h4>
+                        </div>
+                        <div className="space-y-4">
+                          {customFields.map((field) => {
+                            const fieldKey = field.key || field.id;
+                            const isReq = Boolean(field.required);
+                            const currentVal = (formData as Record<string, any>)[fieldKey];
+                            const fieldError = (errors as Record<string, any>)[fieldKey]?.message as string | undefined;
+
+                            return (
+                              <div key={field.id || field.key} className="space-y-1.5">
+                                <label className="block text-sm font-medium">
+                                  {field.label}
+                                  {isReq && <span className="text-accent ml-0.5">*</span>}
+                                </label>
+                                {field.helpText && (
+                                  <p className="text-xs text-ink/60">{field.helpText}</p>
+                                )}
+
+                                {field.type === 'textarea' ? (
+                                  <textarea
+                                    rows={3}
+                                    placeholder={field.placeholder || ''}
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"
+                                  />
+                                ) : field.type === 'select' ? (
+                                  <select
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  >
+                                    <option value="">{field.placeholder || 'Select...'}</option>
+                                    {(field.options || []).map((opt: any) => {
+                                      const val = typeof opt === 'string' ? opt : (opt.value || opt.label);
+                                      const lbl = typeof opt === 'string' ? opt : (opt.label || opt.value);
+                                      return <option key={val} value={val}>{lbl}</option>;
+                                    })}
+                                  </select>
+                                ) : field.type === 'radio' ? (
+                                  <div className="flex flex-wrap gap-4 pt-1">
+                                    {(field.options || []).map((opt: any) => {
+                                      const val = typeof opt === 'string' ? opt : (opt.value || opt.label);
+                                      const lbl = typeof opt === 'string' ? opt : (opt.label || opt.value);
+                                      return (
+                                        <label key={val} className="flex items-center gap-2 cursor-pointer text-sm">
+                                          <input
+                                            type="radio"
+                                            value={val}
+                                            checked={currentVal === val}
+                                            {...register(fieldKey as any)}
+                                            className="accent-ink"
+                                          />
+                                          <span>{lbl}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                ) : field.type === 'checkbox' ? (
+                                  <div className="flex flex-wrap gap-2.5 pt-1">
+                                    {(field.options || []).map((opt: any) => {
+                                      const val = typeof opt === 'string' ? opt : (opt.value || opt.label);
+                                      const lbl = typeof opt === 'string' ? opt : (opt.label || opt.value);
+                                      const currentArr: string[] = Array.isArray(currentVal) ? currentVal : [];
+                                      const isChecked = currentArr.includes(val);
+                                      return (
+                                        <label
+                                          key={val}
+                                          className={`flex items-center gap-2 px-3 py-1.5 border rounded-full cursor-pointer text-xs sm:text-sm transition-colors ${
+                                            isChecked
+                                              ? 'border-ink bg-ink text-paper font-medium'
+                                              : 'border-ink/20 hover:border-ink'
+                                          }`}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            value={val}
+                                            checked={isChecked}
+                                            {...register(fieldKey as any)}
+                                            className="hidden"
+                                          />
+                                          <span>{lbl}</span>
+                                        </label>
+                                      );
+                                    })}
+                                  </div>
+                                ) : field.type === 'date' ? (
+                                  <input
+                                    type="date"
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  />
+                                ) : field.type === 'number' ? (
+                                  <input
+                                    type="number"
+                                    placeholder={field.placeholder || ''}
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  />
+                                ) : field.type === 'email' ? (
+                                  <input
+                                    type="email"
+                                    placeholder={field.placeholder || 'name@example.com'}
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  />
+                                ) : field.type === 'phone' ? (
+                                  <input
+                                    type="tel"
+                                    placeholder={field.placeholder || '+44 ...'}
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  />
+                                ) : (
+                                  <input
+                                    type="text"
+                                    placeholder={field.placeholder || ''}
+                                    value={currentVal ?? ''}
+                                    {...register(fieldKey as any)}
+                                    className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink"
+                                  />
+                                )}
+
+                                {fieldError && (
+                                  <p className="text-red-500 text-xs sm:text-sm mt-1">{fieldError}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium mb-1">
@@ -1121,7 +1292,7 @@ export default function BookingForm() {
                   </div>
                   {(formData.stylePreferences?.length ?? 0) > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {formData.stylePreferences?.map(s => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
+                      {formData.stylePreferences?.map((s: string) => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
                     </div>
                   ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
                 </div>

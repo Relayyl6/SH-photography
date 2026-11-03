@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth, isAdminEmail } from "@/lib/auth/auth-context";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase/config";
 import { Eye, EyeOff, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
@@ -60,14 +60,14 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
   }, []);
 
   // Redirect upon authenticated user:
-  // If owner -> /admin
+  // If owner / admin -> /admin
   // If customer -> /account
   useEffect(() => {
     if (!loading && user) {
-      if (isOwner) {
-        router.push("/admin");
+      if (isOwner || isAdminEmail(user.email)) {
+        router.replace("/admin");
       } else {
-        router.push("/account");
+        router.replace("/account");
       }
     }
   }, [user, isOwner, loading, router]);
@@ -127,6 +127,10 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
         const res = await signInWithEmail(email, password);
         if (res.user) {
           await syncGuestBookings(res.user.uid);
+          if (isAdminEmail(res.user.email)) {
+            router.replace("/admin");
+            return;
+          }
         }
       }
     } catch (err: any) {
@@ -152,6 +156,10 @@ export function AuthPage({ initialMode = "signin" }: { initialMode?: "signin" | 
       const res = await signInWithGoogle();
       if (res.user) {
         await syncGuestBookings(res.user.uid);
+        if (isAdminEmail(res.user.email)) {
+          router.replace("/admin");
+          return;
+        }
       }
     } catch (err: any) {
       if (err.code !== "auth/popup-closed-by-user") {

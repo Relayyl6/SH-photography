@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { BookingFormData } from './schema';
+import { BookingFormData, STANDARD_BOOKING_FIELD_KEYS } from './schema';
 import { siteConfig } from '@/lib/site-config';
 import { Check, Printer, MessageCircle, Copy, CheckCheck, Home, ArrowLeft } from 'lucide-react';
 
@@ -29,6 +29,10 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
     month: 'long',
     year: 'numeric',
   });
+
+  const customEntries = Object.entries(data).filter(
+    ([k, v]) => !STANDARD_BOOKING_FIELD_KEYS.has(k) && v !== undefined && v !== null && v !== ""
+  );
 
   // Build formatted text message for WhatsApp or copying
   const buildQuoteText = () => {
@@ -70,6 +74,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
       data.mustHaveShots ? `• *Must-Have Shots:* ${data.mustHaveShots}` : null,
       data.specialRequests ? `• *Special Requests:* ${data.specialRequests}` : null,
       data.extraInfo ? `• *Extra Details & Requests:* ${data.extraInfo}` : null,
+      ...(customEntries.length > 0 ? [``, `*ADDITIONAL SPECIFICATIONS*`, ...customEntries.map(([k, v]) => `• *${k.replace(/([A-Z])/g, ' $1')}:* ${Array.isArray(v) ? v.join(', ') : String(v)}`)] : []),
       ``,
       `*DELIVERABLES & BUDGET*`,
       `• *Deliverables:* ${data.deliverables?.join(', ') || 'Standard gallery'}`,
@@ -441,7 +446,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
               <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase text-ink/60 block">Selected Aesthetics</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(data.stylePreferences || []).map((style) => (
+                  {(data.stylePreferences || []).map((style: string) => (
                     <span key={style} className="px-2.5 py-1 bg-paper border border-line rounded-md text-xs font-medium">
                       {style}
                     </span>
@@ -455,7 +460,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
               <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase text-ink/60 block">Deliverables Requested</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {(data.deliverables || []).map((d) => (
+                  {(data.deliverables || []).map((d: string) => (
                     <span key={d} className="px-2.5 py-1 bg-paper border border-line rounded-md text-xs font-medium">
                       {d}
                     </span>
@@ -482,6 +487,24 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
               <div className="text-xs text-ink/80 pt-2 border-t border-line/40">
                 <span className="font-semibold text-ink/70 block mb-1">Additional Details &amp; Custom Requests:</span>
                 <p className="bg-sand/30 p-3 rounded-lg border border-line/50 whitespace-pre-wrap">{data.extraInfo}</p>
+              </div>
+            )}
+
+            {customEntries.length > 0 && (
+              <div className="text-xs text-ink/80 pt-2 border-t border-line/40">
+                <span className="font-semibold text-ink/70 block mb-2">Additional Specifications:</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {customEntries.map(([k, v]) => (
+                    <div key={k} className="p-2.5 rounded-lg bg-sand/30 border border-line/50">
+                      <span className="font-semibold text-ink/60 uppercase text-[10px] block">
+                        {k.replace(/([A-Z])/g, ' $1')}
+                      </span>
+                      <span className="font-medium text-ink break-words">
+                        {Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? JSON.stringify(v) : String(v)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

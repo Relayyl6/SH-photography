@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth/auth-context";
+import { useAuth, isAdminEmail } from "@/lib/auth/auth-context";
 import {
   Calendar,
   Clock,
@@ -86,8 +86,12 @@ export default function CustomerAccountPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
+    } else if (!authLoading && user) {
+      if (isOwner || isAdminEmail(user.email)) {
+        router.replace("/admin");
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, isOwner, authLoading, router]);
 
   // Sync guest bookings from localStorage and fetch customer bookings
   const loadBookings = async () => {
