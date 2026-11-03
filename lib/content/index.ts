@@ -86,8 +86,8 @@ export const DEFAULT_HOME_PAGE: HomePageDoc = {
     'Creative Behind the Scenes',
   ],
   youtube: {
-    videoId: 'Z8mnzVNaiD0',
-    title: 'Behind the Scenes & Photography Techniques — Benedict Henry',
+    videoId: 'vE8pQC6XHoU',
+    title: 'Behind the Scenes & Photography Techniques with Benedict',
     autoplay: false,
     muted: true,
   },
@@ -318,10 +318,10 @@ export async function getHomePageContent(): Promise<HomePageDoc> {
     const snap = await getDoc(doc(db, 'pages', 'home'));
     if (snap.exists()) {
       const data = snap.data() as HomePageDoc;
-      if (data?.youtube?.videoId === 'dQw4w9WgXcQ' || data?.youtube?.videoId === 'vE8pQC6XHoU' || !data?.youtube?.videoId) {
+      if (data?.youtube?.videoId === 'dQw4w9WgXcQ' || !data?.youtube?.videoId) {
         data.youtube = {
           ...data.youtube,
-          videoId: 'Z8mnzVNaiD0',
+          videoId: 'vE8pQC6XHoU',
           title: data?.youtube?.title || DEFAULT_HOME_PAGE.youtube.title,
         };
       }

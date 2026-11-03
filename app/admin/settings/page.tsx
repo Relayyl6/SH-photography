@@ -236,14 +236,14 @@ export default function AdminSettingsPage() {
                   ...home,
                   youtube: {
                     ...home.youtube,
-                    videoId: "Z8mnzVNaiD0",
-                    title: "Behind the Scenes & Photography Techniques — Benedict Henry",
+                    videoId: "vE8pQC6XHoU",
+                    title: "Behind the Scenes & Photography Techniques with Benedict",
                   },
                 });
               }}
               className="text-xs font-bold text-[#e8491c] hover:underline self-start sm:self-auto"
             >
-              Reset to Original Masterclass Video (Z8mnzVNaiD0)
+              Reset to Original Video (vE8pQC6XHoU)
             </button>
           </div>
           <p className="text-xs text-[#7a766f]">
