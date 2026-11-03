@@ -8,14 +8,14 @@ import { siteConfig } from "@/lib/site-config";
 import { SocialLinks } from "./SocialLinks";
 import { sessions } from "@/lib/sessions";
 import { usePathname } from "next/navigation";
-import { getContactSettings, getSiteSettings, DEFAULT_CONTACT_SETTINGS, DEFAULT_SITE_SETTINGS } from "@/lib/content";
+import { getContactSettings, getSiteSettings } from "@/lib/content";
 import { ContactSettingsDoc, SiteSettingsDoc } from "@/types/firebase";
 
 export function Footer() {
   const pathname = usePathname();
   const isStylePage = pathname === "/style";
-  const [contact, setContact] = useState<ContactSettingsDoc>(DEFAULT_CONTACT_SETTINGS);
-  const [site, setSite] = useState<SiteSettingsDoc>(DEFAULT_SITE_SETTINGS);
+  const [contact, setContact] = useState<ContactSettingsDoc>({} as ContactSettingsDoc);
+  const [site, setSite] = useState<SiteSettingsDoc>({} as SiteSettingsDoc);
 
   useEffect(() => {
     async function loadSettings() {

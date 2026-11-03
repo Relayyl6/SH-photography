@@ -26,27 +26,14 @@ import {
   getPortfolioImages,
   getSessions,
   getBookings,
-  DEFAULT_BENTO_HOME,
-  DEFAULT_PORTFOLIO_IMAGES,
-  DEFAULT_BOOKINGS,
 } from "@/lib/content";
 import { BentoHomeDoc, PortfolioImageDoc, SessionDoc, BookingDoc } from "@/types/firebase";
 
 export default function AdminOverviewPage() {
-  const [bento, setBento] = useState<BentoHomeDoc>(DEFAULT_BENTO_HOME);
-  const [images, setImages] = useState<PortfolioImageDoc[]>(DEFAULT_PORTFOLIO_IMAGES);
+  const [bento, setBento] = useState<BentoHomeDoc>({ slots: [], published: true, updatedAt: 0 });
+  const [images, setImages] = useState<PortfolioImageDoc[]>([]);
   const [sessions, setSessions] = useState<SessionDoc[]>([]);
-  const [recentBookings, setRecentBookings] = useState<BookingDoc[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const deletedIds: string[] = JSON.parse(localStorage.getItem("sh_deleted_booking_ids") || "[]");
-        if (deletedIds.length > 0) {
-          return DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
-        }
-      } catch {}
-    }
-    return DEFAULT_BOOKINGS;
-  });
+  const [recentBookings, setRecentBookings] = useState<BookingDoc[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Today's formatted date

@@ -270,15 +270,32 @@ export const DEFAULT_PACKAGES: PackageDoc[] = baselinePackages.map((p, idx) => {
   return pkg;
 });
 
-// Typed Data Layer Getters (Universal Server/Client, reading directly from Firestore DB)
+// Typed Data Layer Getters (Universal Server/Client, reading strictly from Firestore DB — zero mock fallbacks)
 export async function getSiteSettings(): Promise<SiteSettingsDoc> {
   try {
     const { db } = await import('@/lib/firebase/config');
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'settings', 'site'));
     if (snap.exists()) return snap.data() as SiteSettingsDoc;
-  } catch {}
-  return DEFAULT_SITE_SETTINGS;
+  } catch (err) {
+    console.warn('getSiteSettings error:', err);
+  }
+  return {
+    businessName: siteConfig.businessName,
+    tagline: 'Authentic Photography in Manchester & Worldwide',
+    logo: '/logo.svg',
+    favicon: '/favicon.ico',
+    seo: {
+      title: 'SH Photography — Benedict Henry',
+      description: 'Bespoke editorial, portrait, wedding, and event photography based in Manchester, United Kingdom.',
+      ogImage: '/og-image.jpg',
+    },
+    footerText: `© ${new Date().getFullYear()} ${siteConfig.businessName}. All rights reserved.`,
+    currency: 'GBP',
+    timezone: 'Europe/London',
+    published: true,
+    updatedAt: 0,
+  };
 }
 
 export async function getContactSettings(): Promise<ContactSettingsDoc> {
@@ -287,8 +304,19 @@ export async function getContactSettings(): Promise<ContactSettingsDoc> {
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'settings', 'contact'));
     if (snap.exists()) return snap.data() as ContactSettingsDoc;
-  } catch {}
-  return DEFAULT_CONTACT_SETTINGS;
+  } catch (err) {
+    console.warn('getContactSettings error:', err);
+  }
+  return {
+    email: siteConfig.email,
+    phone: siteConfig.phoneDisplay,
+    whatsapp: siteConfig.whatsappE164,
+    address: siteConfig.location,
+    mapLink: 'https://maps.google.com/?q=Manchester,+United+Kingdom',
+    hours: 'Mon - Sun: 9:00 AM – 7:00 PM',
+    published: true,
+    updatedAt: 0,
+  };
 }
 
 export async function getSocialSettings(): Promise<SocialSettingsDoc> {
@@ -297,8 +325,10 @@ export async function getSocialSettings(): Promise<SocialSettingsDoc> {
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'settings', 'social'));
     if (snap.exists()) return snap.data() as SocialSettingsDoc;
-  } catch {}
-  return DEFAULT_SOCIAL_SETTINGS;
+  } catch (err) {
+    console.warn('getSocialSettings error:', err);
+  }
+  return { links: [], published: true, updatedAt: 0 };
 }
 
 export async function getBookingSettings(): Promise<BookingSettingsDoc> {
@@ -307,8 +337,20 @@ export async function getBookingSettings(): Promise<BookingSettingsDoc> {
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'settings', 'booking'));
     if (snap.exists()) return snap.data() as BookingSettingsDoc;
-  } catch {}
-  return DEFAULT_BOOKING_SETTINGS;
+  } catch (err) {
+    console.warn('getBookingSettings error:', err);
+  }
+  return {
+    leadTimeHours: 48,
+    maxAdvanceDays: 180,
+    bufferMinutes: 30,
+    autoConfirm: false,
+    cancellationPolicyText: '',
+    termsText: '',
+    ownerNotifyEmails: [siteConfig.email],
+    published: true,
+    updatedAt: 0,
+  };
 }
 
 export async function getHomePageContent(): Promise<HomePageDoc> {
@@ -317,18 +359,27 @@ export async function getHomePageContent(): Promise<HomePageDoc> {
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'pages', 'home'));
     if (snap.exists()) {
-      const data = snap.data() as HomePageDoc;
-      if (data?.youtube?.videoId === 'dQw4w9WgXcQ' || !data?.youtube?.videoId) {
-        data.youtube = {
-          ...data.youtube,
-          videoId: 'vE8pQC6XHoU',
-          title: data?.youtube?.title || DEFAULT_HOME_PAGE.youtube.title,
-        };
-      }
-      return data;
+      return snap.data() as HomePageDoc;
     }
-  } catch {}
-  return DEFAULT_HOME_PAGE;
+  } catch (err) {
+    console.warn('getHomePageContent error:', err);
+  }
+  return {
+    headline: 'Authentic moments, timelessly captured.',
+    subtitle: '',
+    ctaLabel: 'Book a Session',
+    ctaLink: '/book',
+    heroText: [],
+    youtube: {
+      videoId: 'vE8pQC6XHoU',
+      title: 'Behind the Scenes & Photography Techniques with Benedict',
+      autoplay: false,
+      muted: true,
+    },
+    sectionTexts: {},
+    published: true,
+    updatedAt: 0,
+  };
 }
 
 export async function getAboutPageContent(): Promise<AboutPageDoc> {
@@ -337,74 +388,21 @@ export async function getAboutPageContent(): Promise<AboutPageDoc> {
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'pages', 'about'));
     if (snap.exists()) return snap.data() as AboutPageDoc;
-  } catch {}
-  return DEFAULT_ABOUT_PAGE;
-}
-
-export function sanitizeBentoSlots(doc: BentoHomeDoc): BentoHomeDoc {
-  if (!doc?.slots || !Array.isArray(doc.slots)) {
-    return DEFAULT_BENTO_HOME;
+  } catch (err) {
+    console.warn('getAboutPageContent error:', err);
   }
-
-  const slotMap = new Map<string, any>();
-  doc.slots.forEach((s) => {
-    if (s?.slotId) slotMap.set(String(s.slotId), s);
-  });
-
-  const CANONICAL_DEFAULTS: Record<string, { label: string; defaultImg: string }> = {
-    '1': { label: 'Weddings', defaultImg: 'weddings_01' },
-    '2': { label: 'Portraits', defaultImg: 'portraits_01' },
-    '3': { label: 'Family', defaultImg: 'family_01' },
-    '4': { label: 'Events', defaultImg: 'events_01' },
-    '5': { label: 'Behind the Scenes', defaultImg: 'behind-the-scenes_01' },
-    '6': { label: 'Birthdays', defaultImg: 'birthday_01' },
-    '7': { label: 'Personal Branding', defaultImg: 'personal_01' },
-    '8': { label: 'Sports & Athletics', defaultImg: 'sports_01' },
-    '9': { label: 'Photography Classes & Retouching', defaultImg: 'behind-the-scenes_05' },
-  };
-
-  const fixedSlots = ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((id) => {
-    const canonical = CANONICAL_DEFAULTS[id] || { label: `Slot ${id}`, defaultImg: 'weddings_01' };
-    const existing = slotMap.get(id);
-
-    if (!existing) {
-      return {
-        slotId: id,
-        portfolioImageId: canonical.defaultImg,
-        label: canonical.label,
-      };
-    }
-
-    let imgId = existing.portfolioImageId;
-    let label = existing.label;
-
-    // Enforce correct canonical category labels & prevent cross-contamination
-    let customTitle = existing.customTitle;
-    if (id === '5') {
-      if (label === 'Birthdays' || !label) label = 'Behind the Scenes';
-      if (customTitle === 'Birthdays') customTitle = undefined;
-      if (imgId === 'birthday_01') imgId = 'behind-the-scenes_01';
-    } else if (id === '6') {
-      if (label === 'Behind the Scenes' || !label) label = 'Birthdays';
-      if (customTitle === 'Behind the Scenes') customTitle = undefined;
-      if (imgId === 'behind-the-scenes_01') imgId = 'birthday_01';
-    } else if (id === '9') {
-      if (label === 'Editorial Stories' || !label) label = 'Photography Classes & Retouching';
-      if (customTitle === 'Editorial Stories') customTitle = undefined;
-      if (imgId === 'weddings_02') imgId = 'behind-the-scenes_05';
-    }
-
-    return {
-      ...existing,
-      slotId: id,
-      label: customTitle || label || canonical.label,
-      portfolioImageId: imgId || canonical.defaultImg,
-    };
-  });
-
   return {
-    ...doc,
-    slots: fixedSlots,
+    heading: 'Get to Know Me',
+    body: '',
+    coverImage: {
+      url: '/photos/personal/personal_01.jpg',
+      path: '/photos/personal/personal_01.jpg',
+      alt: 'Benedict Henry, founder and lead photographer at SH Photography',
+    },
+    stats: [],
+    signature: 'Benedict Henry',
+    published: true,
+    updatedAt: 0,
   };
 }
 
@@ -413,42 +411,48 @@ export async function getBentoSlots(): Promise<BentoHomeDoc> {
     const { db } = await import('@/lib/firebase/config');
     const { doc, getDoc } = await import('firebase/firestore');
     const snap = await getDoc(doc(db, 'bento', 'home'));
-    if (snap.exists()) return sanitizeBentoSlots(snap.data() as BentoHomeDoc);
-  } catch {}
-  return DEFAULT_BENTO_HOME;
+    if (snap.exists()) {
+      return snap.data() as BentoHomeDoc;
+    }
+  } catch (err) {
+    console.warn('getBentoSlots error:', err);
+  }
+  return { slots: [], published: true, updatedAt: 0 };
 }
 
 export async function getPortfolioImages(category?: string): Promise<PortfolioImageDoc[]> {
   try {
     const { db } = await import('@/lib/firebase/config');
-    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
-    let q = query(collection(db, 'portfolio'), where('published', '==', true), orderBy('order', 'asc'));
-    if (category) {
-      q = query(collection(db, 'portfolio'), where('published', '==', true), where('category', 'array-contains', category), orderBy('order', 'asc'));
-    }
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as PortfolioImageDoc);
-    }
-  } catch {}
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snap = await getDocs(collection(db, 'portfolio'));
+    const items = snap.docs
+      .map((d) => d.data() as PortfolioImageDoc)
+      .filter((img) => img.published !== false);
 
-  if (category) {
-    return DEFAULT_PORTFOLIO_IMAGES.filter((img) => img.category.includes(category));
+    const filtered = category
+      ? items.filter((img) => Array.isArray(img.category) && img.category.includes(category))
+      : items;
+
+    return filtered.sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+  } catch (err) {
+    console.warn('getPortfolioImages error:', err);
+    return [];
   }
-  return DEFAULT_PORTFOLIO_IMAGES;
 }
 
 export async function getSessions(): Promise<SessionDoc[]> {
   try {
     const { db } = await import('@/lib/firebase/config');
-    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
-    const snap = await getDocs(query(collection(db, 'sessions'), where('published', '==', true), orderBy('order', 'asc')));
-    if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as SessionDoc);
-    }
-  } catch {}
-
-  return DEFAULT_SESSIONS;
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snap = await getDocs(collection(db, 'sessions'));
+    return snap.docs
+      .map((d) => d.data() as SessionDoc)
+      .filter((s) => s.published !== false && s.active !== false)
+      .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+  } catch (err) {
+    console.warn('getSessions error:', err);
+    return [];
+  }
 }
 
 export async function getSessionBySlug(slug: string): Promise<SessionDoc | null> {
@@ -459,14 +463,16 @@ export async function getSessionBySlug(slug: string): Promise<SessionDoc | null>
 export async function getPackages(): Promise<PackageDoc[]> {
   try {
     const { db } = await import('@/lib/firebase/config');
-    const { collection, getDocs, query, where, orderBy } = await import('firebase/firestore');
-    const snap = await getDocs(query(collection(db, 'packages'), where('published', '==', true), orderBy('order', 'asc')));
-    if (!snap.empty) {
-      return snap.docs.map((d) => d.data() as PackageDoc);
-    }
-  } catch {}
-
-  return DEFAULT_PACKAGES;
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snap = await getDocs(collection(db, 'packages'));
+    return snap.docs
+      .map((d) => d.data() as PackageDoc)
+      .filter((p) => p.published !== false)
+      .sort((a, b) => (a.order ?? 9999) - (b.order ?? 9999));
+  } catch (err) {
+    console.warn('getPackages error:', err);
+    return [];
+  }
 }
 
 export async function getPackageBySlug(slug: string): Promise<PackageDoc | null> {
@@ -474,143 +480,125 @@ export async function getPackageBySlug(slug: string): Promise<PackageDoc | null>
   return all.find((p) => p.sessionSlug === slug || p.id === slug) || null;
 }
 
+export async function getBookings(): Promise<BookingDoc[]> {
+  try {
+    const { db } = await import('@/lib/firebase/config');
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snap = await getDocs(collection(db, 'bookings'));
+    return snap.docs
+      .map((d) => d.data() as BookingDoc)
+      .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  } catch (err) {
+    console.warn('getBookings error:', err);
+    return [];
+  }
+}
+
+// Initial seed template for bookings (used strictly by scripts/seed.ts)
 export const DEFAULT_BOOKINGS: BookingDoc[] = [
   {
-    id: "bk_101",
-    sessionId: "weddings",
+    id: 'bk_101',
+    sessionId: 'weddings',
     sessionSnapshot: {
-      name: "Weddings (Full Day)",
+      name: 'Weddings (Full Day)',
       price: 850,
       durationMinutes: 480,
     },
     slot: {
-      date: "2026-11-14",
-      start: "10:00",
-      end: "18:00",
+      date: '2026-11-14',
+      start: '10:00',
+      end: '18:00',
     },
     customer: {
-      name: "Eleanor Vance",
-      email: "eleanor.vance@example.co.uk",
-      phone: "+44 7700 900123",
+      name: 'Eleanor Vance',
+      email: 'eleanor.vance@example.co.uk',
+      phone: '+44 7700 900123',
     },
-    status: "confirmed",
-    source: "web",
+    status: 'confirmed',
+    source: 'web',
     answers: {
-      location: "Victoria Baths, Manchester",
-      ceremonyType: "Full Day Documentary",
+      location: 'Victoria Baths, Manchester',
+      ceremonyType: 'Full Day Documentary',
     },
     ownerNotes: [
-      { text: "Ceremony at Victoria Baths. High priority documentary coverage.", by: "Benedict Henry", at: Date.now() - 86400000 * 2 }
+      { text: 'Ceremony at Victoria Baths. High priority documentary coverage.', by: 'Benedict Henry', at: Date.now() - 86400000 * 2 },
     ],
     customerUid: null,
-    emailStatus: { owner: "sent", customer: "sent" },
+    emailStatus: { owner: 'sent', customer: 'sent' },
     statusHistory: [
-      { status: "confirmed", by: "Benedict Henry", at: Date.now() - 86400000 * 2 }
+      { status: 'confirmed', by: 'Benedict Henry', at: Date.now() - 86400000 * 2 },
     ],
     createdAt: Date.now() - 86400000 * 2,
     updatedAt: Date.now() - 86400000 * 2,
   },
   {
-    id: "bk_102",
-    sessionId: "portraits",
+    id: 'bk_102',
+    sessionId: 'portraits',
     sessionSnapshot: {
-      name: "Portraits & Beauty",
+      name: 'Portraits & Beauty',
       price: 350,
       durationMinutes: 120,
     },
     slot: {
-      date: "2026-11-18",
-      start: "14:00",
-      end: "16:00",
+      date: '2026-11-18',
+      start: '14:00',
+      end: '16:00',
     },
     customer: {
-      name: "Marcus Sterling",
-      email: "marcus.s@example.com",
-      phone: "+44 7700 900456",
+      name: 'Marcus Sterling',
+      email: 'marcus.s@example.com',
+      phone: '+44 7700 900456',
     },
-    status: "pending",
-    source: "web",
+    status: 'pending',
+    source: 'web',
     answers: {
-      location: "Studio Manchester",
-      lookCount: "3 wardrobe changes",
+      location: 'Studio Manchester',
+      lookCount: '3 wardrobe changes',
     },
     ownerNotes: [
-      { text: "Studio editorial portrait session in Manchester.", by: "Benedict Henry", at: Date.now() - 86400000 }
+      { text: 'Studio editorial portrait session in Manchester.', by: 'Benedict Henry', at: Date.now() - 86400000 },
     ],
     customerUid: null,
-    emailStatus: { owner: "sent", customer: "sent" },
+    emailStatus: { owner: 'sent', customer: 'sent' },
     statusHistory: [
-      { status: "pending", by: "system", at: Date.now() - 86400000 }
+      { status: 'pending', by: 'system', at: Date.now() - 86400000 },
     ],
     createdAt: Date.now() - 86400000,
     updatedAt: Date.now() - 86400000,
   },
   {
-    id: "bk_103",
-    sessionId: "family",
+    id: 'bk_103',
+    sessionId: 'family',
     sessionSnapshot: {
-      name: "Family Milestones",
+      name: 'Family Milestones',
       price: 275,
       durationMinutes: 90,
     },
     slot: {
-      date: "2026-11-22",
-      start: "11:00",
-      end: "12:30",
+      date: '2026-11-22',
+      start: '11:00',
+      end: '12:30',
     },
     customer: {
-      name: "Sophia Chen",
-      email: "sophia.chen@example.com",
-      phone: "+44 7700 900789",
+      name: 'Sophia Chen',
+      email: 'sophia.chen@example.com',
+      phone: '+44 7700 900789',
     },
-    status: "pending",
-    source: "web",
+    status: 'pending',
+    source: 'web',
     answers: {
-      location: "Heaton Park, Manchester",
-      familyMembers: "2 adults, 1 toddler",
+      location: 'Heaton Park, Manchester',
+      familyMembers: '2 adults, 1 toddler',
     },
     ownerNotes: [
-      { text: "Outdoor golden hour milestone session with parents and toddler.", by: "Benedict Henry", at: Date.now() - 3600000 * 5 }
+      { text: 'Outdoor golden hour milestone session with parents and toddler.', by: 'Benedict Henry', at: Date.now() - 3600000 * 5 },
     ],
     customerUid: null,
-    emailStatus: { owner: "sent", customer: "sent" },
+    emailStatus: { owner: 'sent', customer: 'sent' },
     statusHistory: [
-      { status: "pending", by: "system", at: Date.now() - 3600000 * 5 }
+      { status: 'pending', by: 'system', at: Date.now() - 3600000 * 5 },
     ],
     createdAt: Date.now() - 3600000 * 5,
     updatedAt: Date.now() - 3600000 * 5,
   },
 ];
-
-export async function getBookings(): Promise<BookingDoc[]> {
-  try {
-    const { db } = await import('@/lib/firebase/config');
-    const { collection, getDocs, query, orderBy } = await import('firebase/firestore');
-    const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt', 'desc')));
-    if (!snap.empty) {
-      const fromDb = snap.docs.map((d) => d.data() as BookingDoc);
-      if (typeof window !== 'undefined') {
-        try {
-          const deletedIds: string[] = JSON.parse(localStorage.getItem('sh_deleted_booking_ids') || '[]');
-          if (deletedIds.length > 0) {
-            return fromDb.filter((b) => !deletedIds.includes(b.id));
-          }
-        } catch {}
-      }
-      return fromDb;
-    }
-  } catch (err) {
-    console.warn("getBookings error:", err);
-  }
-
-  // Fallback to default mock records if database has no records yet
-  if (typeof window !== 'undefined') {
-    try {
-      const deletedIds: string[] = JSON.parse(localStorage.getItem('sh_deleted_booking_ids') || '[]');
-      if (deletedIds.length > 0) {
-        return DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
-      }
-    } catch {}
-  }
-  return DEFAULT_BOOKINGS;
-}

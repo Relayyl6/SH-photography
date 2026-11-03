@@ -38,7 +38,7 @@ import { BookingDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { collection, query, getDocs, doc, updateDoc } from "firebase/firestore";
 import { siteConfig } from "@/lib/site-config";
-import { getBookings, DEFAULT_BOOKINGS } from "@/lib/content";
+import { getBookings } from "@/lib/content";
 
 export default function AdminBookingsPage() {
   const searchParams = useSearchParams();
@@ -74,7 +74,7 @@ export default function AdminBookingsPage() {
       const deletedIds: string[] = JSON.parse(
         (typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]"
       );
-      const activeBookings = loaded.filter((b) => !deletedIds.includes(b.id));
+      const activeBookings = (loaded || []).filter((b) => !deletedIds.includes(b.id));
       setBookings(activeBookings);
       if (urlBookingId) {
         const found = activeBookings.find((b) => b.id === urlBookingId);
@@ -82,15 +82,7 @@ export default function AdminBookingsPage() {
       }
     } catch (err) {
       console.error("Failed to load bookings from Firestore:", err);
-      const deletedIds: string[] = JSON.parse(
-        (typeof window !== "undefined" && localStorage.getItem("sh_deleted_booking_ids")) || "[]"
-      );
-      const activeBookings = DEFAULT_BOOKINGS.filter((b) => !deletedIds.includes(b.id));
-      setBookings(activeBookings);
-      if (urlBookingId) {
-        const found = DEFAULT_BOOKINGS.find((b) => b.id === urlBookingId);
-        if (found) setSelectedBooking(found);
-      }
+      setBookings([]);
     } finally {
       setLoading(false);
     }

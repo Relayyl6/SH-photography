@@ -4,7 +4,6 @@ import { getAdminDb } from "@/lib/firebase/admin";
 import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
 import { sendRescheduleRequestNotification, sendRescheduleDecisionNotification } from "@/lib/email";
 import { findSlotConflict } from "@/lib/bookings-conflict";
-import { DEFAULT_BOOKINGS } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -145,7 +144,7 @@ async function handleUpdate(req: NextRequest) {
 
     const currentBooking = snap.exists()
       ? snap.data()
-      : (DEFAULT_BOOKINGS.find((b) => b.id === actualBookingId) || body.bookingFallback || {
+      : (body.bookingFallback || {
           id: actualBookingId,
           status: "pending",
           slot: { date: "2026-11-20", start: "10:00", end: "11:30" },

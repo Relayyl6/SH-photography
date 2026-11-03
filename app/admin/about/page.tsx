@@ -15,14 +15,28 @@ import {
   Trash2,
   Camera,
 } from "lucide-react";
-import { getAboutPageContent, DEFAULT_ABOUT_PAGE } from "@/lib/content";
+import { getAboutPageContent } from "@/lib/content";
 import { AboutPageDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
 import { uploadImageFile } from "@/lib/upload";
 
+const INITIAL_ABOUT_PAGE: AboutPageDoc = {
+  heading: "Get to Know Me",
+  body: "",
+  coverImage: {
+    url: "/photos/personal/personal_01.jpg",
+    path: "/photos/personal/personal_01.jpg",
+    alt: "Benedict Henry",
+  },
+  stats: [],
+  signature: "Benedict Henry",
+  published: true,
+  updatedAt: 0,
+};
+
 export default function AdminAboutPage() {
-  const [about, setAbout] = useState<AboutPageDoc>(DEFAULT_ABOUT_PAGE);
+  const [about, setAbout] = useState<AboutPageDoc>(INITIAL_ABOUT_PAGE);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -34,9 +48,7 @@ export default function AdminAboutPage() {
     async function init() {
       try {
         const data = await getAboutPageContent();
-        if (!data.body || data.body.includes("I am a freelance photographer with passion for all types")) {
-          setAbout({ ...data, body: DEFAULT_ABOUT_PAGE.body });
-        } else {
+        if (data && data.heading) {
           setAbout(data);
         }
       } catch (e) {

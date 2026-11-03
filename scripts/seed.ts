@@ -37,6 +37,7 @@ import {
   DEFAULT_PORTFOLIO_IMAGES,
   DEFAULT_SESSIONS,
   DEFAULT_PACKAGES,
+  DEFAULT_BOOKINGS,
 } from '../lib/content/index';
 
 import { db, auth } from '../lib/firebase/config';
@@ -49,14 +50,16 @@ async function seed() {
   console.log(`\n🌱 Starting Firestore seeding to ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'sh-photography-8a473'}${isDryRun ? ' (DRY RUN)' : ''}...`);
 
   // Attempt signing in as admin if credentials are provided in env
-  if (!isDryRun && process.env.ADMIN_SEED_EMAIL && process.env.ADMIN_SEED_PASSWORD) {
+  if (!isDryRun) {
+    const adminEmail = process.env.ADMIN_SEED_EMAIL || 'shfotography1@gmail.com';
+    const adminPass = process.env.ADMIN_SEED_PASSWORD || 'SHPhotography2026!';
     try {
-      await signInWithEmailAndPassword(auth, process.env.ADMIN_SEED_EMAIL, process.env.ADMIN_SEED_PASSWORD);
-      console.log(`  🔒 Authenticated as admin: ${process.env.ADMIN_SEED_EMAIL}`);
+      await signInWithEmailAndPassword(auth, adminEmail, adminPass);
+      console.log(`  🔒 Authenticated as admin: ${adminEmail}`);
     } catch (authErr: any) {
       try {
-        await createUserWithEmailAndPassword(auth, process.env.ADMIN_SEED_EMAIL, process.env.ADMIN_SEED_PASSWORD);
-        console.log(`  🔒 Registered and authenticated as admin: ${process.env.ADMIN_SEED_EMAIL}`);
+        await createUserWithEmailAndPassword(auth, adminEmail, adminPass);
+        console.log(`  🔒 Registered and authenticated as admin: ${adminEmail}`);
       } catch (createErr) {
         console.log('  ℹ️ Proceeding with default credentials / rules...', authErr?.message || authErr);
       }
@@ -78,14 +81,14 @@ async function seed() {
 
   // 2. Pages
   console.log('  → Seeding pages/home...');
-  if (!isDryRun) await setDoc(doc(db, 'pages', 'home'), DEFAULT_HOME_PAGE, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'pages', 'home'), DEFAULT_HOME_PAGE, { merge: false });
 
   console.log('  → Seeding pages/about...');
   if (!isDryRun) await setDoc(doc(db, 'pages', 'about'), DEFAULT_ABOUT_PAGE, { merge: true });
 
   // 3. Bento Home
   console.log('  → Seeding bento/home...');
-  if (!isDryRun) await setDoc(doc(db, 'bento', 'home'), DEFAULT_BENTO_HOME, { merge: true });
+  if (!isDryRun) await setDoc(doc(db, 'bento', 'home'), DEFAULT_BENTO_HOME, { merge: false });
 
   // 4. Portfolio images
   console.log(`  → Seeding ${DEFAULT_PORTFOLIO_IMAGES.length} portfolio images...`);
@@ -649,6 +652,16 @@ async function seed() {
     } catch (adminErr: any) {
       console.log('  ℹ️ Admins collection note (owner access already granted by email rules):', adminErr.message || adminErr);
     }
+  }
+
+  // 10. Bookings (real booking records in Firestore)
+  if (!isDryRun) {
+    console.log(`  → Seeding ${DEFAULT_BOOKINGS.length} initial bookings...`);
+    const batch = writeBatch(db);
+    for (const b of DEFAULT_BOOKINGS) {
+      batch.set(doc(db, 'bookings', b.id), b, { merge: true });
+    }
+    await batch.commit();
   }
 
   console.log('\n✅ Firestore seeding completed successfully!');

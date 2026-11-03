@@ -18,7 +18,7 @@ import {
   Camera,
   Trash2,
 } from "lucide-react";
-import { getPortfolioImages, DEFAULT_PORTFOLIO_IMAGES } from "@/lib/content";
+import { getPortfolioImages } from "@/lib/content";
 import { PortfolioImageDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc, deleteDoc } from "firebase/firestore";
@@ -37,7 +37,7 @@ const CATEGORIES = [
 ];
 
 export default function AdminPortfolioPage() {
-  const [images, setImages] = useState<PortfolioImageDoc[]>(DEFAULT_PORTFOLIO_IMAGES);
+  const [images, setImages] = useState<PortfolioImageDoc[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);

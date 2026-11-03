@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
 import { Reveal } from "@/components/Reveal";
-import { getAboutPageContent, DEFAULT_ABOUT_PAGE } from "@/lib/content";
+import { getAboutPageContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +13,7 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const about = await getAboutPageContent();
-  const rawBody =
-    !about.body || about.body.includes("I am a freelance photographer with passion for all types")
-      ? DEFAULT_ABOUT_PAGE.body
-      : about.body;
+  const rawBody = about.body || "";
   const paragraphs = rawBody.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
   return (

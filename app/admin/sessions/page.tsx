@@ -22,14 +22,14 @@ import {
   Trash2,
   Image as ImageIcon,
 } from "lucide-react";
-import { getPackages, DEFAULT_PACKAGES } from "@/lib/content";
+import { getPackages } from "@/lib/content";
 import { PackageDoc, SessionDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc, deleteDoc, collection, getDocs, getDoc } from "firebase/firestore";
 import { uploadImageFile } from "@/lib/upload";
 
 export default function AdminSessionsPage() {
-  const [packages, setPackages] = useState<PackageDoc[]>(DEFAULT_PACKAGES);
+  const [packages, setPackages] = useState<PackageDoc[]>([]);
   const [editingPkg, setEditingPkg] = useState<PackageDoc | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);

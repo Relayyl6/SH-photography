@@ -18,8 +18,6 @@ import {
 import {
   getBentoSlots,
   getPortfolioImages,
-  DEFAULT_BENTO_HOME,
-  DEFAULT_PORTFOLIO_IMAGES,
 } from "@/lib/content";
 import { BentoHomeDoc, BentoSlot, PortfolioImageDoc } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
@@ -110,8 +108,8 @@ const FIXED_SLOTS: SlotConfig[] = [
 ];
 
 export default function AdminBentoPage() {
-  const [bento, setBento] = useState<BentoHomeDoc>(DEFAULT_BENTO_HOME);
-  const [allImages, setAllImages] = useState<PortfolioImageDoc[]>(DEFAULT_PORTFOLIO_IMAGES);
+  const [bento, setBento] = useState<BentoHomeDoc>({ slots: [], published: true, updatedAt: 0 });
+  const [allImages, setAllImages] = useState<PortfolioImageDoc[]>([]);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);
@@ -124,10 +122,10 @@ export default function AdminBentoPage() {
           getBentoSlots(),
           getPortfolioImages(),
         ]);
-        setBento(bentoData);
-        setAllImages(imgs);
+        if (bentoData?.slots) setBento(bentoData);
+        if (imgs) setAllImages(imgs);
       } catch (err) {
-        console.error("Failed to load bento data:", err);
+        console.error("Failed to load bento data from DB:", err);
       }
     }
     init();
@@ -217,9 +215,10 @@ export default function AdminBentoPage() {
     });
   };
 
-  const handleResetToDefaults = () => {
-    if (confirm("Reset all 9 Bento slots to standard recommended layout? This will fix any inverted categories or photos.")) {
-      setBento(DEFAULT_BENTO_HOME);
+  const handleResetToDefaults = async () => {
+    if (confirm("Reload Bento slots from the database?")) {
+      const bentoData = await getBentoSlots();
+      if (bentoData?.slots) setBento(bentoData);
     }
   };
 

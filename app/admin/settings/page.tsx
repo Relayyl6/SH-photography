@@ -21,11 +21,6 @@ import {
   getSocialSettings,
   getBookingSettings,
   getHomePageContent,
-  DEFAULT_SITE_SETTINGS,
-  DEFAULT_CONTACT_SETTINGS,
-  DEFAULT_SOCIAL_SETTINGS,
-  DEFAULT_BOOKING_SETTINGS,
-  DEFAULT_HOME_PAGE,
 } from "@/lib/content";
 import {
   SiteSettingsDoc,
@@ -39,11 +34,11 @@ import { doc, setDoc } from "firebase/firestore";
 import { Video } from "lucide-react";
 
 export default function AdminSettingsPage() {
-  const [site, setSite] = useState<SiteSettingsDoc>(DEFAULT_SITE_SETTINGS);
-  const [contact, setContact] = useState<ContactSettingsDoc>(DEFAULT_CONTACT_SETTINGS);
-  const [social, setSocial] = useState<SocialSettingsDoc>(DEFAULT_SOCIAL_SETTINGS);
-  const [booking, setBooking] = useState<BookingSettingsDoc>(DEFAULT_BOOKING_SETTINGS);
-  const [home, setHome] = useState<HomePageDoc>(DEFAULT_HOME_PAGE);
+  const [site, setSite] = useState<SiteSettingsDoc>({} as SiteSettingsDoc);
+  const [contact, setContact] = useState<ContactSettingsDoc>({} as ContactSettingsDoc);
+  const [social, setSocial] = useState<SocialSettingsDoc>({ links: [] } as any);
+  const [booking, setBooking] = useState<BookingSettingsDoc>({} as BookingSettingsDoc);
+  const [home, setHome] = useState<HomePageDoc>({} as HomePageDoc);
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
