@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { bookingSchema, BookingFormData } from './schema';
+import { buildBookingSchema, bookingSchema, BookingFormData } from './schema';
 import { BookingCalendar } from './BookingCalendar';
 import { QuoteReceipt } from './QuoteReceipt';
 import { AiAutofillAssistant } from './AiAutofillAssistant';
@@ -166,6 +166,19 @@ export default function BookingForm() {
     loadData();
   }, []);
 
+  const isFieldRequired = (keyOrId: string, defaultRequired: boolean = false): boolean => {
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    if (field && typeof field.required === 'boolean') {
+      return field.required;
+    }
+    return defaultRequired;
+  };
+
+  const getFieldLabel = (keyOrId: string, defaultLabel: string): string => {
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    return field?.label || defaultLabel;
+  };
+
   const getFieldOptions = (keyOrId: string, fallback: string[]): Array<{ label: string; value: string }> => {
     const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
     if (field?.options && Array.isArray(field.options) && field.options.length > 0) {
@@ -180,6 +193,10 @@ export default function BookingForm() {
     return fallback.map((val) => ({ label: val, value: val }));
   };
 
+  const dynamicSchema = useMemo(() => {
+    return buildBookingSchema(fields);
+  }, [fields]);
+
   const {
     register,
     handleSubmit,
@@ -189,7 +206,9 @@ export default function BookingForm() {
     setValue,
     formState: { errors }
   } = useForm<BookingFormData>({
-    resolver: zodResolver(bookingSchema),
+    resolver: (values, context, options) => {
+      return zodResolver(dynamicSchema)(values, context, options);
+    },
     defaultValues: {
       stylePreferences: [],
       deliverables: [],
@@ -335,37 +354,49 @@ export default function BookingForm() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleNext = async () => {
-    let fieldsToValidate: (keyof BookingFormData)[] = [];
-
-    switch(currentStep) {
+  const getFieldsForStep = (stepIdx: number): (keyof BookingFormData)[] => {
+    switch(stepIdx) {
       case 0:
-        fieldsToValidate = ['serviceCategory', 'preferredDate', 'preferredStartTime', 'dateFlexible'];
-        break;
+        return ['serviceCategory', 'preferredDate', 'preferredStartTime', 'dateFlexible'];
       case 1:
-        fieldsToValidate = ['locationType', 'travelRequired'];
-        break;
+        return ['locationType', 'travelRequired'];
       case 2:
-        fieldsToValidate = ['vision', 'stylePreferences', 'colorPreference'];
-        break;
+        return ['vision', 'stylePreferences', 'colorPreference'];
       case 3:
-        fieldsToValidate = ['deliverables', 'turnaroundTime'];
-        break;
+        return ['deliverables', 'turnaroundTime'];
       case 4:
-        fieldsToValidate = ['budgetRange', 'budgetFlexible', 'howSoon', 'depositAck'];
-        break;
+        return ['budgetRange', 'budgetFlexible', 'howSoon', 'depositAck'];
       case 5:
-        fieldsToValidate = ['fullName', 'email', 'phone', 'preferredContact'];
-        break;
+        return ['fullName', 'email', 'phone', 'preferredContact'];
       case 6:
-        fieldsToValidate = ['termsAgreed', 'privacyAgreed', 'contactConsent'];
-        break;
+        return ['termsAgreed', 'privacyAgreed', 'contactConsent'];
+      default:
+        return [];
     }
+  };
 
-    const isStepValid = await trigger(fieldsToValidate);
+  const handleNext = async () => {
+    const candidateFields = getFieldsForStep(currentStep);
+    // Only validate fields on this step that are currently required per DB configuration
+    const fieldsToValidate = candidateFields.filter((key) => isFieldRequired(key, true));
+
+    const isStepValid = fieldsToValidate.length === 0 || (await trigger(fieldsToValidate));
     if (isStepValid) {
       setCurrentStep(s => Math.min(s + 1, steps.length - 1));
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const onInvalid = (fieldErrors: any) => {
+    console.warn('Form submission validation issues:', fieldErrors);
+    const errorKeys = Object.keys(fieldErrors);
+    for (let i = 0; i < steps.length; i++) {
+      const stepFields = getFieldsForStep(i);
+      if (stepFields.some((k) => errorKeys.includes(k))) {
+        setCurrentStep(i);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      }
     }
   };
 
@@ -474,7 +505,7 @@ export default function BookingForm() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentStep}
@@ -497,7 +528,7 @@ export default function BookingForm() {
                     </div>
 
                     <div className="space-y-4">
-                      <label className="block text-sm font-medium">Service Category *</label>
+                      <label className="block text-sm font-medium">Service Category{isFieldRequired('serviceCategory', true) ? ' *' : ''}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
                         {getFieldOptions('serviceCategory', ['Wedding', 'Portrait', 'Event', 'Retouching', 'Other']).map(cat => (
                           <label
@@ -548,7 +579,7 @@ export default function BookingForm() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Preferred Date & Time *</label>
+                      <label className="block text-sm font-medium mb-2">Preferred Date & Time{isFieldRequired('preferredDate', true) ? ' *' : ''}</label>
                       <Controller
                         name="preferredDate"
                         control={control}
@@ -581,7 +612,7 @@ export default function BookingForm() {
                         <p className="text-xs text-ink/50 mt-1">Optional backup.</p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Is the date flexible? *</label>
+                        <label className="block text-sm font-medium mb-2">Is the date flexible?{isFieldRequired('dateFlexible', true) ? ' *' : ''}</label>
                         <div className="flex gap-4 h-[50px] items-center">
                           {getFieldOptions('dateFlexible', ['Yes', 'No']).map(opt => (
                             <label key={opt.value} className="flex items-center gap-2">
@@ -665,7 +696,7 @@ export default function BookingForm() {
                     <h3 className="font-display text-2xl sm:text-3xl mb-6 sm:mb-8">Location & Logistics</h3>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Shoot Location Type *</label>
+                      <label className="block text-sm font-medium mb-2">Shoot Location Type{isFieldRequired('locationType', true) ? ' *' : ''}</label>
                       <select value={formData.locationType ?? ''} {...register('locationType')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                         <option value="">Select location type...</option>
                         {getFieldOptions('locationType', ['Studio', "Client's Location", 'Outdoor', 'Venue', 'Multiple Locations', 'Other']).map(opt => (
@@ -696,7 +727,7 @@ export default function BookingForm() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Travel required? *</label>
+                      <label className="block text-sm font-medium mb-2">Travel required?{isFieldRequired('travelRequired', true) ? ' *' : ''}</label>
                       <div className="flex gap-4 mb-2">
                         {getFieldOptions('travelRequired', ['Yes', 'No']).map(opt => (
                           <label key={opt.value} className="flex items-center gap-2">
@@ -728,14 +759,14 @@ export default function BookingForm() {
                     <h3 className="font-display text-2xl sm:text-3xl mb-6 sm:mb-8">Creative Brief & Style</h3>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">Describe your vision *</label>
+                      <label className="block text-sm font-medium mb-2">Describe your vision{isFieldRequired('vision', true) ? ' *' : ''}</label>
                       <p className="text-xs text-ink/60 mb-2">What mood, story, or feeling do you want captured?</p>
                       <textarea value={formData.vision ?? ''} {...register('vision')} rows={4} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink resize-none"></textarea>
                       {errors.vision && <p className="text-red-500 text-sm mt-1">{errors.vision.message}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-3">Preferred Photography Style *</label>
+                      <label className="block text-sm font-medium mb-3">Preferred Photography Style{isFieldRequired('stylePreferences', true) ? ' *' : ''}</label>
                       <div className="flex flex-wrap gap-2 sm:gap-3">
                         {getFieldOptions('stylePreferences', ['Candid', 'Posed', 'Documentary', 'Editorial', 'Fine Art', 'Lifestyle', 'Dramatic', 'Natural Light', 'Studio Lit', 'Vintage', 'Modern', 'Moody', 'Bright & Airy']).map(opt => {
                           const isSelected = formData.stylePreferences?.includes(opt.value) ?? false;
@@ -752,7 +783,7 @@ export default function BookingForm() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Color Preference *</label>
+                        <label className="block text-sm font-medium mb-2">Color Preference{isFieldRequired('colorPreference', true) ? ' *' : ''}</label>
                         <select value={formData.colorPreference ?? ''} {...register('colorPreference')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           {getFieldOptions('colorPreference', ['Color', 'Black & White', 'Mix', "Benedict's choice"]).map(opt => (
@@ -799,7 +830,7 @@ export default function BookingForm() {
                     <h3 className="font-display text-2xl sm:text-3xl mb-6 sm:mb-8">Deliverables & Usage</h3>
 
                     <div>
-                      <label className="block text-sm font-medium mb-3">What do you want delivered? *</label>
+                      <label className="block text-sm font-medium mb-3">What do you want delivered?{isFieldRequired('deliverables', true) ? ' *' : ''}</label>
                       <div className="flex flex-col gap-3">
                         {getFieldOptions('deliverables', ['Edited digital images', 'Prints', 'Album/Book', 'Canvas/Wall art', 'Social media package', 'Video/Hybrid coverage']).map(opt => {
                           const isSelected = formData.deliverables?.includes(opt.value) ?? false;
@@ -825,7 +856,7 @@ export default function BookingForm() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Turnaround time needed *</label>
+                        <label className="block text-sm font-medium mb-2">Turnaround time needed{isFieldRequired('turnaroundTime', true) ? ' *' : ''}</label>
                         <select value={formData.turnaroundTime ?? ''} {...register('turnaroundTime')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           {getFieldOptions('turnaroundTime', ['Standard (2–3 weeks)', 'Rush (under 1 week)', 'Flexible']).map(opt => (
@@ -865,7 +896,7 @@ export default function BookingForm() {
                     <h3 className="font-display text-2xl sm:text-3xl mb-6 sm:mb-8">Budget & Timeline</h3>
 
                     <div>
-                      <label className="block text-sm font-medium mb-4">Budget Range *</label>
+                      <label className="block text-sm font-medium mb-4">Budget Range{isFieldRequired('budgetRange', true) ? ' *' : ''}</label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                         {getFieldOptions('budgetRange', ['Under £500', '£500–£1,000', '£1,000–£2,500', '£2,500–£5,000', '£5,000+', 'Prefer to discuss']).map(opt => (
                           <label key={opt.value} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.budgetRange === opt.value ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
@@ -879,7 +910,7 @@ export default function BookingForm() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Is budget flexible? *</label>
+                        <label className="block text-sm font-medium mb-2">Is budget flexible?{isFieldRequired('budgetFlexible', true) ? ' *' : ''}</label>
                         <select value={formData.budgetFlexible ?? ''} {...register('budgetFlexible')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           {getFieldOptions('budgetFlexible', ['Yes', 'No', 'Slightly']).map(opt => (
@@ -889,7 +920,7 @@ export default function BookingForm() {
                         {errors.budgetFlexible && <p className="text-red-500 text-sm mt-1">{errors.budgetFlexible.message}</p>}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">How soon do you need to book? *</label>
+                        <label className="block text-sm font-medium mb-2">How soon do you need to book?{isFieldRequired('howSoon', true) ? ' *' : ''}</label>
                         <select value={formData.howSoon ?? ''} {...register('howSoon')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           {getFieldOptions('howSoon', ['ASAP', 'Within 2 weeks', 'Within a month', '1–3 months', 'Just planning ahead']).map(opt => (
@@ -903,7 +934,7 @@ export default function BookingForm() {
                     <div className="pt-4 border-t border-ink/10">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" checked={!!formData.depositAck} {...register('depositAck')} className="mt-1 accent-ink w-4 h-4 shrink-0" />
-                        <span className="text-sm">I understand a deposit is required to secure the date *</span>
+                        <span className="text-sm">I understand a deposit is required to secure the date{isFieldRequired('depositAck', true) ? ' *' : ''}</span>
                       </label>
                       {errors.depositAck && <p className="text-red-500 text-sm mt-1 ml-7">{errors.depositAck.message}</p>}
                     </div>
@@ -917,12 +948,12 @@ export default function BookingForm() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Full Name *</label>
+                        <label className="block text-sm font-medium mb-2">Full Name{isFieldRequired('fullName', true) ? ' *' : ''}</label>
                         <input type="text" value={formData.fullName ?? ''} {...register('fullName')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.fullName && <p className="text-red-500 text-sm mt-1">{errors.fullName.message}</p>}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Email *</label>
+                        <label className="block text-sm font-medium mb-2">Email{isFieldRequired('email', true) ? ' *' : ''}</label>
                         <input type="email" value={formData.email ?? ''} {...register('email')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
                       </div>
@@ -930,12 +961,12 @@ export default function BookingForm() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Phone *</label>
+                        <label className="block text-sm font-medium mb-2">Phone{isFieldRequired('phone', true) ? ' *' : ''}</label>
                         <input type="tel" value={formData.phone ?? ''} {...register('phone')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink" />
                         {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Preferred contact method *</label>
+                        <label className="block text-sm font-medium mb-2">Preferred contact method{isFieldRequired('preferredContact', true) ? ' *' : ''}</label>
                         <select value={formData.preferredContact ?? ''} {...register('preferredContact')} className="w-full p-3 border border-ink/20 bg-transparent focus:outline-none focus:border-ink">
                           <option value="">Select...</option>
                           {getFieldOptions('preferredContact', ['Email', 'Phone', 'WhatsApp']).map(opt => (
@@ -1088,9 +1119,9 @@ export default function BookingForm() {
                     <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Style</h4>
                     {currentStep > 2 && <button onClick={() => setCurrentStep(2)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
                   </div>
-                  {formData.stylePreferences?.length > 0 ? (
+                  {(formData.stylePreferences?.length ?? 0) > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {formData.stylePreferences.map(s => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
+                      {formData.stylePreferences?.map(s => <span key={s} className="text-[10px] bg-ink/10 px-2 py-0.5 rounded-full">{s}</span>)}
                     </div>
                   ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
                 </div>
@@ -1101,8 +1132,8 @@ export default function BookingForm() {
                     <h4 className="font-medium text-sm text-ink/60 uppercase tracking-widest">Deliverables</h4>
                     {currentStep > 3 && <button onClick={() => setCurrentStep(3)} className="text-xs text-[#e8491c] hover:underline">Edit</button>}
                   </div>
-                  {formData.deliverables?.length > 0 ? (
-                    <p className="text-xs leading-relaxed">{formData.deliverables.join(', ')}</p>
+                  {(formData.deliverables?.length ?? 0) > 0 ? (
+                    <p className="text-xs leading-relaxed">{formData.deliverables?.join(', ')}</p>
                   ) : <p className="text-xs text-ink/40 italic">Pending...</p>}
                 </div>
 

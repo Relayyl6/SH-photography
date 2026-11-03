@@ -63,22 +63,22 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
       data.parkingNotes ? `• *Access/Parking:* ${data.parkingNotes}` : null,
       ``,
       `*CREATIVE BRIEF*`,
-      `• *Vision:* "${data.vision}"`,
-      `• *Style Preferences:* ${data.stylePreferences.join(', ')}`,
-      `• *Color:* ${data.colorPreference}`,
+      `• *Vision:* "${data.vision || 'Standard signature shoot'}"`,
+      `• *Style Preferences:* ${data.stylePreferences?.join(', ') || 'Standard'}`,
+      `• *Color:* ${data.colorPreference || 'Color'}`,
       data.inspirationLinks ? `• *Inspiration:* ${data.inspirationLinks}` : null,
       data.mustHaveShots ? `• *Must-Have Shots:* ${data.mustHaveShots}` : null,
       data.specialRequests ? `• *Special Requests:* ${data.specialRequests}` : null,
       data.extraInfo ? `• *Extra Details & Requests:* ${data.extraInfo}` : null,
       ``,
       `*DELIVERABLES & BUDGET*`,
-      `• *Deliverables:* ${data.deliverables.join(', ')}`,
+      `• *Deliverables:* ${data.deliverables?.join(', ') || 'Standard gallery'}`,
       data.editedImagesExpected ? `• *Images Expected:* ${data.editedImagesExpected}` : null,
-      `• *Turnaround:* ${data.turnaroundTime}`,
+      `• *Turnaround:* ${data.turnaroundTime || 'Standard'}`,
       data.usageRights ? `• *Usage:* ${data.usageRights}` : null,
-      `• *Second Shooter:* ${data.secondShooter}`,
-      `• *Budget Range:* ${data.budgetRange} (Flexible: ${data.budgetFlexible})`,
-      `• *Booking Urgency:* ${data.howSoon}`,
+      `• *Second Shooter:* ${data.secondShooter || 'No'}`,
+      `• *Budget Range:* ${data.budgetRange || 'Discuss'} (Flexible: ${data.budgetFlexible || 'Yes'})`,
+      `• *Booking Urgency:* ${data.howSoon || 'Flexible'}`,
       ``,
       `*Studio:* ${siteConfig.businessName} (${siteConfig.owner})`,
       `*Contact:* ${siteConfig.phoneDisplay} | ${siteConfig.email}`,
@@ -104,7 +104,7 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
   };
 
   // Clean client phone digits for direct WhatsApp linking
-  const cleanClientPhone = data.phone.replace(/[^0-9]/g, '');
+  const cleanClientPhone = (data.phone || '').replace(/[^0-9]/g, '');
   const encodedMessage = encodeURIComponent(buildQuoteText());
 
   const studioWhatsAppUrl = `https://wa.me/${siteConfig.whatsappE164}?text=${encodedMessage}`;
@@ -441,21 +441,21 @@ export function QuoteReceipt({ data, onReset }: QuoteReceiptProps) {
               <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase text-ink/60 block">Selected Aesthetics</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {data.stylePreferences.map((style) => (
+                  {(data.stylePreferences || []).map((style) => (
                     <span key={style} className="px-2.5 py-1 bg-paper border border-line rounded-md text-xs font-medium">
                       {style}
                     </span>
                   ))}
                 </div>
                 <p className="text-xs text-ink/70 pt-2">
-                  <span className="font-medium">Color Preference:</span> {data.colorPreference}
+                  <span className="font-medium">Color Preference:</span> {data.colorPreference || 'Color'}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase text-ink/60 block">Deliverables Requested</span>
                 <div className="flex flex-wrap gap-1.5">
-                  {data.deliverables.map((d) => (
+                  {(data.deliverables || []).map((d) => (
                     <span key={d} className="px-2.5 py-1 bg-paper border border-line rounded-md text-xs font-medium">
                       {d}
                     </span>
