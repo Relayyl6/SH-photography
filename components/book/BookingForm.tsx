@@ -359,10 +359,10 @@ export default function BookingForm() {
 
   return (
     <div className="w-full pt-1 sm:pt-3 pb-12">
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 xl:gap-16">
-        <div className="flex-1">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 xl:gap-12">
+        <div className="flex-1 min-w-0">
           <header className="mb-6 space-y-2">
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-ink tracking-tight font-medium">Request a Quote</h1>
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl text-ink tracking-tight font-medium">Request a Quote</h1>
             <p className="text-sm sm:text-base text-ink/70 max-w-2xl leading-relaxed">
               Please provide as much detail as possible about your upcoming session. This helps me understand your vision and prepare an accurate, custom quote for you.
             </p>
@@ -381,11 +381,11 @@ export default function BookingForm() {
 
           {/* Progress Bar */}
           <div className="w-full mb-8 sm:mb-10">
-            <div className="flex items-center justify-between text-sm text-ink/60 mb-2">
-              <span>Step {currentStep + 1} of {steps.length}</span>
-              <span className="font-display">{steps[currentStep]}</span>
+            <div className="flex items-center justify-between gap-4 text-xs sm:text-sm text-ink/60 mb-2">
+              <span className="font-semibold whitespace-nowrap shrink-0">Step {currentStep + 1} of {steps.length}</span>
+              <span className="font-display text-right truncate text-ink/80">{steps[currentStep]}</span>
             </div>
-            <div className="h-1 w-full bg-ink/10 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-ink/10 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-ink"
                 initial={{ width: 0 }}
@@ -419,11 +419,26 @@ export default function BookingForm() {
 
                     <div className="space-y-4">
                       <label className="block text-sm font-medium">Service Category *</label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 lg:gap-3.5">
                         {['Wedding', 'Portrait', 'Event', 'Retouching', 'Other'].map(cat => (
-                          <label key={cat} className={`border p-3 sm:p-4 cursor-pointer transition-colors ${formData.serviceCategory === cat ? 'border-ink bg-ink text-paper' : 'border-ink/20 hover:border-ink'}`}>
-                            <input type="radio" value={cat} checked={formData.serviceCategory === cat} {...register('serviceCategory')} className="hidden" />
-                            <span className="block text-center text-sm sm:text-base">{cat}</span>
+                          <label
+                            key={cat}
+                            className={`border p-3 sm:p-3.5 md:p-4 rounded-xl cursor-pointer transition-all flex items-center justify-center min-w-0 select-none ${
+                              formData.serviceCategory === cat
+                                ? 'border-ink bg-ink text-paper shadow-sm font-semibold'
+                                : 'border-ink/20 hover:border-ink bg-white/40'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              value={cat}
+                              checked={formData.serviceCategory === cat}
+                              {...register('serviceCategory')}
+                              className="hidden"
+                            />
+                            <span className="block text-center text-xs sm:text-sm md:text-base font-medium truncate sm:whitespace-normal">
+                              {cat}
+                            </span>
                           </label>
                         ))}
                       </div>
@@ -961,7 +976,7 @@ export default function BookingForm() {
         </div>
 
         {/* Live Summary Sidebar (Sticky on desktop, stacked on mobile) */}
-        <div className="w-full lg:w-88 xl:w-96 shrink-0 mt-8 lg:mt-0">
+        <div className="w-full lg:w-80 xl:w-96 shrink-0 mt-8 lg:mt-0">
           <div className="lg:sticky lg:top-28 space-y-6">
             <div className="rounded-2xl sm:rounded-3xl border border-line/70 bg-sand/30 p-5 sm:p-6 backdrop-blur-sm shadow-sm">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink/10">

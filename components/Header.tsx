@@ -127,14 +127,14 @@ export function Header() {
             />
           </Link>
 
-          <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
+          <nav aria-label="Primary" className="hidden items-center gap-4 xl:gap-8 lg:flex">
             <div className="relative">
               <button
                 type="button"
                 aria-haspopup="true"
                 aria-expanded={portfolioOpen}
                 onClick={() => setPortfolioOpen((v) => !v)}
-                className="flex items-center gap-1 text-sm font-medium uppercase tracking-wide hover:text-accent"
+                className="flex items-center gap-1 text-xs xl:text-sm font-medium uppercase tracking-wide hover:text-accent whitespace-nowrap"
               >
                 Portfolio
                 <span aria-hidden="true">{portfolioOpen ? "−" : "+"}</span>
@@ -175,7 +175,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium uppercase tracking-wide hover:text-accent"
+                className="text-xs xl:text-sm font-medium uppercase tracking-wide hover:text-accent whitespace-nowrap"
               >
                 {link.label}
               </Link>
