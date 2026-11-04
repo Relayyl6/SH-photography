@@ -13,7 +13,7 @@ import {
   IdTokenResult,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export const ADMIN_EMAILS = [
   "shfotography1@gmail.com",
@@ -101,6 +101,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isEmailAdmin = ADMIN_LIST.includes(currentUser.email?.toLowerCase().trim() || "");
         if (isEmailAdmin) {
           setIsOwner(true);
+        } else if (currentUser.email) {
+          // Auto-sync customer account directory in Firestore
+          try {
+            setDoc(
+              doc(db, "customers", currentUser.uid),
+              {
+                id: currentUser.uid,
+                displayName: currentUser.displayName || currentUser.email.split("@")[0] || "Registered Client",
+                name: currentUser.displayName || currentUser.email.split("@")[0] || "Registered Client",
+                email: currentUser.email.toLowerCase().trim(),
+                isRegisteredUser: true,
+                source: "Portal Account",
+                updatedAt: Date.now(),
+                deleted: false,
+              },
+              { merge: true }
+            ).catch(() => {});
+          } catch {}
         }
         setUser(currentUser);
         await checkOwnerStatus(currentUser);

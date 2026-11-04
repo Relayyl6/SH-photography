@@ -669,6 +669,35 @@ async function seed() {
       batch.set(doc(db, 'bookings', b.id), b, { merge: true });
     }
     await batch.commit();
+
+    // 11. Customers (directory records in Firestore)
+    console.log(`  → Seeding customer accounts into customers collection...`);
+    const custBatch = writeBatch(db);
+    for (const b of DEFAULT_BOOKINGS) {
+      const email = (b.customer?.email || '').toLowerCase().trim();
+      if (!email) continue;
+      const custId = `cust_${email.replace(/[^a-z0-9]/gi, '_')}`;
+      custBatch.set(
+        doc(db, 'customers', custId),
+        {
+          id: custId,
+          displayName: b.customer.name,
+          name: b.customer.name,
+          email,
+          phone: b.customer.phone || '',
+          shootsCount: 1,
+          lastShootDate: b.slot?.date || '2026-11-14',
+          source: 'Guest Booking',
+          isRegisteredUser: false,
+          notes: `Booking for ${b.sessionSnapshot?.name || 'Photography Session'}`,
+          createdAt: Date.now() - 86400000 * 7,
+          updatedAt: Date.now(),
+          deleted: false,
+        },
+        { merge: true }
+      );
+    }
+    await custBatch.commit();
   }
 
   console.log('\n✅ Firestore seeding completed successfully!');

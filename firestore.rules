@@ -85,7 +85,8 @@ service cloud.firestore {
 
     // Customers
     match /customers/{uid} {
-      allow read, write: if request.auth != null && (request.auth.uid == uid || isOwner());
+      allow create: if true;
+      allow read, update, delete: if isOwner() || (request.auth != null && request.auth.uid == uid);
     }
 
     // Admins list

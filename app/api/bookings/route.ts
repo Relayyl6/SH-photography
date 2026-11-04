@@ -162,6 +162,73 @@ export async function POST(req: NextRequest) {
       // We do not fail the request if DB write was rejected by rules; proceed to email so lead is not lost.
     }
 
+    // 3b. Auto-upsert customer directory record in Firestore
+    try {
+      const normEmail = (customer.email || "").toLowerCase().trim();
+      const custId = customerUid || `cust_${normEmail.replace(/[^a-z0-9]/gi, "_")}`;
+      const adminDb = getAdminDb();
+
+      if (adminDb) {
+        const custRef = adminDb.collection("customers").doc(custId);
+        const custSnap = await custRef.get();
+        if (custSnap.exists) {
+          const existing = custSnap.data() || {};
+          const currentShoots = Number(existing.shootsCount || 0);
+          await custRef.set(
+            {
+              name: customer.name || existing.name || "Client",
+              displayName: customer.name || existing.displayName || "Client",
+              email: normEmail,
+              phone: customer.phone || existing.phone || "",
+              shootsCount: currentShoots + 1,
+              lastShootDate: date,
+              isRegisteredUser: Boolean(customerUid || existing.isRegisteredUser),
+              source: existing.source || (customerUid ? "Portal Account" : "Direct Booking"),
+              updatedAt: Date.now(),
+              deleted: false,
+            },
+            { merge: true }
+          );
+        } else {
+          await custRef.set({
+            id: custId,
+            name: customer.name,
+            displayName: customer.name,
+            email: normEmail,
+            phone: customer.phone || "",
+            shootsCount: 1,
+            lastShootDate: date,
+            isRegisteredUser: Boolean(customerUid),
+            source: customerUid ? "Portal Account" : "Direct Booking",
+            notes: `Initial booking for ${sessionName || sessionId} on ${date}`,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            deleted: false,
+          });
+        }
+      } else {
+        // Fallback using client SDK setDoc
+        await setDoc(
+          doc(db, "customers", custId),
+          {
+            id: custId,
+            name: customer.name,
+            displayName: customer.name,
+            email: normEmail,
+            phone: customer.phone || "",
+            lastShootDate: date,
+            isRegisteredUser: Boolean(customerUid),
+            source: customerUid ? "Portal Account" : "Direct Booking",
+            updatedAt: Date.now(),
+            deleted: false,
+          },
+          { merge: true }
+        );
+      }
+    } catch (custErr) {
+      console.warn("Failed to auto-upsert customer directory entry:", custErr);
+    }
+
     // 4. Send emails to owner and customer via Gmail SMTP (with timeout protection)
     try {
       await Promise.race([
