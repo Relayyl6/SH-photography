@@ -14,6 +14,7 @@ import { Check, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 
 
 import { BookingFieldDoc } from '@/types/firebase';
+import { useAuth } from '@/lib/auth/auth-context';
 
 const steps = [
   'Service & Session Type',
@@ -195,8 +196,11 @@ export default function BookingForm() {
     };
   }, []);
 
+  const normalizeKey = (s?: string): string => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
   const isFieldRequired = (keyOrId: string, defaultRequired: boolean = false): boolean => {
-    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    const targetNorm = normalizeKey(keyOrId);
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId || normalizeKey(f.key) === targetNorm || normalizeKey(f.id) === targetNorm);
     if (field && typeof field.required === 'boolean') {
       return field.required;
     }
@@ -204,19 +208,20 @@ export default function BookingForm() {
   };
 
   const getFieldLabel = (keyOrId: string, defaultLabel: string): string => {
-    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    const targetNorm = normalizeKey(keyOrId);
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId || normalizeKey(f.key) === targetNorm || normalizeKey(f.id) === targetNorm);
     return field?.label || defaultLabel;
   };
 
   const getFieldOptions = (keyOrId: string, fallback: string[]): Array<{ label: string; value: string }> => {
-    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId);
+    const targetNorm = normalizeKey(keyOrId);
+    const field = fields.find((f) => f.key === keyOrId || f.id === keyOrId || normalizeKey(f.key) === targetNorm || normalizeKey(f.id) === targetNorm);
     if (field?.options && Array.isArray(field.options) && field.options.length > 0) {
       return field.options.map((opt: any) => {
         if (typeof opt === 'string') return { label: opt, value: opt };
-        return {
-          label: opt.label || opt.value || '',
-          value: opt.value || opt.label || '',
-        };
+        const lbl = opt.label || opt.value || opt.name || opt.title || opt.text || '';
+        const val = opt.value || opt.label || opt.name || opt.title || opt.text || '';
+        return { label: lbl, value: val };
       }).filter((o) => o.label && o.value);
     }
     return fallback.map((val) => ({ label: val, value: val }));
@@ -225,6 +230,8 @@ export default function BookingForm() {
   const dynamicSchema = useMemo(() => {
     return buildBookingSchema(fields);
   }, [fields]);
+
+  const { user } = useAuth();
 
   const {
     register,
@@ -243,6 +250,14 @@ export default function BookingForm() {
       deliverables: [],
     }
   });
+
+  // Pre-fill user contact info if logged in
+  useEffect(() => {
+    if (user) {
+      if (user.displayName) setValue('fullName', user.displayName, { shouldValidate: false });
+      if (user.email) setValue('email', user.email, { shouldValidate: false });
+    }
+  }, [user, setValue]);
 
   // Pre-fill serviceCategory from ?service= URL param on mount.
   useEffect(() => {
@@ -269,8 +284,8 @@ export default function BookingForm() {
       timeSlot: { start: data.preferredStartTime || '10:00', end: '11:30' },
       customer: {
         name: data.fullName,
-        email: data.email,
-        phone: data.phone,
+        email: (data.email || user?.email || '').toLowerCase().trim(),
+        phone: data.phone || '',
       },
       isDoubleDate: Boolean(data.isDoubleDate),
       secondaryDate: data.secondaryDate || null,
@@ -281,7 +296,7 @@ export default function BookingForm() {
       ],
       extraInfo: data.extraInfo || null,
       answers: data,
-      customerUid: null,
+      customerUid: user?.uid || null,
     };
 
     let bookingSaved = false;
@@ -342,10 +357,10 @@ export default function BookingForm() {
           customer: payload.customer,
           status: 'pending',
           ownerNotes: [],
-          customerUid: null,
+          customerUid: user?.uid || null,
           createdAt: Date.now(),
           updatedAt: Date.now(),
-          source: 'web',
+          source: user?.uid ? 'portal_account' : 'web',
           emailStatus: { owner: 'queued', customer: 'queued' },
           statusHistory: [{ status: 'pending', by: data.fullName, at: Date.now() }],
         };
@@ -363,6 +378,8 @@ export default function BookingForm() {
       existing.push({
         bookingId,
         claimToken,
+        customerUid: user?.uid || null,
+        customerEmail: payload.customer.email,
         sessionName: data.serviceCategory || 'Photography Session',
         date: data.preferredDate,
         status: 'pending',
@@ -373,6 +390,8 @@ export default function BookingForm() {
       localStorage.setItem('sh_latest_booking', JSON.stringify({
         bookingId,
         claimToken,
+        customerUid: user?.uid || null,
+        customerEmail: payload.customer.email,
         date: data.preferredDate,
         status: 'pending',
       }));

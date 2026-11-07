@@ -70,11 +70,18 @@ service cloud.firestore {
     // Bookings (Quote Requests)
     // Public visitors can create a new quote request/booking.
     // Reading allowed so findSlotConflict can query active slots to avoid double-bookings.
-    // Update/Delete restricted to owner or customer owner.
+    // Update allowed for owner, or customer claiming unassigned booking / booking matching their email.
     match /bookings/{bookingId} {
       allow create: if true;
       allow read: if true;
-      allow update, delete: if isOwner() || (resource != null && isCustomerOwner(resource.data.customerUid));
+      allow update: if isOwner() || (
+        request.auth != null && (
+          (resource != null && isCustomerOwner(resource.data.customerUid)) ||
+          (resource != null && resource.data.customerUid == null) ||
+          (resource != null && request.auth.token.email != null && resource.data.customer != null && request.auth.token.email == resource.data.customer.email)
+        )
+      );
+      allow delete: if isOwner() || (resource != null && isCustomerOwner(resource.data.customerUid));
     }
 
     // Inquiries (Contact page messages)

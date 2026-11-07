@@ -12,11 +12,13 @@ export function SessionPreviewCarousel({
   sessionTitle,
   count = 6, 
   intervalMs = 3200,
+  initialPhotos,
 }: {
   sessionSlug?: string;
   sessionTitle: string;
   count?: number; 
   intervalMs?: number;
+  initialPhotos?: { src: string; width: number; height: number; aspectRatio: number; alt: string; title: string }[];
 }) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -31,8 +33,17 @@ export function SessionPreviewCarousel({
 
   // 1. Load the full pool of available photos (up to 100/all 24)
   const allPhotos = useMemo(() => {
-    return sessionSlug ? getPreviewImages(sessionSlug, 100) : [];
-  }, [sessionSlug]);
+    const staticPhotos = sessionSlug ? getPreviewImages(sessionSlug, 100) : [];
+    if (initialPhotos && initialPhotos.length > 0) {
+      const usedSrcs = new Set(initialPhotos.map((p) => p.src).filter(Boolean));
+      const merged = [
+        ...initialPhotos,
+        ...staticPhotos.filter((p) => !p.src || !usedSrcs.has(p.src)),
+      ];
+      return merged;
+    }
+    return staticPhotos;
+  }, [sessionSlug, initialPhotos]);
 
   // 2. The Reshuffle Engine: Shuffles the full pool and locks in a new set of 6
   const reshuffle = useCallback(() => {

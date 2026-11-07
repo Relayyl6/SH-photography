@@ -30,10 +30,28 @@ export default async function HomePage() {
   ]);
 
   const imgMap = new Map<string, string>();
+  const portfolioBySession = new Map<string, Array<{src: string; width: number; height: number; aspectRatio: number; alt: string; title: string}>>();
   portfolioImages.forEach((img) => {
     if (img.id && img.url) imgMap.set(img.id, img.url);
     const base = img.url?.split("/").pop()?.replace(/\.[^/.]+$/, "");
     if (base && img.url) imgMap.set(base, img.url);
+    // Group by category for session carousels
+    if (img.category && img.url) {
+      const cats = Array.isArray(img.category) ? img.category : [img.category];
+      const photo = {
+        src: img.url,
+        width: img.width || 1200,
+        height: img.height || 1500,
+        aspectRatio: (img.width && img.height) ? img.width / img.height : 0.8,
+        alt: img.alt || "Portfolio photo",
+        title: img.caption || "SH Photography",
+      };
+      for (const cat of cats) {
+        const slug = String(cat).toLowerCase().trim();
+        if (!portfolioBySession.has(slug)) portfolioBySession.set(slug, []);
+        portfolioBySession.get(slug)!.push(photo);
+      }
+    }
   });
 
   const slotMap = new Map<string, (typeof bentoData.slots)[0]>();
@@ -48,6 +66,7 @@ export default async function HomePage() {
     title: s.name,
     intro: s.shortDescription || s.description,
     previewCount: 6,
+    uploadedPhotos: portfolioBySession.get(s.slug),
   }));
   return (
     <>
@@ -284,6 +303,7 @@ export default async function HomePage() {
                   sessionSlug={session.slug}
                   sessionTitle={session.title}
                   count={session.previewCount}
+                  initialPhotos={session.uploadedPhotos}
                 />
                 <h3 className="mt-4 font-display text-2xl group-hover:text-accent">{session.title}</h3>
                 <p className="mt-1 text-sm text-ink/60">{session.intro}</p>

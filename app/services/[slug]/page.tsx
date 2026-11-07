@@ -24,6 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 import { serviceMedia, defaultMedia } from "@/lib/service-media";
 
+export const dynamic = "force-dynamic";
+
 
 export default async function ServiceDetailPage({ params }: Props) {
   const { slug } = params;

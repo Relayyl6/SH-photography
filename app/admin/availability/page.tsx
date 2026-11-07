@@ -16,13 +16,23 @@ import {
   Plus,
   Trash2,
   RefreshCw,
+  ExternalLink,
 } from "lucide-react";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "firebase/firestore";
+import { getConsecutiveDates } from "@/lib/date-utils";
 
 interface BlockedDay {
   date: string; // YYYY-MM-DD
   reason: string;
+  isBooking?: boolean;
+  bookingId?: string;
+  bookingStatus?: "confirmed" | "pending" | "reschedule_requested";
+  clientName?: string;
+  clientEmail?: string;
+  sessionName?: string;
+  dayIndex?: number;
+  totalDays?: number;
 }
 
 interface DaySchedule {
@@ -70,6 +80,7 @@ export default function AdminAvailabilityPage() {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [blockReason, setBlockReason] = useState("");
+  const [lockedBookingNotice, setLockedBookingNotice] = useState<BlockedDay | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -87,7 +98,7 @@ export default function AdminAvailabilityPage() {
         if (typeof data.bufferMinutes === "number") setBufferMinutes(data.bufferMinutes);
       }
 
-      // 2. Load availability collection (individual blocked dates)
+      // 2. Load availability collection (individual manual blocked dates)
       const availSnap = await getDocs(collection(db, "availability"));
       const blocked: BlockedDay[] = [];
       availSnap.forEach((d) => {
@@ -96,6 +107,7 @@ export default function AdminAvailabilityPage() {
           blocked.push({
             date: d.id,
             reason: dData.blockedReason || "Studio Booked / Unavailable",
+            isBooking: false,
           });
         }
       });
@@ -107,17 +119,52 @@ export default function AdminAvailabilityPage() {
           const bData = b.data();
           if (bData.status === "confirmed" || bData.status === "pending" || bData.status === "reschedule_requested") {
             const bookedDate = bData.slot?.date;
-            if (bookedDate && !blocked.some((item) => item.date === bookedDate)) {
-              blocked.push({
-                date: bookedDate,
-                reason: `Booked: ${bData.customer?.name || "Client"} (${bData.sessionSnapshot?.name || "Session"})`,
-              });
-            }
-            if (bData.secondaryDate && !blocked.some((item) => item.date === bData.secondaryDate)) {
-              blocked.push({
-                date: bData.secondaryDate,
-                reason: `Booked (Day 2): ${bData.customer?.name || "Client"}`,
-              });
+            const multiDates = bookedDate
+              ? getConsecutiveDates(bookedDate, bData.multiDayCount || bData.answers?.multiDayCount)
+              : [];
+
+            multiDates.forEach((dt, idx) => {
+              const existingIdx = blocked.findIndex((item) => item.date === dt);
+              const bookingItem: BlockedDay = {
+                date: dt,
+                reason: `${bData.status === "confirmed" ? "Confirmed Shoot" : "Pending Hold"}: ${bData.customer?.name || "Client"} (${bData.sessionSnapshot?.name || "Shoot"}${idx > 0 ? ` - Day ${idx + 1}` : ""})`,
+                isBooking: true,
+                bookingId: b.id,
+                bookingStatus: bData.status,
+                clientName: bData.customer?.name || "Client",
+                clientEmail: bData.customer?.email,
+                sessionName: bData.sessionSnapshot?.name || "Photoshoot",
+                dayIndex: idx + 1,
+                totalDays: multiDates.length,
+              };
+
+              if (existingIdx >= 0) {
+                blocked[existingIdx] = bookingItem;
+              } else {
+                blocked.push(bookingItem);
+              }
+            });
+
+            if (bData.secondaryDate) {
+              const secDate = bData.secondaryDate;
+              const existingIdx = blocked.findIndex((item) => item.date === secDate);
+              const secItem: BlockedDay = {
+                date: secDate,
+                reason: `${bData.status === "confirmed" ? "Confirmed Shoot" : "Pending Hold"} (Secondary Date): ${bData.customer?.name || "Client"}`,
+                isBooking: true,
+                bookingId: b.id,
+                bookingStatus: bData.status,
+                clientName: bData.customer?.name || "Client",
+                clientEmail: bData.customer?.email,
+                sessionName: bData.sessionSnapshot?.name || "Photoshoot",
+                dayIndex: 2,
+                totalDays: 2,
+              };
+              if (existingIdx >= 0) {
+                blocked[existingIdx] = secItem;
+              } else {
+                blocked.push(secItem);
+              }
             }
           }
         });
@@ -169,7 +216,14 @@ export default function AdminAvailabilityPage() {
       return; // Passed dates are automatically locked and cannot be opened
     }
 
-    if (isBlocked(dateStr)) {
+    const existingBlock = blockedDays.find((b) => b.date === dateStr);
+    if (existingBlock) {
+      if (existingBlock.isBooking) {
+        // ACTIVE BOOKING DETECTED! DO NOT CASUALLY UNLOCK!
+        setLockedBookingNotice(existingBlock);
+        return;
+      }
+      // Manual block can be removed
       setBlockedDays(blockedDays.filter((b) => b.date !== dateStr));
     } else {
       setSelectedDate(dateStr);
@@ -366,6 +420,11 @@ export default function AdminAvailabilityPage() {
               const dayOfWeekName = WEEKDAY_KEYS[(dayDate.getDay() + 6) % 7]!;
               const isDayOff = alwaysClosedDays.includes(dayOfWeekName) || !schedule[dayOfWeekName]?.open;
 
+              const blockItem = blockedDays.find((b) => b.date === dateStr);
+              const isConfirmedBooking = blockItem?.isBooking && blockItem.bookingStatus === "confirmed";
+              const isPendingBooking = blockItem?.isBooking && (blockItem.bookingStatus === "pending" || blockItem.bookingStatus === "reschedule_requested");
+              const isManualBlock = blockItem && !blockItem.isBooking;
+
               return (
                 <button
                   key={day}
@@ -375,27 +434,60 @@ export default function AdminAvailabilityPage() {
                   className={`aspect-square rounded-2xl p-2 text-left flex flex-col justify-between transition-all border ${
                     isPast
                       ? "bg-[#f5f4ef]/60 border-[#e8e6df] text-[#a8a49c] cursor-not-allowed opacity-60 select-none"
-                      : blocked
+                      : isConfirmedBooking
+                      ? "bg-emerald-50/90 border-emerald-300 text-emerald-950 hover:bg-emerald-100 shadow-sm"
+                      : isPendingBooking
+                      ? "bg-amber-50/90 border-amber-300 text-amber-950 hover:bg-amber-100"
+                      : isManualBlock
                       ? "bg-red-50/80 border-red-200 text-red-900 hover:bg-red-100"
                       : isDayOff
                       ? "bg-stone-100/70 border-stone-200 text-stone-500"
                       : "bg-[#faf9f6] border-[#e8e6df] text-[#1c1b1a] hover:bg-[#f5f4ef] hover:border-[#1c1b1a]"
                   }`}
-                  title={isPast ? "Date has passed (automatically locked)" : blocked ? "Locked date" : isDayOff ? "Closed day" : "Click to lock date"}
+                  title={
+                    isPast
+                      ? "Date has passed (automatically locked)"
+                      : blockItem?.reason
+                      ? blockItem.reason
+                      : isDayOff
+                      ? "Closed day"
+                      : "Click to lock date"
+                  }
                 >
-                  <span className="text-xs font-bold">{day}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold">{day}</span>
+                    {isConfirmedBooking && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-emerald-600 text-white">
+                        {blockItem?.totalDays && blockItem.totalDays > 1 ? `D${blockItem.dayIndex || 1}` : "Shoot"}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center justify-between">
                     {isPast ? (
                       <Clock className="w-3.5 h-3.5 text-[#a8a49c]" />
-                    ) : blocked ? (
+                    ) : isConfirmedBooking ? (
+                      <Lock className="w-3.5 h-3.5 text-emerald-700" />
+                    ) : isPendingBooking ? (
+                      <Lock className="w-3.5 h-3.5 text-amber-600" />
+                    ) : isManualBlock ? (
                       <Lock className="w-3.5 h-3.5 text-red-600" />
                     ) : isDayOff ? (
                       <span className="text-[9px] font-semibold text-stone-400">Off</span>
                     ) : (
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     )}
-                    <span className="text-[9px] font-semibold text-[#8a867f]">
-                      {isPast ? "Passed" : blocked ? "Locked" : isDayOff ? "Closed" : "Open"}
+                    <span className="text-[9px] font-semibold truncate max-w-[42px] text-right">
+                      {isPast
+                        ? "Passed"
+                        : isConfirmedBooking
+                        ? "Booked"
+                        : isPendingBooking
+                        ? "Pending"
+                        : isManualBlock
+                        ? "Locked"
+                        : isDayOff
+                        ? "Closed"
+                        : "Open"}
                     </span>
                   </div>
                 </button>
@@ -410,8 +502,16 @@ export default function AdminAvailabilityPage() {
               <span>Open for Booking</span>
             </span>
             <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
+              <span>Confirmed Shoot (Protected)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span>Pending Inquiry</span>
+            </span>
+            <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-              <span>Locked / Booked Date</span>
+              <span>Manual Block</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-stone-300" />
@@ -419,7 +519,7 @@ export default function AdminAvailabilityPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-[#a8a49c]" />
-              <span>Passed Dates (Auto-Locked)</span>
+              <span>Passed Dates</span>
             </span>
           </div>
         </div>
@@ -606,6 +706,74 @@ export default function AdminAvailabilityPage() {
                   Confirm Lock
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Active Booking Protection Modal */}
+      {lockedBookingNotice && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-emerald-200 animate-in zoom-in-95 duration-200 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#1c1b1a]">Active Booking Protection</h3>
+                <p className="text-xs text-[#7a766f]">Date {lockedBookingNotice.date} is strictly reserved</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#faf9f6] border border-[#e8e6df] space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#8a867f]">Client Name:</span>
+                <span className="font-semibold text-[#1c1b1a]">{lockedBookingNotice.clientName}</span>
+              </div>
+              {lockedBookingNotice.clientEmail && (
+                <div className="flex justify-between">
+                  <span className="text-[#8a867f]">Client Email:</span>
+                  <span className="font-mono text-[#1c1b1a]">{lockedBookingNotice.clientEmail}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-[#8a867f]">Session:</span>
+                <span className="font-semibold text-[#1c1b1a]">{lockedBookingNotice.sessionName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#8a867f]">Booking Status:</span>
+                <span className="uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 text-[10px]">
+                  {lockedBookingNotice.bookingStatus}
+                </span>
+              </div>
+              {lockedBookingNotice.totalDays && lockedBookingNotice.totalDays > 1 && (
+                <div className="flex justify-between text-purple-700 font-medium">
+                  <span>Multi-Day Event:</span>
+                  <span>Day {lockedBookingNotice.dayIndex} of {lockedBookingNotice.totalDays}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+              <strong>Why is this date protected?</strong> Benedict Henry enforces a 1-shoot-per-day commitment. You cannot open this date for public booking while an active reservation exists. To change or free this date, reschedule or cancel the booking from the Bookings dashboard (which notifies the client by email).
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setLockedBookingNotice(null)}
+                className="px-4 py-2 rounded-xl border border-[#e6e4dc] text-xs font-semibold text-[#55524c] hover:bg-[#f5f4ef]"
+              >
+                Keep Date Locked
+              </button>
+              {lockedBookingNotice.bookingId && (
+                <Link
+                  href={`/admin/bookings?id=${lockedBookingNotice.bookingId}`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1c1b1a] text-white text-xs font-bold hover:bg-black"
+                >
+                  <span>Go to Booking</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              )}
             </div>
           </div>
         </div>

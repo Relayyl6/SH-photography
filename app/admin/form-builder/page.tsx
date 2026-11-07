@@ -60,17 +60,377 @@ function normalizeFieldOptions(
       return { label: opt, value: opt, order: idx + 1 };
     }
     if (typeof opt === "object" && opt !== null) {
-      const lbl = opt.label !== undefined ? String(opt.label) : (opt.value !== undefined ? String(opt.value) : "");
-      const val = opt.value !== undefined ? String(opt.value) : (opt.label !== undefined ? String(opt.label) : "");
+      const lbl = opt.label || opt.value || opt.name || opt.title || opt.option || opt.text || "";
+      const val = opt.value || opt.label || opt.name || opt.title || opt.option || opt.text || "";
       return {
-        label: lbl,
-        value: val,
+        label: String(lbl),
+        value: String(val),
         order: typeof opt.order === "number" ? opt.order : idx + 1,
         priceDelta: typeof opt.priceDelta === "number" ? opt.priceDelta : undefined,
       };
     }
     return { label: String(opt), value: String(opt), order: idx + 1 };
   });
+}
+
+const DEFAULT_FORM_FIELDS: BookingFieldDoc[] = [
+  {
+    id: "serviceCategory",
+    key: "serviceCategory",
+    label: "Service Category",
+    type: "radio",
+    required: true,
+    published: true,
+    appliesTo: "all",
+    order: 1,
+    helpText: "Select which category best fits your upcoming photoshoot.",
+    options: [
+      { label: "Wedding", value: "Wedding", order: 1 },
+      { label: "Portrait", value: "Portrait", order: 2 },
+      { label: "Event", value: "Event", order: 3 },
+      { label: "Retouching", value: "Retouching", order: 4 },
+      { label: "Other", value: "Other", order: 5 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "estimatedDuration",
+    key: "estimatedDuration",
+    label: "Estimated Duration",
+    type: "select",
+    required: true,
+    published: true,
+    appliesTo: "all",
+    order: 2,
+    placeholder: "Choose estimated hours...",
+    helpText: "How long would you like the photography coverage to last?",
+    options: [
+      { label: "30 min", value: "30 min", order: 1 },
+      { label: "1 hr", value: "1 hr", order: 2 },
+      { label: "2 hrs", value: "2 hrs", order: 3 },
+      { label: "Half Day (4 hrs)", value: "Half Day (4 hrs)", order: 4 },
+      { label: "Full Day (8 hrs)", value: "Full Day (8 hrs)", order: 5 },
+      { label: "Multi-Day", value: "Multi-Day", order: 6 },
+      { label: "Not sure", value: "Not sure", order: 7 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "dateFlexible",
+    key: "dateFlexible",
+    label: "Date Flexibility",
+    type: "radio",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 3,
+    options: [
+      { label: "Yes", value: "Yes", order: 1 },
+      { label: "No", value: "No", order: 2 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "multiDayCount",
+    key: "multiDayCount",
+    label: "Multi-Day Event Count",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 4,
+    helpText: "If your event spans multiple consecutive days, select total days.",
+    options: [
+      { label: "2 Days", value: "2 Days", order: 1 },
+      { label: "3 Days", value: "3 Days", order: 2 },
+      { label: "4 Days", value: "4 Days", order: 3 },
+      { label: "5+ Days", value: "5+ Days", order: 4 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "locationType",
+    key: "locationType",
+    label: "Location Type",
+    type: "select",
+    required: true,
+    published: true,
+    appliesTo: "all",
+    order: 5,
+    placeholder: "Select location setting...",
+    helpText: "Where will the photoshoot or event take place?",
+    options: [
+      { label: "Studio", value: "Studio", order: 1 },
+      { label: "Client's Location", value: "Client's Location", order: 2 },
+      { label: "Outdoor", value: "Outdoor", order: 3 },
+      { label: "Venue", value: "Venue", order: 4 },
+      { label: "Multiple Locations", value: "Multiple Locations", order: 5 },
+      { label: "Other", value: "Other", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "indoorsOutdoors",
+    key: "indoorsOutdoors",
+    label: "Indoors or Outdoors?",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 6,
+    options: [
+      { label: "Indoors", value: "Indoors", order: 1 },
+      { label: "Outdoors", value: "Outdoors", order: 2 },
+      { label: "Both", value: "Both", order: 3 },
+      { label: "Not Sure", value: "Not Sure", order: 4 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "travelRequired",
+    key: "travelRequired",
+    label: "Travel Required?",
+    type: "radio",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 7,
+    helpText: "Will Benedict need to travel outside Manchester?",
+    options: [
+      { label: "Yes", value: "Yes", order: 1 },
+      { label: "No", value: "No", order: 2 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "stylePreferences",
+    key: "stylePreferences",
+    label: "Style Preferences",
+    type: "checkbox",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 8,
+    helpText: "Select all visual and mood aesthetics that resonate with you.",
+    options: [
+      { label: "Candid", value: "Candid", order: 1 },
+      { label: "Posed", value: "Posed", order: 2 },
+      { label: "Documentary", value: "Documentary", order: 3 },
+      { label: "Editorial", value: "Editorial", order: 4 },
+      { label: "Fine Art", value: "Fine Art", order: 5 },
+      { label: "Lifestyle", value: "Lifestyle", order: 6 },
+      { label: "Dramatic", value: "Dramatic", order: 7 },
+      { label: "Natural Light", value: "Natural Light", order: 8 },
+      { label: "Studio Lit", value: "Studio Lit", order: 9 },
+      { label: "Vintage", value: "Vintage", order: 10 },
+      { label: "Modern", value: "Modern", order: 11 },
+      { label: "Moody", value: "Moody", order: 12 },
+      { label: "Bright & Airy", value: "Bright & Airy", order: 13 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "colorPreference",
+    key: "colorPreference",
+    label: "Color Grading Preference",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 9,
+    options: [
+      { label: "Color", value: "Color", order: 1 },
+      { label: "Black & White", value: "Black & White", order: 2 },
+      { label: "Mix", value: "Mix", order: 3 },
+      { label: "Benedict's choice", value: "Benedict's choice", order: 4 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "deliverables",
+    key: "deliverables",
+    label: "Desired Deliverables",
+    type: "checkbox",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 10,
+    helpText: "What deliverables would you like included with your shoot?",
+    options: [
+      { label: "Edited digital images", value: "Edited digital images", order: 1 },
+      { label: "Prints", value: "Prints", order: 2 },
+      { label: "Album/Book", value: "Album/Book", order: 3 },
+      { label: "Canvas/Wall art", value: "Canvas/Wall art", order: 4 },
+      { label: "Social media package", value: "Social media package", order: 5 },
+      { label: "Video/Hybrid coverage", value: "Video/Hybrid coverage", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "editedImagesExpected",
+    key: "editedImagesExpected",
+    label: "Expected Edited Images",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 11,
+    options: [
+      { label: "10-25", value: "10-25", order: 1 },
+      { label: "25-50", value: "25-50", order: 2 },
+      { label: "50-100", value: "50-100", order: 3 },
+      { label: "100-250", value: "100-250", order: 4 },
+      { label: "250+", value: "250+", order: 5 },
+      { label: "Not sure", value: "Not sure", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "turnaroundTime",
+    key: "turnaroundTime",
+    label: "Turnaround Time",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 12,
+    options: [
+      { label: "Standard (2-3 weeks)", value: "Standard (2-3 weeks)", order: 1 },
+      { label: "Rush (under 1 week)", value: "Rush (under 1 week)", order: 2 },
+      { label: "Flexible", value: "Flexible", order: 3 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "usageRights",
+    key: "usageRights",
+    label: "Usage Rights & Licensing",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 13,
+    options: [
+      { label: "Personal use", value: "Personal use", order: 1 },
+      { label: "Social media", value: "Social media", order: 2 },
+      { label: "Commercial", value: "Commercial", order: 3 },
+      { label: "Editorial", value: "Editorial", order: 4 },
+      { label: "Advertising", value: "Advertising", order: 5 },
+      { label: "Full buyout", value: "Full buyout", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "secondShooter",
+    key: "secondShooter",
+    label: "Second Shooter Needed?",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 14,
+    options: [
+      { label: "Yes", value: "Yes", order: 1 },
+      { label: "No", value: "No", order: 2 },
+      { label: "Recommend for me", value: "Recommend for me", order: 3 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "budgetRange",
+    key: "budgetRange",
+    label: "Budget Range",
+    type: "radio",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 15,
+    options: [
+      { label: "Under £500", value: "Under £500", order: 1 },
+      { label: "£500-£1,000", value: "£500-£1,000", order: 2 },
+      { label: "£1,000-£2,500", value: "£1,000-£2,500", order: 3 },
+      { label: "£2,500-£5,000", value: "£2,500-£5,000", order: 4 },
+      { label: "£5,000+", value: "£5,000+", order: 5 },
+      { label: "Prefer to discuss", value: "Prefer to discuss", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "budgetFlexible",
+    key: "budgetFlexible",
+    label: "Budget Flexible?",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 16,
+    options: [
+      { label: "Yes", value: "Yes", order: 1 },
+      { label: "No", value: "No", order: 2 },
+      { label: "Slightly", value: "Slightly", order: 3 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "howSoon",
+    key: "howSoon",
+    label: "Decision Timeline",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 17,
+    options: [
+      { label: "ASAP", value: "ASAP", order: 1 },
+      { label: "Within 2 weeks", value: "Within 2 weeks", order: 2 },
+      { label: "Within a month", value: "Within a month", order: 3 },
+      { label: "1-3 months", value: "1-3 months", order: 4 },
+      { label: "Just planning ahead", value: "Just planning ahead", order: 5 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "preferredContact",
+    key: "preferredContact",
+    label: "Preferred Contact Method",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 18,
+    options: [
+      { label: "Email", value: "Email", order: 1 },
+      { label: "Phone", value: "Phone", order: 2 },
+      { label: "WhatsApp", value: "WhatsApp", order: 3 },
+    ],
+    updatedAt: 0,
+  },
+  {
+    id: "howDidYouFindMe",
+    key: "howDidYouFindMe",
+    label: "How Did You Find Me?",
+    type: "select",
+    required: false,
+    published: true,
+    appliesTo: "all",
+    order: 19,
+    options: [
+      { label: "Instagram", value: "Instagram", order: 1 },
+      { label: "Google", value: "Google", order: 2 },
+      { label: "Referral", value: "Referral", order: 3 },
+      { label: "Venue", value: "Venue", order: 4 },
+      { label: "Repeat Client", value: "Repeat Client", order: 5 },
+      { label: "Other", value: "Other", order: 6 },
+    ],
+    updatedAt: 0,
+  },
+];
+
+function getDefaultOptionsForField(fieldKeyOrId: string): Array<{ label: string; value: string; order: number }> {
+  const norm = (s?: string) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const target = norm(fieldKeyOrId);
+  const found = DEFAULT_FORM_FIELDS.find((f) => norm(f.id) === target || norm(f.key) === target);
+  return found?.options ? [...found.options] : [];
 }
 
 export default function AdminFormBuilderPage() {
@@ -126,12 +486,72 @@ export default function AdminFormBuilderPage() {
   };
 
   const openEditFieldModal = (f: BookingFieldDoc) => {
+    let opts = normalizeFieldOptions(f.options);
+    const hasValidOpts = opts.some(
+      (o) => (o.label || "").trim() || (o.value || "").trim()
+    );
+    if (!hasValidOpts) {
+      const defOpts = getDefaultOptionsForField(f.id || f.key);
+      if (defOpts.length > 0) {
+        opts = defOpts;
+      }
+    }
     setEditingField({
       ...f,
-      options: normalizeFieldOptions(f.options),
+      options: opts,
     });
     setNewOptionLabel("");
     setNewOptionValue("");
+  };
+
+  const [seeding, setSeeding] = useState(false);
+  const [seedSuccess, setSeedSuccess] = useState(false);
+
+  const handleSeedDefaultFields = async () => {
+    if (
+      !confirm(
+        "This will seed/sync all 19 standard booking fields & choices (Location Type, Duration, Styles, Deliverables, etc.) into your live Firestore database. Existing customized fields will be preserved or updated with complete options. Proceed?"
+      )
+    ) {
+      return;
+    }
+    setSeeding(true);
+    try {
+      for (const defField of DEFAULT_FORM_FIELDS) {
+        await setDoc(
+          doc(db, "bookingFields", defField.id),
+          {
+            ...defField,
+            updatedAt: Date.now(),
+          },
+          { merge: true }
+        );
+
+        // Also check if a snake_case alias exists (e.g. location_type) and update its choices
+        const snakeKey = defField.id.replace(/([A-Z])/g, "_$1").toLowerCase();
+        if (snakeKey !== defField.id) {
+          const match = fields.find((f) => f.id === snakeKey || f.key === snakeKey);
+          if (match) {
+            await setDoc(
+              doc(db, "bookingFields", snakeKey),
+              {
+                ...match,
+                options: defField.options,
+                updatedAt: Date.now(),
+              },
+              { merge: true }
+            );
+          }
+        }
+      }
+      setSeedSuccess(true);
+      setTimeout(() => setSeedSuccess(false), 4000);
+      await loadFields();
+    } catch (err) {
+      console.error("Failed to seed default fields:", err);
+    } finally {
+      setSeeding(false);
+    }
   };
 
   useEffect(() => {
@@ -431,6 +851,27 @@ export default function AdminFormBuilderPage() {
           >
             <Plus className="w-4 h-4 text-[#e8491c]" />
             <span>Add Custom Field</span>
+          </button>
+
+          <button
+            onClick={handleSeedDefaultFields}
+            disabled={seeding || loading}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#faf9f6] hover:bg-[#f0eee8] text-[#1c1b1a] border border-[#e6e4dc] text-xs font-bold transition-all shadow-2xs disabled:opacity-50"
+            title="Seed/Restore all 19 standard questionnaire fields & choices (Location Type, Duration, Styles, Deliverables, etc.)"
+          >
+            {seeding ? (
+              <span className="w-4 h-4 border-2 border-[#1c1b1a]/30 border-t-[#1c1b1a] rounded-full animate-spin" />
+            ) : seedSuccess ? (
+              <>
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span className="text-emerald-700">19 Fields &amp; Options Seeded!</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 text-[#e8491c]" />
+                <span>Seed Standard Fields &amp; Options</span>
+              </>
+            )}
           </button>
 
           <button
@@ -829,7 +1270,7 @@ export default function AdminFormBuilderPage() {
               {/* OPTIONS & ENUM VALUES MANAGER (Select, Radio, Checkbox, etc.) */}
               {/* ============================================================ */}
               <div className="space-y-3 p-4 rounded-2xl bg-[#faf9f6] border border-[#f0eee8]">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h4 className="text-xs font-bold text-[#1c1b1a]">
                       Options &amp; Choice Enums ({editingField.options?.length || 0})
@@ -838,12 +1279,30 @@ export default function AdminFormBuilderPage() {
                       Add, update labels, delete, or reorder choices for dropdowns, radios, and multi-select.
                     </p>
                   </div>
-                  {!isEnumField(editingField.type) && (
-                    <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                      Type is {editingField.type}; options become active if switched to select/radio/checkbox
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {getDefaultOptionsForField(editingField.id || editingField.key).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const defs = getDefaultOptionsForField(editingField.id || editingField.key);
+                          setEditingField({
+                            ...editingField,
+                            options: defs,
+                          });
+                        }}
+                        className="px-3 py-1 rounded-xl bg-white border border-[#e8491c]/30 hover:border-[#e8491c] text-[#e8491c] text-xs font-bold transition-colors shadow-2xs"
+                        title="Populate standard default options for this field"
+                      >
+                        Seed Standard Options ({getDefaultOptionsForField(editingField.id || editingField.key).length})
+                      </button>
+                    )}
+                  </div>
                 </div>
+                {!isEnumField(editingField.type) && (
+                  <div className="text-[10px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                    Type is currently {editingField.type}. Choices will display on the live booking form if input class is set to Dropdown Select, Radio Buttons, or Checkboxes.
+                  </div>
+                )}
 
                 {/* Add Option Sub-Form */}
                 <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">

@@ -47,6 +47,18 @@ interface RescheduleDecisionPayload {
   ownerMessage?: string;
 }
 
+export interface BookingConfirmationPayload {
+  bookingId: string;
+  sessionName: string;
+  date: string;
+  timeSlot?: { start: string; end: string };
+  customer: { name: string; email: string; phone?: string };
+  location?: string;
+  secondaryDate?: string | null;
+  additionalDates?: string[];
+  ownerMessage?: string;
+}
+
 function getTransporter() {
   const host = process.env.SMTP_HOST || "smtp.gmail.com";
   const port = parseInt(process.env.SMTP_PORT || "465", 10);
@@ -382,6 +394,77 @@ export async function sendRescheduleDecisionNotification(payload: RescheduleDeci
     to: payload.customer.email,
     replyTo: (process.env.OWNER_EMAILS || "").split(",")[0] || process.env.SMTP_USER,
     subject: `${isApproved ? "✅ Confirmed: New Shoot Date" : "ℹ️ Update"} on ${payload.sessionName} (Booking #${payload.bookingId.substring(0, 8)})`,
+    html,
+  });
+}
+
+// 5. Official Booking Confirmation Email (Dispatched when Benedict/Admin confirms a booking)
+export async function sendBookingConfirmationNotification(payload: BookingConfirmationPayload) {
+  if (!payload.customer?.email) return;
+
+  const transporter = getTransporter();
+  const from = process.env.EMAIL_FROM || `SH Photography <${process.env.SMTP_USER}>`;
+  const timeDisplay = payload.timeSlot?.start ? `${payload.timeSlot.start} – ${payload.timeSlot.end || "11:30"}` : "Full Day Coverage";
+  const refCode = payload.bookingId.substring(0, 8).toUpperCase();
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1c1917; background-color: #fdfbf7; border-radius: 16px; border: 1px solid #e7e5e4;">
+      <div style="border-bottom: 2px solid #16a34a; padding-bottom: 16px; margin-bottom: 20px;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #16a34a; font-weight: 700;">
+          Booking Confirmed
+        </span>
+        <h1 style="font-size: 24px; margin: 6px 0 0 0; color: #0c0a09; font-weight: 800;">
+          Your Photoshoot is Locked In!
+        </h1>
+        <p style="font-size: 12px; color: #78716c; margin: 4px 0 0 0;">
+          Reference #${refCode} • ${payload.sessionName}
+        </p>
+      </div>
+
+      <p style="font-size: 15px; line-height: 1.6; color: #44403c;">
+        Hi ${payload.customer.name},<br/><br/>
+        Great news! Benedict Henry has reviewed and officially <strong>confirmed</strong> your booking for <strong>${payload.sessionName}</strong>. Your date is reserved on our calendar.
+      </p>
+
+      <div style="background-color: #f0fdf4; padding: 20px; border-radius: 14px; border: 1px solid #bbf7d0; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #166534;">
+          📅 Confirmed Date: ${payload.date}
+        </p>
+        <p style="margin: 0 0 6px 0; font-size: 14px; color: #15803d;">
+          ⏰ Time: ${timeDisplay}
+        </p>
+        ${payload.secondaryDate ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #15803d;">📅 Secondary / Day 2: ${payload.secondaryDate}</p>` : ""}
+        ${payload.additionalDates && payload.additionalDates.length > 0 ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #15803d;">📅 Additional Dates: ${payload.additionalDates.join(", ")}</p>` : ""}
+        ${payload.location ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #44403c;">📍 Location / Venue: <strong>${payload.location}</strong></p>` : ""}
+        ${payload.ownerMessage ? `<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #bbf7d0; font-size: 13px; color: #166534; font-style: italic;">Note from Benedict: &ldquo;${payload.ownerMessage}&rdquo;</div>` : ""}
+      </div>
+
+      <div style="background-color: #ffffff; padding: 18px; border-radius: 12px; border: 1px solid #e7e5e4; margin-bottom: 22px;">
+        <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #1c1917; font-weight: 700;">What happens next?</h3>
+        <ul style="margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: #57534e;">
+          <li>Benedict will prepare custom styling and lighting tailored to your vision.</li>
+          <li>If you need to update locations or request notes, you can do so directly in your Client Portal.</li>
+          <li>For immediate queries, you can reach Benedict directly on WhatsApp.</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="https://sh-photography.vercel.app/account" style="display: inline-block; background-color: #1c1917; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 28px; border-radius: 9999px;">
+          View in Client Portal
+        </a>
+      </div>
+
+      <div style="text-align: center; font-size: 12px; color: #a8a29e; border-top: 1px solid #e7e5e4; padding-top: 16px; margin-top: 24px;">
+        SH Photography • Manchester, United Kingdom • <a href="https://wa.me/447350156054" style="color: #ea580c; text-decoration: none;">Chat on WhatsApp</a>
+      </div>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from,
+    to: payload.customer.email,
+    replyTo: (process.env.OWNER_EMAILS || "").split(",")[0] || process.env.SMTP_USER,
+    subject: `✅ Booking Confirmed: ${payload.sessionName} with Benedict Henry (#${refCode})`,
     html,
   });
 }

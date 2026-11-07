@@ -39,6 +39,7 @@ import { db } from "@/lib/firebase/config";
 import { collection, query, getDocs, doc, updateDoc } from "firebase/firestore";
 import { siteConfig } from "@/lib/site-config";
 import { getBookings } from "@/lib/content";
+import { getConsecutiveDates } from "@/lib/date-utils";
 
 export default function AdminBookingsPage() {
   const searchParams = useSearchParams();
@@ -127,27 +128,55 @@ export default function AdminBookingsPage() {
     setActionError(null);
     setActionSuccess(null);
 
-    // 1. Immediately update UI state locally
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: targetStatus } : b))
-    );
-    if (selectedBooking && selectedBooking.id === bookingId) {
-      setSelectedBooking((prev) => (prev ? { ...prev, status: targetStatus } : null));
+    const targetBooking = bookings.find((b) => b.id === bookingId) || selectedBooking;
+
+    // 1. Strict Conflict Check when confirming a booking (including multi-day ranges and encroachment)
+    if (targetStatus === "confirmed" && targetBooking) {
+      const datesToCheck: string[] = [];
+      if (targetBooking.slot?.date) {
+        datesToCheck.push(
+          ...getConsecutiveDates(
+            targetBooking.slot.date,
+            targetBooking.multiDayCount || (targetBooking as any).answers?.multiDayCount
+          )
+        );
+      }
+      if (targetBooking.secondaryDate) datesToCheck.push(targetBooking.secondaryDate);
+      if (Array.isArray(targetBooking.additionalDates)) {
+        datesToCheck.push(...targetBooking.additionalDates.filter(Boolean));
+      }
+
+      // Check against all other currently confirmed bookings in memory
+      for (const other of bookings) {
+        if (other.id === bookingId) continue;
+        if (other.status !== "confirmed") continue;
+
+        const otherDates: string[] = [];
+        if (other.slot?.date) {
+          otherDates.push(
+            ...getConsecutiveDates(
+              other.slot.date,
+              other.multiDayCount || (other as any).answers?.multiDayCount
+            )
+          );
+        }
+        if (other.secondaryDate) otherDates.push(other.secondaryDate);
+        if (Array.isArray(other.additionalDates)) {
+          otherDates.push(...other.additionalDates.filter(Boolean));
+        }
+
+        for (const d of datesToCheck) {
+          if (otherDates.includes(d)) {
+            const conflictMsg = `Cannot confirm booking: Date ${d} conflicts with confirmed photoshoot for ${other.customer?.name || "another client"} (${other.sessionSnapshot?.name || "Shoot"} #${other.id.substring(0, 8)}). The shoot spans multiple days encroaching into this date. Benedict Henry only accepts 1 event per day.`;
+            setActionError(conflictMsg);
+            setActionLoading(false);
+            return;
+          }
+        }
+      }
     }
 
-    // 2. Direct client SDK write (runs with logged-in Admin credentials!)
-    try {
-      const { db } = await import("@/lib/firebase/config");
-      const { doc, setDoc } = await import("firebase/firestore");
-      await setDoc(doc(db, "bookings", bookingId), {
-        status: targetStatus,
-        updatedAt: Date.now(),
-      }, { merge: true });
-    } catch (clientErr) {
-      console.warn("Client SDK status update warning:", clientErr);
-    }
-
-    // 3. Call server route for notification emails & server-side sync safely
+    // 2. Call server route for notification emails & server-side conflict verification FIRST
     try {
       const res = await fetch("/api/bookings/update", {
         method: "POST",
@@ -156,25 +185,59 @@ export default function AdminBookingsPage() {
           action: "set_status",
           bookingId,
           newStatus: targetStatus,
+          bookingFallback: targetBooking,
         }),
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        try {
-          const json = JSON.parse(text);
-          if (json.error) console.warn("Server status note:", json.error);
-        } catch {
-          // Ignore HTML response error since client SDK & local state already updated
-        }
+      const text = await res.text();
+      let resData: any = {};
+      try {
+        resData = JSON.parse(text);
+      } catch {
+        resData = { error: text };
       }
-    } catch (apiErr) {
-      console.warn("API status update error:", apiErr);
-    }
 
-    setActionSuccess(`Status updated to ${targetStatus}.`);
-    setTimeout(() => setActionSuccess(null), 3000);
-    setActionLoading(false);
+      if (!res.ok) {
+        setActionError(resData.error || resData.conflictDetail || "Failed to update booking status due to conflict.");
+        setActionLoading(false);
+        return;
+      }
+
+      // 3. Update client state locally and write to DB
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: targetStatus } : b))
+      );
+      if (selectedBooking && selectedBooking.id === bookingId) {
+        setSelectedBooking((prev) => (prev ? { ...prev, status: targetStatus } : null));
+      }
+
+      try {
+        const { db } = await import("@/lib/firebase/config");
+        const { doc, setDoc } = await import("firebase/firestore");
+        await setDoc(
+          doc(db, "bookings", bookingId),
+          {
+            status: targetStatus,
+            updatedAt: Date.now(),
+          },
+          { merge: true }
+        );
+      } catch (clientErr) {
+        console.warn("Client SDK status update warning:", clientErr);
+      }
+
+      if (targetStatus === "confirmed") {
+        setActionSuccess("Booking confirmed! Official confirmation email sent to client.");
+      } else {
+        setActionSuccess(`Status updated to ${targetStatus}.`);
+      }
+      setTimeout(() => setActionSuccess(null), 4000);
+    } catch (apiErr: any) {
+      console.warn("API status update error:", apiErr);
+      setActionError(apiErr.message || "Failed to communicate with booking server.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   // Approve a pending change/reschedule request with collision check

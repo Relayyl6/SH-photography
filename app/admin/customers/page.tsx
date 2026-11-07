@@ -111,40 +111,87 @@ export default function AdminCustomersPage() {
     try {
       const customerMap = new Map<string, CustomerItem>();
       const bookingsByEmail = new Map<string, CustomerBookingSummary[]>();
+      const bookingsByUid = new Map<string, CustomerBookingSummary[]>();
+      const guestInfoByEmail = new Map<string, { name: string; phone: string }>();
+      const claimedEmails = new Set<string>();
+      const deletedEmails = new Set<string>();
 
-      // A. Load bookings collection
+      // A. Load customers collection first to identify registered users & deleted accounts
+      const custSnap = await getDocs(collection(db, "customers"));
+      custSnap.forEach((d) => {
+        const data = d.data();
+        const email = (data.email || "").toLowerCase().trim();
+        if (data.deleted === true) {
+          if (email) deletedEmails.add(email);
+          if (Array.isArray(data.linkedEmails)) {
+            data.linkedEmails.forEach((e: string) => e && deletedEmails.add(e.toLowerCase().trim()));
+          }
+          return; // Skip deleted
+        }
+
+        if (email) claimedEmails.add(email);
+        if (Array.isArray(data.linkedEmails)) {
+          data.linkedEmails.forEach((e: string) => e && claimedEmails.add(e.toLowerCase().trim()));
+        }
+      });
+
+      // B. Load bookings collection
       try {
         const bookSnap = await getDocs(collection(db, "bookings"));
         bookSnap.forEach((d) => {
           const data = d.data();
-          const email = (data.customer?.email || "").toLowerCase().trim();
-          if (!email) return;
+          if (data.customerDeleted === true) return; // Skip bookings marked deleted
+
+          const email = (data.customer?.email || data.customerEmail || data.answers?.email || "").toLowerCase().trim();
+          const uid = data.customerUid || null;
+          const bName = data.customer?.name || data.customerName || data.answers?.name || "";
+          const bPhone = data.customer?.phone || data.customerPhone || data.answers?.phone || "";
+
+          if (deletedEmails.has(email)) return;
+
+          if (email && (bName || bPhone)) {
+            const existing = guestInfoByEmail.get(email);
+            guestInfoByEmail.set(email, {
+              name: existing?.name || bName,
+              phone: existing?.phone || bPhone,
+            });
+          }
 
           const summary: CustomerBookingSummary = {
             id: d.id,
             sessionId: data.sessionId || "session",
-            sessionName: data.sessionSnapshot?.name || data.sessionId || "Shoot",
+            sessionName: data.sessionSnapshot?.name || data.sessionName || data.sessionId || "Shoot",
             date: data.slot?.date || "",
             timeSlot: data.slot ? { start: data.slot.start, end: data.slot.end } : undefined,
             status: data.status || "pending",
           };
 
-          const list = bookingsByEmail.get(email) || [];
-          list.push(summary);
-          bookingsByEmail.set(email, list);
+          if (email) {
+            const list = bookingsByEmail.get(email) || [];
+            list.push(summary);
+            bookingsByEmail.set(email, list);
+          }
+
+          if (uid) {
+            const uidList = bookingsByUid.get(uid) || [];
+            uidList.push(summary);
+            bookingsByUid.set(uid, uidList);
+            if (email) claimedEmails.add(email);
+          }
         });
       } catch (bookErr) {
         console.warn("Could not load bookings for customers:", bookErr);
       }
 
-      // B. Load customers collection
-      const custSnap = await getDocs(collection(db, "customers"));
+      // C. Populate registered customers
       custSnap.forEach((d) => {
         const data = d.data();
-        if (data.deleted === true) return; // Skip soft-deleted accounts
+        if (data.deleted === true) return;
 
         const email = (data.email || "").toLowerCase().trim();
-        const key = email || d.id;
+        if (deletedEmails.has(email)) return;
+
+        const key = d.id;
         const joinedDate = data.createdAt
           ? new Date(data.createdAt).toLocaleDateString("en-GB", {
               day: "numeric",
@@ -153,61 +200,77 @@ export default function AdminCustomersPage() {
             })
           : "Recently";
 
-        const associatedBookings = bookingsByEmail.get(email) || [];
-        const rawShootsCount = data.shootsCount !== undefined ? Number(data.shootsCount) : associatedBookings.length;
-        const finalShootsCount = Math.max(rawShootsCount, associatedBookings.length);
+        // Merge bookings from UID and email
+        const uidBookings = bookingsByUid.get(d.id) || [];
+        const emailBookings = email ? (bookingsByEmail.get(email) || []) : [];
+        const allAssociatedBookings = [...uidBookings];
+        emailBookings.forEach((eb) => {
+          if (!allAssociatedBookings.some((ab) => ab.id === eb.id)) {
+            allAssociatedBookings.push(eb);
+          }
+        });
+
+        const rawShootsCount = data.shootsCount !== undefined ? Number(data.shootsCount) : allAssociatedBookings.length;
+        const finalShootsCount = Math.max(rawShootsCount, allAssociatedBookings.length);
 
         // Find latest shoot date
         let latestDate = data.lastShootDate || "";
-        for (const b of associatedBookings) {
+        for (const b of allAssociatedBookings) {
           if (b.date && (!latestDate || b.date > latestDate)) {
             latestDate = b.date;
           }
         }
 
+        const guestInfo = email ? guestInfoByEmail.get(email) : undefined;
+
         customerMap.set(key, {
           id: d.id,
-          name: data.name || data.displayName || email.split("@")[0] || "Client",
-          displayName: data.displayName || data.name || email.split("@")[0] || "Client",
+          name: data.name || data.displayName || guestInfo?.name || email.split("@")[0] || "Client",
+          displayName: data.displayName || data.name || guestInfo?.name || email.split("@")[0] || "Client",
           email: data.email || "",
-          phone: data.phone || data.phoneNumber || "",
+          phone: data.phone || data.phoneNumber || guestInfo?.phone || "",
           shootsCount: finalShootsCount,
           lastShootDate: latestDate,
           isRegisteredUser: Boolean(data.isRegisteredUser),
-          source: data.source || (data.isRegisteredUser ? "Portal Account" : "Guest Booking"),
+          source: data.source || (data.isRegisteredUser ? "Portal Account" : "Direct Booking"),
           notes: data.notes || "",
           joinedAt: joinedDate,
           createdAtMs: Number(data.createdAt) || Date.now(),
-          bookings: associatedBookings,
+          bookings: allAssociatedBookings,
         });
       });
 
-      // C. Also detect guest clients from bookings who don't have a doc in customers yet
+      // D. Also detect guest clients from bookings who don't have a registered account yet
       bookingsByEmail.forEach((bList, email) => {
-        if (!customerMap.has(email)) {
-          let latestDate = "";
-          for (const b of bList) {
-            if (b.date && (!latestDate || b.date > latestDate)) {
-              latestDate = b.date;
-            }
-          }
+        if (deletedEmails.has(email)) return;
+        if (claimedEmails.has(email)) return; // Already linked to a registered customer!
 
-          customerMap.set(email, {
-            id: `cust_${email.replace(/[^a-z0-9]/gi, "_")}`,
-            name: email.split("@")[0] || "Client",
-            displayName: email.split("@")[0] || "Client",
-            email,
-            phone: "",
-            shootsCount: bList.length,
-            lastShootDate: latestDate,
-            isRegisteredUser: false,
-            source: "Guest Booking",
-            notes: `Auto-detected from ${bList.length} booking(s)`,
-            joinedAt: "Via Booking",
-            createdAtMs: Date.now(),
-            bookings: bList,
-          });
+        let latestDate = "";
+        for (const b of bList) {
+          if (b.date && (!latestDate || b.date > latestDate)) {
+            latestDate = b.date;
+          }
         }
+
+        const guestInfo = guestInfoByEmail.get(email);
+        const resolvedName = guestInfo?.name || email.split("@")[0] || "Client";
+        const resolvedPhone = guestInfo?.phone || "";
+
+        customerMap.set(email, {
+          id: `cust_${email.replace(/[^a-z0-9]/gi, "_")}`,
+          name: resolvedName,
+          displayName: resolvedName,
+          email,
+          phone: resolvedPhone,
+          shootsCount: bList.length,
+          lastShootDate: latestDate,
+          isRegisteredUser: false,
+          source: "Guest Booking",
+          notes: `Auto-detected from ${bList.length} booking(s)`,
+          joinedAt: "Via Booking",
+          createdAtMs: Date.now(),
+          bookings: bList,
+        });
       });
 
       const list = Array.from(customerMap.values());
@@ -345,40 +408,40 @@ export default function AdminCustomersPage() {
     try {
       const email = deletingCustomer.email.toLowerCase().trim();
 
-      // 1. Permanently delete or mark deleted in customers collection
-      try {
-        await deleteDoc(doc(db, "customers", deletingCustomer.id));
-      } catch {
-        // Fallback: soft-delete
-        await setDoc(doc(db, "customers", deletingCustomer.id), { deleted: true, updatedAt: Date.now() }, { merge: true });
-      }
-
-      // Also mark soft delete flag in case doc is re-queried
+      // 1. Mark soft delete flag in customers collection so it persists across re-queries
       await setDoc(
         doc(db, "customers", deletingCustomer.id),
-        { deleted: true, deletedAt: Date.now() },
+        {
+          deleted: true,
+          email,
+          deletedAt: Date.now(),
+        },
         { merge: true }
       ).catch(() => {});
 
-      // 2. If admin opted to also purge associated bookings
-      if (alsoDeleteBookings && email) {
-        try {
-          const bSnap = await getDocs(collection(db, "bookings"));
-          const batch = writeBatch(db);
-          let deleteCount = 0;
-          bSnap.forEach((bDoc) => {
-            const bEmail = (bDoc.data().customer?.email || "").toLowerCase().trim();
-            if (bEmail === email) {
+      // 2. Update or purge associated bookings
+      try {
+        const bSnap = await getDocs(collection(db, "bookings"));
+        const batch = writeBatch(db);
+        let matchCount = 0;
+        bSnap.forEach((bDoc) => {
+          const bData = bDoc.data();
+          const bEmail = (bData.customer?.email || bData.customerEmail || bData.answers?.email || "").toLowerCase().trim();
+          const bUid = bData.customerUid;
+          if ((email && bEmail === email) || (deletingCustomer.id && bUid === deletingCustomer.id)) {
+            if (alsoDeleteBookings) {
               batch.delete(bDoc.ref);
-              deleteCount++;
+            } else {
+              batch.set(bDoc.ref, { customerDeleted: true, updatedAt: Date.now() }, { merge: true });
             }
-          });
-          if (deleteCount > 0) {
-            await batch.commit();
+            matchCount++;
           }
-        } catch (bErr) {
-          console.warn("Could not batch delete bookings:", bErr);
+        });
+        if (matchCount > 0) {
+          await batch.commit();
         }
+      } catch (bErr) {
+        console.warn("Could not batch delete/update bookings for customer:", bErr);
       }
 
       // 3. Immediately remove from local state

@@ -14,6 +14,7 @@ import {
   Share2,
   Calendar,
   ExternalLink,
+  Video,
 } from "lucide-react";
 import {
   getSiteSettings,
@@ -31,15 +32,84 @@ import {
 } from "@/types/firebase";
 import { db } from "@/lib/firebase/config";
 import { doc, setDoc } from "firebase/firestore";
-import { Video } from "lucide-react";
+import { siteConfig } from "@/lib/site-config";
+
+const DEFAULT_SITE: SiteSettingsDoc = {
+  businessName: siteConfig.businessName,
+  ownerName: siteConfig.owner,
+  tagline: "",
+  logo: "",
+  favicon: "",
+  seo: {
+    title: `${siteConfig.businessName} — Photography by ${siteConfig.owner}`,
+    description: "Curated photography sessions in Manchester, UK and worldwide.",
+    ogImage: "",
+  },
+  footerText: "",
+  currency: "GBP",
+  timezone: "Europe/London",
+  published: true,
+  updatedAt: 0,
+} as SiteSettingsDoc & { ownerName: string };
+
+const DEFAULT_CONTACT: ContactSettingsDoc = {
+  email: siteConfig.email,
+  phone: siteConfig.phoneDisplay,
+  whatsapp: siteConfig.whatsappE164,
+  address: siteConfig.locationLine,
+  mapLink: "",
+  hours: "",
+  published: true,
+  updatedAt: 0,
+};
+
+const DEFAULT_SOCIAL: SocialSettingsDoc = {
+  links: [
+    { platform: "instagram", url: "https://www.instagram.com/_sh_fotography?rpxt=bTZyN2h4M3pubXVh", label: "Instagram", order: 0, visible: true },
+    { platform: "youtube", url: "https://youtube.com/@shfotography?si=_beJ7rTNqElsJhEs", label: "YouTube", order: 1, visible: true },
+    { platform: "whatsapp", url: "https://wa.me/447350156054", label: "WhatsApp", order: 2, visible: true },
+  ],
+  published: true,
+  updatedAt: 0,
+};
+
+const DEFAULT_BOOKING: BookingSettingsDoc = {
+  leadTimeHours: 48,
+  maxAdvanceDays: 180,
+  bufferMinutes: 30,
+  autoConfirm: false,
+  cancellationPolicyText: "Cancellations made 7 days prior to session are eligible for rescheduling.",
+  termsText: "",
+  ownerNotifyEmails: [siteConfig.email],
+  published: true,
+  updatedAt: 0,
+};
+
+const DEFAULT_HOME: HomePageDoc = {
+  headline: "Visual Poetry in Every Frame",
+  subtitle: "Editorial, portrait, and documentary photography by Benedict Henry.",
+  ctaLabel: "Explore Sessions",
+  ctaLink: "/services",
+  heroText: [],
+  youtube: {
+    videoId: "vE8pQC6XHoU",
+    title: "Behind the Scenes & Photography Techniques with Benedict",
+    autoplay: false,
+    muted: true,
+  },
+  sectionTexts: {},
+  published: true,
+  updatedAt: 0,
+};
 
 export default function AdminSettingsPage() {
-  const [site, setSite] = useState<SiteSettingsDoc>({} as SiteSettingsDoc);
-  const [contact, setContact] = useState<ContactSettingsDoc>({} as ContactSettingsDoc);
-  const [social, setSocial] = useState<SocialSettingsDoc>({ links: [] } as any);
-  const [booking, setBooking] = useState<BookingSettingsDoc>({} as BookingSettingsDoc);
-  const [home, setHome] = useState<HomePageDoc>({} as HomePageDoc);
+  const [site, setSite] = useState<SiteSettingsDoc>(DEFAULT_SITE);
+  const [contact, setContact] = useState<ContactSettingsDoc>(DEFAULT_CONTACT);
+  const [social, setSocial] = useState<SocialSettingsDoc>(DEFAULT_SOCIAL);
+  const [booking, setBooking] = useState<BookingSettingsDoc>(DEFAULT_BOOKING);
+  const [home, setHome] = useState<HomePageDoc>(DEFAULT_HOME);
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -47,19 +117,40 @@ export default function AdminSettingsPage() {
     async function init() {
       try {
         const [s, c, soc, b, h] = await Promise.all([
-          getSiteSettings(),
-          getContactSettings(),
-          getSocialSettings(),
-          getBookingSettings(),
-          getHomePageContent(),
+          getSiteSettings().catch(() => DEFAULT_SITE),
+          getContactSettings().catch(() => DEFAULT_CONTACT),
+          getSocialSettings().catch(() => DEFAULT_SOCIAL),
+          getBookingSettings().catch(() => DEFAULT_BOOKING),
+          getHomePageContent().catch(() => DEFAULT_HOME),
         ]);
-        setSite(s);
-        setContact(c);
-        setSocial(soc);
-        setBooking(b);
-        setHome(h);
+
+        if (s && s.businessName) {
+          setSite({
+            ...DEFAULT_SITE,
+            ...s,
+            seo: { ...DEFAULT_SITE.seo, ...(s.seo || {}) },
+          });
+        }
+        if (c && c.email) {
+          setContact({ ...DEFAULT_CONTACT, ...c });
+        }
+        if (soc && Array.isArray(soc.links) && soc.links.length > 0) {
+          setSocial(soc);
+        }
+        if (b && b.leadTimeHours !== undefined) {
+          setBooking({ ...DEFAULT_BOOKING, ...b });
+        }
+        if (h && h.headline) {
+          setHome({
+            ...DEFAULT_HOME,
+            ...h,
+            youtube: { ...DEFAULT_HOME.youtube, ...(h.youtube || {}) },
+          });
+        }
       } catch (e) {
-        // Fallback
+        console.warn("Failed to load settings from DB:", e);
+      } finally {
+        setLoading(false);
       }
     }
     init();
@@ -78,7 +169,8 @@ export default function AdminSettingsPage() {
       ]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch {
+    } catch (err) {
+      console.error("Save error:", err);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } finally {
@@ -86,8 +178,19 @@ export default function AdminSettingsPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-3">
+        <div className="w-9 h-9 border-3 border-[#e8491c]/20 border-t-[#e8491c] rounded-full animate-spin" />
+        <p className="text-xs font-semibold text-[#8a867f]">Loading Studio Settings &amp; SEO...</p>
+      </div>
+    );
+  }
+
+  const socialLinksList = Array.isArray(social?.links) ? social.links : DEFAULT_SOCIAL.links;
+
   return (
-    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-12">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-16">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-3xl p-6 sm:p-8 border border-[#e8e6df] shadow-sm">
         <div>
@@ -141,7 +244,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Business Name</label>
               <input
                 type="text"
-                value={site.businessName}
+                value={site?.businessName ?? ""}
                 onChange={(e) => setSite({ ...site, businessName: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -151,7 +254,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Studio Email</label>
               <input
                 type="email"
-                value={contact.email}
+                value={contact?.email ?? ""}
                 onChange={(e) => setContact({ ...contact, email: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -161,7 +264,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Phone Number (Display)</label>
               <input
                 type="text"
-                value={contact.phone}
+                value={contact?.phone ?? ""}
                 onChange={(e) => setContact({ ...contact, phone: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -171,7 +274,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">WhatsApp E.164 Number</label>
               <input
                 type="text"
-                value={contact.whatsapp}
+                value={contact?.whatsapp ?? ""}
                 onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -181,7 +284,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Studio Location Line</label>
               <input
                 type="text"
-                value={contact.address}
+                value={contact?.address ?? ""}
                 onChange={(e) => setContact({ ...contact, address: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -196,19 +299,16 @@ export default function AdminSettingsPage() {
             <span>Social Media Channels</span>
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {social.links.map((link, idx) => (
-              <div key={link.platform} className="p-3.5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-2">
+            {socialLinksList.map((link, idx) => (
+              <div key={link.platform || idx} className="p-3.5 rounded-2xl bg-[#faf9f6] border border-[#f0eee8] space-y-2">
                 <span className="text-xs font-bold text-[#1c1b1a] capitalize">{link.platform}</span>
                 <input
                   type="text"
-                  value={link.url}
+                  value={link.url ?? ""}
                   onChange={(e) => {
-                    const item = social.links[idx];
-                    if (item) {
-                      const newLinks = [...social.links];
-                      newLinks[idx] = { ...item, url: e.target.value };
-                      setSocial({ ...social, links: newLinks });
-                    }
+                    const newLinks = [...socialLinksList];
+                    newLinks[idx] = { ...link, url: e.target.value };
+                    setSocial({ ...social, links: newLinks });
                   }}
                   className="w-full px-3 py-1.5 rounded-xl border border-[#e6e4dc] bg-white text-xs text-[#1c1b1a]"
                 />
@@ -230,9 +330,10 @@ export default function AdminSettingsPage() {
                 setHome({
                   ...home,
                   youtube: {
-                    ...home.youtube,
                     videoId: "vE8pQC6XHoU",
                     title: "Behind the Scenes & Photography Techniques with Benedict",
+                    autoplay: home?.youtube?.autoplay ?? false,
+                    muted: home?.youtube?.muted ?? true,
                   },
                 });
               }}
@@ -252,10 +353,9 @@ export default function AdminSettingsPage() {
               </label>
               <input
                 type="text"
-                value={home.youtube?.videoId || ""}
+                value={home?.youtube?.videoId ?? ""}
                 onChange={(e) => {
                   let val = e.target.value.trim();
-                  // Extract video ID if user pastes full youtube URL
                   if (val.includes("youtube.com/watch?v=")) {
                     val = val.split("v=")[1]?.split("&")[0] || val;
                   } else if (val.includes("youtu.be/")) {
@@ -264,9 +364,10 @@ export default function AdminSettingsPage() {
                   setHome({
                     ...home,
                     youtube: {
-                      ...home.youtube,
                       videoId: val,
-                      title: home.youtube?.title || "Behind the Scenes & Photography Techniques with Benedict",
+                      title: home?.youtube?.title || "Behind the Scenes & Photography Techniques with Benedict",
+                      autoplay: home?.youtube?.autoplay ?? false,
+                      muted: home?.youtube?.muted ?? true,
                     },
                   });
                 }}
@@ -279,14 +380,15 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Video Display Title</label>
               <input
                 type="text"
-                value={home.youtube?.title || ""}
+                value={home?.youtube?.title ?? ""}
                 onChange={(e) =>
                   setHome({
                     ...home,
                     youtube: {
-                      ...home.youtube,
-                      videoId: home.youtube?.videoId || "vE8pQC6XHoU",
+                      videoId: home?.youtube?.videoId || "vE8pQC6XHoU",
                       title: e.target.value,
+                      autoplay: home?.youtube?.autoplay ?? false,
+                      muted: home?.youtube?.muted ?? true,
                     },
                   })
                 }
@@ -296,7 +398,7 @@ export default function AdminSettingsPage() {
             </div>
           </div>
 
-          {home.youtube?.videoId && (
+          {home?.youtube?.videoId && (
             <div className="mt-3 p-3 bg-[#faf9f6] rounded-2xl border border-[#f0eee8] flex items-center gap-3">
               <span className="text-xs font-bold text-[#1c1b1a]">Active Video:</span>
               <span className="text-xs font-mono bg-white px-2 py-1 rounded border border-[#e6e4dc] text-[#e8491c]">
@@ -326,7 +428,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Minimum Lead Time (Hours)</label>
               <input
                 type="number"
-                value={booking.leadTimeHours}
+                value={booking?.leadTimeHours ?? 48}
                 onChange={(e) => setBooking({ ...booking, leadTimeHours: Number(e.target.value) })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -336,7 +438,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Max Advance Booking (Days)</label>
               <input
                 type="number"
-                value={booking.maxAdvanceDays}
+                value={booking?.maxAdvanceDays ?? 180}
                 onChange={(e) => setBooking({ ...booking, maxAdvanceDays: Number(e.target.value) })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -346,7 +448,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Buffer Time (Minutes)</label>
               <input
                 type="number"
-                value={booking.bufferMinutes}
+                value={booking?.bufferMinutes ?? 30}
                 onChange={(e) => setBooking({ ...booking, bufferMinutes: Number(e.target.value) })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -356,7 +458,7 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Cancellation Policy Copy</label>
               <input
                 type="text"
-                value={booking.cancellationPolicyText}
+                value={booking?.cancellationPolicyText ?? ""}
                 onChange={(e) => setBooking({ ...booking, cancellationPolicyText: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
@@ -375,8 +477,8 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Meta Title</label>
               <input
                 type="text"
-                value={site.seo.title}
-                onChange={(e) => setSite({ ...site, seo: { ...site.seo, title: e.target.value } })}
+                value={site?.seo?.title ?? ""}
+                onChange={(e) => setSite({ ...site, seo: { ...(site?.seo || {}), title: e.target.value, description: site?.seo?.description || "" } })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
             </div>
@@ -384,8 +486,8 @@ export default function AdminSettingsPage() {
               <label className="block text-xs font-semibold text-[#48453f] mb-1">Meta Description</label>
               <textarea
                 rows={2}
-                value={site.seo.description}
-                onChange={(e) => setSite({ ...site, seo: { ...site.seo, description: e.target.value } })}
+                value={site?.seo?.description ?? ""}
+                onChange={(e) => setSite({ ...site, seo: { ...(site?.seo || {}), title: site?.seo?.title || "", description: e.target.value } })}
                 className="w-full px-3 py-2 rounded-xl border border-[#e6e4dc] bg-[#faf9f6] text-xs text-[#1c1b1a]"
               />
             </div>

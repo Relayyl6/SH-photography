@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSession, sessions } from "@/lib/sessions";
 import { getSessionBySlug, getPortfolioImages } from "@/lib/content";
+import { getGalleryImages } from "@/lib/gallery";
 import { GalleryGrid } from "@/components/GalleryGrid";
 
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 export function generateStaticParams() {
@@ -36,19 +38,23 @@ export default async function SessionPage({ params }: { params: { session: strin
   const slug = dynamicSession?.slug || staticSession?.slug || params.session;
   const count = staticSession?.galleryCount;
 
-  // Check if photos exist in Firestore portfolio collection
+  // Merge uploaded Firestore photos with static baseline photos
   const portfolioDocs = await getPortfolioImages(slug);
-  let customPhotos = undefined;
-  if (portfolioDocs.length > 0) {
-    customPhotos = portfolioDocs.map((p) => ({
-      src: p.url,
-      width: p.width || 1200,
-      height: p.height || 1500,
-      aspectRatio: (p.width && p.height) ? p.width / p.height : 0.8,
-      alt: p.alt || `${title} photo`,
-      title: p.caption || title,
-    }));
-  }
+  const uploadedPhotos = portfolioDocs.map((p) => ({
+    src: p.url,
+    width: p.width || 1200,
+    height: p.height || 1500,
+    aspectRatio: (p.width && p.height) ? p.width / p.height : 0.8,
+    alt: p.alt || `${title} photo`,
+    title: p.caption || title,
+  }));
+  const baselinePhotos = staticSession ? getGalleryImages(slug) : [];
+  const usedSrcs = new Set(uploadedPhotos.map((p) => p.src).filter(Boolean));
+  const mergedPhotos = [
+    ...uploadedPhotos,
+    ...baselinePhotos.filter((p) => !p.src || !usedSrcs.has(p.src)),
+  ];
+  const finalPhotos = mergedPhotos.length > 0 ? mergedPhotos : undefined;
 
   return (
     <div className="container-site py-20">
@@ -65,7 +71,7 @@ export default async function SessionPage({ params }: { params: { session: strin
           sessionSlug={slug}
           sessionTitle={title}
           count={count}
-          initialPhotos={customPhotos}
+          initialPhotos={finalPhotos}
         />
       </div>
     </div>

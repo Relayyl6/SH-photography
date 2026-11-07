@@ -83,6 +83,67 @@ export default function CustomerAccountPage() {
   const [editSubmitted, setEditSubmitted] = useState(false);
   const [editFeedback, setEditFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // Link Past Booking modal & state
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkFeedback, setLinkFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleLinkPastBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkInput.trim() || !user) return;
+    setLinkLoading(true);
+    setLinkFeedback(null);
+
+    const inputVal = linkInput.trim();
+    const isEmail = inputVal.includes("@");
+
+    try {
+      const res = await fetch("/api/bookings/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerUid: user.uid,
+          customerEmail: isEmail ? inputVal : user.email,
+          bookingId: !isEmail ? inputVal : undefined,
+          bookingIds: !isEmail ? [inputVal] : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to link booking.");
+      }
+
+      if (data.claimedCount > 0) {
+        setLinkFeedback({
+          type: "success",
+          text: `Success! Linked ${data.claimedCount} booking(s) directly to your account.`,
+        });
+        await loadBookings();
+        setTimeout(() => {
+          setIsLinkModalOpen(false);
+          setLinkFeedback(null);
+          setLinkInput("");
+        }, 1500);
+      } else {
+        setLinkFeedback({
+          type: "error",
+          text: isEmail
+            ? `No unassigned bookings found matching "${inputVal}". If your booking is already linked, it will show below.`
+            : `Booking #${inputVal} was not found or is already assigned to another profile.`,
+        });
+      }
+    } catch (err: any) {
+      setLinkFeedback({
+        type: "error",
+        text: err.message || "An error occurred while linking your booking.",
+      });
+    } finally {
+      setLinkLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
@@ -106,28 +167,38 @@ export default function CustomerAccountPage() {
           const guestBookings = JSON.parse(stored);
           if (Array.isArray(guestBookings) && guestBookings.length > 0) {
             setClaimStatus("Syncing your past guest bookings to your account...");
-            const res = await fetch("/api/bookings/claim", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                claimTokens: guestBookings.map((b: { claimToken?: string }) => b.claimToken).filter(Boolean),
-                customerUid: user.uid,
-                customerEmail: user.email,
-              }),
-            });
-            if (res.ok) {
-              const data = await res.json();
-              if (data.claimedCount > 0) {
-                setClaimStatus(`Successfully linked ${data.claimedCount} booking(s) to your account!`);
-                localStorage.removeItem("sh_guest_bookings");
+            try {
+              const res = await fetch("/api/bookings/claim", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  claimTokens: guestBookings.map((b: { claimToken?: string }) => b.claimToken).filter(Boolean),
+                  bookingIds: guestBookings.map((b: { bookingId?: string; id?: string }) => b.bookingId || b.id).filter(Boolean),
+                  claims: guestBookings,
+                  customerUid: user.uid,
+                  customerEmail: user.email,
+                }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.claimedCount > 0) {
+                  setClaimStatus(`Successfully linked ${data.claimedCount} booking(s) to your account!`);
+                  setTimeout(() => setClaimStatus(null), 6000);
+                } else {
+                  setClaimStatus(null);
+                }
               } else {
                 setClaimStatus(null);
               }
+            } finally {
+              // Always clean up guest booking localStorage so it never runs repeatedly or freezes
+              localStorage.removeItem("sh_guest_bookings");
             }
           }
         }
       } catch (err) {
         console.error("Failed to auto-claim guest bookings:", err);
+        setClaimStatus(null);
       }
     }
 
@@ -426,8 +497,14 @@ export default function CustomerAccountPage() {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsLinkModalOpen(true)}
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-stone-300 hover:bg-stone-50 transition text-stone-700 shadow-sm"
+            >
+              <FileText className="w-3.5 h-3.5 text-[#C25E00]" /> Link Past Booking
+            </button>
+            <button
               onClick={() => loadBookings()}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-lg border border-stone-300 hover:bg-stone-50 transition text-stone-700"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg border border-stone-300 hover:bg-stone-50 transition text-stone-700"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
@@ -447,21 +524,38 @@ export default function CustomerAccountPage() {
             <p className="text-stone-500 text-sm">Loading your bookings...</p>
           </div>
         ) : bookings.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-12 text-center max-w-xl mx-auto shadow-sm">
-            <div className="w-16 h-16 rounded-full bg-orange-50 text-[#C25E00] flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white rounded-2xl border border-stone-200/90 p-8 sm:p-12 text-center max-w-xl mx-auto shadow-sm space-y-6">
+            <div className="w-16 h-16 rounded-full bg-orange-50 text-[#C25E00] flex items-center justify-center mx-auto">
               <Camera className="w-8 h-8 stroke-[1.5]" />
             </div>
-            <h3 className="font-serif text-xl text-stone-900 mb-2">No active bookings yet</h3>
-            <p className="text-stone-500 text-sm mb-6 leading-relaxed">
-              When you reserve a portrait, wedding, family, or event shoot, all your session details, location, and
-              custom notes will appear right here.
-            </p>
-            <Link
-              href="/book"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 text-sm font-semibold transition"
-            >
-              Explore Sessions & Book <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div>
+              <h3 className="font-serif text-xl text-stone-900 mb-2">No active bookings yet</h3>
+              <p className="text-stone-500 text-sm leading-relaxed">
+                When you reserve a portrait, wedding, family, or event shoot, all your session details, location, and
+                custom notes will appear right here.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                href="/book"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-stone-900 text-white hover:bg-stone-800 text-sm font-semibold transition"
+              >
+                Explore Sessions &amp; Book <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsLinkModalOpen(true)}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-50 text-sm font-medium transition"
+              >
+                <FileText className="w-4 h-4 text-[#C25E00]" /> Link Past Booking
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#faf9f5] border border-stone-200 text-left text-xs text-stone-600">
+              <p className="font-semibold text-stone-800 mb-1">Did you book with a different email address or as a guest?</p>
+              <p>Click &ldquo;Link Past Booking&rdquo; above to connect bookings made under any previous email or with your Booking ID.</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -834,6 +928,98 @@ export default function CustomerAccountPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Link Past Booking Modal */}
+      {isLinkModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#C25E00] flex items-center justify-center">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg text-stone-900 font-bold">Link Past Booking</h3>
+                  <p className="text-xs text-stone-500">Connect shoots booked as guest or under another email</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsLinkModalOpen(false);
+                  setLinkFeedback(null);
+                  setLinkInput("");
+                }}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleLinkPastBooking} className="mt-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  Booking ID or Past Email Address
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  placeholder="e.g. bk_1730... or your-previous@email.com"
+                  className="w-full text-xs px-3.5 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:border-[#C25E00] font-mono"
+                />
+                <p className="text-[11px] text-stone-400 mt-1">
+                  Enter the Booking Reference from your booking confirmation or the email you filled in the booking form.
+                </p>
+              </div>
+
+              {linkFeedback && (
+                <div
+                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    linkFeedback.type === "success"
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
+                  {linkFeedback.type === "success" ? (
+                    <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  )}
+                  <span>{linkFeedback.text}</span>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-stone-100 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLinkModalOpen(false);
+                    setLinkFeedback(null);
+                    setLinkInput("");
+                  }}
+                  className="px-4 py-2 text-xs font-semibold text-stone-600 hover:text-stone-900 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={linkLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C25E00] text-white text-xs font-semibold hover:bg-[#a34f00] disabled:opacity-50 transition shadow-sm"
+                >
+                  {linkLoading ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Verifying &amp; Linking...
+                    </>
+                  ) : (
+                    "Link to My Account"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

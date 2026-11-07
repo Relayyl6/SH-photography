@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/firebase/config";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
-import { sendRescheduleRequestNotification, sendRescheduleDecisionNotification } from "@/lib/email";
-import { findSlotConflict } from "@/lib/bookings-conflict";
+import {
+  sendRescheduleRequestNotification,
+  sendRescheduleDecisionNotification,
+  sendBookingConfirmationNotification,
+} from "@/lib/email";
+import { findSlotConflict, getConsecutiveDates } from "@/lib/bookings-conflict";
 
 export const dynamic = "force-dynamic";
 
@@ -263,7 +267,14 @@ async function handleUpdate(req: NextRequest) {
       // If Benedict tries to confirm a booking, verify that none of its dates are already booked!
       if (targetStatus === "confirmed") {
         const allDatesToCheck: string[] = [];
-        if (currentBooking.slot?.date) allDatesToCheck.push(currentBooking.slot.date);
+        if (currentBooking.slot?.date) {
+          allDatesToCheck.push(
+            ...getConsecutiveDates(
+              currentBooking.slot.date,
+              currentBooking.multiDayCount || currentBooking.answers?.multiDayCount
+            )
+          );
+        }
         if (currentBooking.secondaryDate) allDatesToCheck.push(currentBooking.secondaryDate);
         if (Array.isArray(currentBooking.additionalDates)) {
           allDatesToCheck.push(...currentBooking.additionalDates.filter(Boolean));
@@ -321,6 +332,35 @@ async function handleUpdate(req: NextRequest) {
         }
       } catch (dbErr) {
         console.warn("Status update in Firestore warning:", dbErr);
+      }
+
+      // Dispatch official confirmation email to customer
+      const targetCustomerEmail =
+        currentBooking.customer?.email ||
+        currentBooking.customerEmail ||
+        currentBooking.answers?.email ||
+        (body.bookingFallback?.customer?.email);
+
+      if (targetStatus === "confirmed" && targetCustomerEmail) {
+        try {
+          await sendBookingConfirmationNotification({
+            bookingId: actualBookingId,
+            sessionName: currentBooking.sessionSnapshot?.name || currentBooking.sessionName || "Photography Session",
+            date: currentBooking.slot?.date || "To be arranged",
+            timeSlot: currentBooking.slot ? { start: currentBooking.slot.start, end: currentBooking.slot.end } : undefined,
+            customer: {
+              name: currentBooking.customer?.name || currentBooking.customerName || currentBooking.answers?.name || "Valued Client",
+              email: targetCustomerEmail,
+              phone: currentBooking.customer?.phone || currentBooking.customerPhone || currentBooking.answers?.phone || undefined,
+            },
+            location: currentBooking.answers?.location || currentBooking.answers?.venue || currentBooking.answers?.address || undefined,
+            secondaryDate: currentBooking.secondaryDate || undefined,
+            additionalDates: currentBooking.additionalDates || undefined,
+            ownerMessage: body.ownerMessage || undefined,
+          });
+        } catch (emailErr) {
+          console.warn("Failed to dispatch booking confirmation email:", emailErr);
+        }
       }
 
       return NextResponse.json({ success: true, bookingId: actualBookingId, status: targetStatus });

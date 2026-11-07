@@ -1,91 +1,100 @@
 import { db } from "@/lib/firebase/config";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { getConsecutiveDates } from "./date-utils";
+
+export { getConsecutiveDates };
 
 /**
- * Check if two time windows on the same date overlap.
- * Format expected: "HH:mm" (24-hour).
- */
-export function isTimeOverlap(startA?: string, endA?: string, startB?: string, endB?: string): boolean {
-  if (!startA || !startB) return true; // If time unspecified, assume full-day overlap
-  const toMinutes = (t: string) => {
-    const [h = "0", m = "0"] = t.split(":");
-    return parseInt(h, 10) * 60 + parseInt(m, 10);
-  };
-  const aStart = toMinutes(startA);
-  const aEnd = toMinutes(endA || startA);
-  const bStart = toMinutes(startB);
-  const bEnd = toMinutes(endB || startB);
-
-  return Math.max(aStart, bStart) < Math.min(aEnd, bEnd);
-}
-
-/**
- * Check if a single target date and time slot has conflicting active bookings in Firestore.
+ * Check if a single target date has conflicting active bookings in Firestore.
  * Active bookings include:
  * 1. "confirmed" bookings (locked by brand owner Benedict)
  * 2. "pending" bookings (held pending review)
  * 3. "reschedule_requested" bookings (both previous dates and requested dates held)
  *
- * Automatically inspects primary date, multi-day additionalDates array, and secondaryDate.
+ * Benedict Henry accepts ONE major photoshoot per day. Any overlap on date or multi-day range is locked.
  */
 export async function findSlotConflict(
   targetDate: string,
-  targetStart: string,
-  targetEnd: string,
+  targetStart?: string,
+  targetEnd?: string,
   excludeBookingId?: string
 ): Promise<{ conflictBookingId: string; reason: string } | null> {
   if (!targetDate) return null;
 
   try {
-    const q = query(
-      collection(db, "bookings"),
-      where("status", "in", ["confirmed", "pending", "reschedule_requested"])
-    );
-    const snap = await getDocs(q);
+    let docs: Array<{ id: string; data: () => any }> = [];
 
-    for (const d of snap.docs) {
+    // 1. Try server Admin DB if available
+    try {
+      const { getAdminDb } = await import("@/lib/firebase/admin");
+      const adminDb = getAdminDb();
+      if (adminDb) {
+        const snap = await adminDb
+          .collection("bookings")
+          .where("status", "in", ["confirmed", "pending", "reschedule_requested"])
+          .get();
+        docs = snap.docs;
+      }
+    } catch {
+      // Fallback to client SDK
+    }
+
+    // 2. Client SDK fallback
+    if (docs.length === 0) {
+      const q = query(
+        collection(db, "bookings"),
+        where("status", "in", ["confirmed", "pending", "reschedule_requested"])
+      );
+      const snap = await getDocs(q);
+      docs = snap.docs;
+    }
+
+    for (const d of docs) {
       if (excludeBookingId && d.id === excludeBookingId) continue;
       const data = d.data();
 
-      // Gather all booked dates for this active booking (primary + any multi-day dates)
-      const activeDates: string[] = [];
-      if (data.slot?.date) activeDates.push(data.slot.date);
-      if (data.secondaryDate) activeDates.push(data.secondaryDate);
+      // Gather all booked dates for this active booking
+      const activeDates = new Set<string>();
+
+      // A. Primary date and any consecutive dates from multiDayCount
+      if (data.slot?.date) {
+        const multiDates = getConsecutiveDates(data.slot.date, data.multiDayCount || data.answers?.multiDayCount);
+        multiDates.forEach((dt) => activeDates.add(dt));
+      }
+
+      // B. Secondary date (double date)
+      if (data.secondaryDate) {
+        activeDates.add(data.secondaryDate);
+      }
+      if (data.answers?.secondaryDate) {
+        activeDates.add(data.answers.secondaryDate);
+      }
+
+      // C. Additional dates array
       if (Array.isArray(data.additionalDates)) {
-        activeDates.push(...data.additionalDates.filter(Boolean));
+        data.additionalDates.filter(Boolean).forEach((dt: string) => activeDates.add(dt));
       }
       if (Array.isArray(data.answers?.additionalDates)) {
-        activeDates.push(...data.answers.additionalDates.filter(Boolean));
+        data.answers.additionalDates.filter(Boolean).forEach((dt: string) => activeDates.add(dt));
       }
 
-      // Check if targetDate matches any of this booking's active confirmed/held dates
-      for (const bookedDate of activeDates) {
-        if (bookedDate === targetDate) {
-          // If multi-day date, assume full-day block unless times match
-          if (bookedDate === data.slot?.date) {
-            if (isTimeOverlap(targetStart, targetEnd, data.slot?.start, data.slot?.end)) {
-              return {
-                conflictBookingId: d.id,
-                reason: `Active ${data.status} booking #${d.id.substring(0, 8)} on ${bookedDate} (${data.slot?.start || "10:00"}–${data.slot?.end || "18:00"})`,
-              };
-            }
-          } else {
-            // Multi-day secondary or additional date is locked full day
-            return {
-              conflictBookingId: d.id,
-              reason: `Active ${data.status} multi-day booking #${d.id.substring(0, 8)} locking ${bookedDate}`,
-            };
-          }
-        }
+      // D. Check if targetDate matches any of these active dates
+      if (activeDates.has(targetDate)) {
+        const clientName = data.customer?.name || "Client";
+        const sessionName = data.sessionSnapshot?.name || "Photoshoot";
+        return {
+          conflictBookingId: d.id,
+          reason: `${data.status.toUpperCase()} event on ${targetDate} for ${clientName} (${sessionName} #${d.id.substring(0, 8)})`,
+        };
       }
 
-      // If booking is pending reschedule approval, also check the requestedSlot and requested additional dates
-      if (data.pendingChangeRequest?.requestedSlot?.date === targetDate) {
-        const reqSlot = data.pendingChangeRequest.requestedSlot;
-        if (isTimeOverlap(targetStart, targetEnd, reqSlot.start, reqSlot.end)) {
+      // E. Check pending reschedule requests
+      if (data.pendingChangeRequest?.requestedSlot?.date) {
+        const reqDate = data.pendingChangeRequest.requestedSlot.date;
+        if (reqDate === targetDate) {
           return {
             conflictBookingId: d.id,
-            reason: `Pending reschedule request on booking #${d.id.substring(0, 8)} holding ${reqSlot.date} (${reqSlot.start || ""}–${reqSlot.end || ""})`,
+            reason: `Pending reschedule request holding ${targetDate} for ${data.customer?.name || "Client"}`,
           };
         }
       }
@@ -94,7 +103,7 @@ export async function findSlotConflict(
         if (data.pendingChangeRequest.requestedAdditionalDates.includes(targetDate)) {
           return {
             conflictBookingId: d.id,
-            reason: `Pending reschedule request on booking #${d.id.substring(0, 8)} holding multi-day date ${targetDate}`,
+            reason: `Pending reschedule request holding multi-day date ${targetDate}`,
           };
         }
       }
@@ -107,12 +116,12 @@ export async function findSlotConflict(
 }
 
 /**
- * Check multiple dates for conflict all at once (useful for 2-day, 3-day, 4-day shoots).
+ * Check multiple dates for conflict all at once (useful for 2-day, 3-day shoots).
  */
 export async function checkAllDatesConflict(
   dates: string[],
-  start: string,
-  end: string,
+  start?: string,
+  end?: string,
   excludeBookingId?: string
 ): Promise<{ conflictDate: string; reason: string } | null> {
   for (const date of dates) {
